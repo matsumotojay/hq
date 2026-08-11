@@ -1031,10 +1031,11 @@ var CHEFS=[
   fj:["お一人様25,000〜30,000円","人件費込み・別途10%税","ドリンク別"],
   hik:"Not in her ranking.",hikj:"光のランキング外。",
   tags:[["Staff included","スタッフ込み","yes"],["Drinks separate","ドリンク別","no"]]},
- {id:"santo",n:"Santo Niseko",nj:"Santo（ニセコ）",c:"#9E93A6",p:P.quest,lo:null,hi:null,budget:null,drinksIncl:false,
-  f:["Asked, no reply yet","Chase or drop"],fj:["打診済み・返答なし","催促するか候補から外す"],
+ {id:"santo",n:"Santo Niseko",nj:"Santo（ニセコ）",c:"#9E93A6",p:P.quest,lo:750000,hi:800000,budget:800000,drinksIncl:false,
+  f:["¥15,000 a head, all inclusive — via Ayuko, 11 Aug","No sushi or ramen — those must be ordered separately","Drinks separate"],
+  fj:["お一人様15,000円・オールインクルーシブ（鮎子さん経由・8月11日）","寿司とラーメンは対応不可・別途手配","ドリンク別"],
   hik:"",hikj:"",
-  tags:[["No reply","返答待ち","no"]]}];
+  tags:[["Quoted ¥800,000 all in","見積もり約800,000円","ok"],["No sushi/ramen","寿司・ラーメン不可","no"]]}];
 
 var PHOTOG=[
  {id:"nom",n:"Nom-san",nj:"のむさん",amt:120000,link:"https://www.instagram.com/nom.photo/",linkl:"Instagram",linkj:"インスタグラム",front:true,
@@ -1678,6 +1679,7 @@ function renderDecor2(){ renderCatTasks("decortasks",4); renderBoard("decorboard
 function renderBeauty(){ renderCatTasks("beautytasks",8); renderBoard("beautyboard","beauty"); }
 
 var UPDATES=[
+ ["Santo finally quoted — ¥800,000 all in","Santoから見積もり到着・約800,000円","¥15,000 a head via Ayuko (11 Aug), the cheapest full quote so far — but no sushi or ramen (order separately) and drinks are separate. Compare on the Food tab.","鮎子さん経由でお一人様15,000円（8月11日）。最安の見積もりですが、寿司・ラーメンは不可（別途手配）、ドリンクも別。「料理」タブで比較を。"],
  ["Glamping prices found","グランピング料金判明","¥13,200 per adult per night. Camping spots are ¥6,000 for two — far cheaper.","大人1名1泊13,200円。キャンプサイトは2名6,000円と割安。"],
  ["Eight bedrooms, not six","寝室は8室","Ayuko confirmed 8 rooms sleeping up to 22 — three take 4 people, five take 2. The booking site only lists six.","鮎子さんより8室・最大22名と回答。4名×3室、2名×5室。予約サイトには6室のみ掲載。"],
  ["Takayo&rsquo;s portfolio found","Takayoさんのポートフォリオ","Full name Takayo Fujie. Link is on the Extras tab.","藤江貴代さん。リンクは「その他」タブに。"],
@@ -2300,14 +2302,25 @@ function renderUpdates(){var w=document.getElementById("updates");w.innerHTML=""
   var xfer=el("div");xfer.style.cssText="margin-bottom:.8rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center";
   if(!window.FBCONFIG){
     var ex=el("button","arch","📤 "+t("Copy my data for the live site","ライブ版へデータをコピー"));
+    var exBox=el("textarea");exBox.rows=4;exBox.readOnly=true;
+    exBox.style.cssText="display:none;width:100%;font:monospace;font-size:.7rem;padding:.5rem .7rem;border:2px solid var(--mint);border-radius:10px;background:var(--card);color:var(--ink)";
     ex.addEventListener("click",function(){
       var out={};for(var i=0;i<localStorage.length;i++){var K=localStorage.key(i);
         if(K&&K.indexOf("lt4.")===0&&K!=="lt4.tab")out[K.slice(4)]=localStorage.getItem(K);}
       var s=JSON.stringify(out);
-      var fin=function(ok){toast(ok?t("Copied — paste it into the live site&rsquo;s Import box","コピーしました。ライブ版のインポート欄へ"):t("Couldn&rsquo;t copy","コピーできませんでした"));};
-      if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(s).then(function(){fin(true);},function(){fin(false);});
-      else fin(false);});
-    xfer.appendChild(ex);
+      exBox.value=s;exBox.style.display="block";exBox.focus();exBox.select();
+      exBox.setSelectionRange(0,s.length);
+      var ok=false;
+      try{ ok=document.execCommand("copy"); }catch(e){}
+      if(!ok&&navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(s).then(function(){
+          toast(t("Copied ✓ — paste it into the live site&rsquo;s Import box","コピーしました ✓ ライブ版のインポート欄へ"));},function(){
+          toast(t("Text is selected below — press ⌘C, then paste it on the live site","下の文字列が選択済みです。⌘Cでコピーしてライブ版へ"));});
+      } else {
+        toast(ok?t("Copied ✓ — paste it into the live site&rsquo;s Import box","コピーしました ✓ ライブ版のインポート欄へ")
+                :t("Text is selected below — press ⌘C, then paste it on the live site","下の文字列が選択済みです。⌘Cでコピーしてライブ版へ"));
+      }});
+    xfer.appendChild(ex);xfer.appendChild(exBox);
   } else {
     var im=el("button","arch","📥 "+t("Import data from the old site","旧サイトからデータを取り込む"));
     var box=el("textarea");box.rows=3;box.placeholder=t("Paste the copied data here, then press Import again","コピーしたデータをここに貼って、もう一度押してください");
