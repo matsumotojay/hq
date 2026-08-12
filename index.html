@@ -338,6 +338,11 @@ a{color:var(--sky)}
 #p-drive .zgrp .zslot .zn,#p-drive .zgrp .zslot .cap{align-self:center}
 #p-drive .zgrp.zsm .zone{min-height:2.2rem;padding:.4rem}
 #p-drive .zgrp.zsm .zgrp-h{margin-bottom:.45rem}
+/* text still in the other person's language — shown rather than hidden, but
+   marked so you know it is waiting on a translation */
+.untr{font-style:normal;opacity:.82;border-bottom:1px dotted var(--ink-faint);cursor:help}
+.untr::after{content:"訳";font-size:.6em;font-weight:800;vertical-align:super;margin-left:.15em;opacity:.7}
+:root[data-lang="ja"] .untr::after{content:"EN"}
 .legsum{margin-bottom:.9rem}
 #p-seat .chip .fl{font-size:.72rem;margin-right:.28rem}
 .cap .mix{font-size:.68rem;font-weight:800;opacity:.85;margin-left:.3rem}
@@ -1036,7 +1041,11 @@ function listItems(key,defs){
   add.forEach(function(a){ if(!del[a.id]) out.push({id:a.id,d:a,def:false}); });
   return out;
 }
-function addItem(key,obj){ var a=load("add."+key,[]); obj.id=key+"_"+Date.now(); a.push(obj); save("add."+key,a); renderAll(); }
+function addItem(key,obj){ var a=load("add."+key,[]);
+  /* the add forms fill both language slots with the same string — file it under
+     the language it is actually written in instead */
+  if(obj&&obj.n&&obj.n===obj.nj){ var p=biSet(null,obj.n); obj.n=p.n; obj.nj=p.nj; obj.src=p.src; }
+  obj.id=key+"_"+Date.now(); a.push(obj); save("add."+key,a); renderAll(); }
 function delItem(key,id){ var d=load("del."+key,{}); d[id]=1; save("del."+key,d); renderAll(); }
 function editList(holder,key,defs,fmt,ph){
   var w=document.getElementById(holder); if(!w) return;
@@ -1044,7 +1053,7 @@ function editList(holder,key,defs,fmt,ph){
   listItems(key,defs).forEach(function(it){
     var card=el("div","card pad");
     card.style.position="relative";
-    card.innerHTML=fmt(it.d)+'<button class="del" data-x="'+it.id+'" style="position:absolute;top:.5rem;right:.5rem">✕</button>';
+    card.innerHTML=fmt(it.d,it.def)+'<button class="del" data-x="'+it.id+'" style="position:absolute;top:.5rem;right:.5rem">✕</button>';
     card.querySelector("[data-x]").addEventListener("click",function(){delItem(key,it.id);});
     w.appendChild(card);
   });
@@ -1056,8 +1065,13 @@ function editList(holder,key,defs,fmt,ph){
   inp.addEventListener("keydown",function(e){if(e.key==="Enter")btn.click();});
   row.appendChild(inp);row.appendChild(btn);w.appendChild(row);
 }
-function fmtSimple(x){ return '<h4 style="padding-right:1.4rem">'+bi(x.n||x[0]||"",x.nj||x[1]||"")+'</h4>'+
-  ((x.d||x[2])?'<div style="font-size:.84rem;color:var(--ink-soft);margin-top:.3rem;line-height:1.65">'+bi(x.d||x[2],x.dj||x[3]||"")+'</div>':''); }
+/* isDef===false means a person typed this, so it may hold only one language */
+function fmtSimple(x,isDef){
+  var nm=(isDef===false)?biUser({n:x.n,nj:x.nj,src:x.src}):bi(x.n||x[0]||"",x.nj||x[1]||"");
+  var dv=x.d||x[2];
+  var ds=dv?((isDef===false)?biUser({n:x.d,nj:x.dj,src:x.dsrc}):bi(dv,x.dj||x[3]||"")):"";
+  return '<h4 style="padding-right:1.4rem">'+nm+'</h4>'+
+    (ds?'<div style="font-size:.84rem;color:var(--ink-soft);margin-top:.3rem;line-height:1.65">'+ds+'</div>':''); }
 var CHEFS=[
  {id:"tera",n:"Teranishi",nj:"寺西シェフ",c:"#7C8598",p:P.cloche,lo:1320000,hi:1400000,budget:1399200,drinksIncl:true,rank:1,
   f:["<b>Written quote received</b> — dated 2 June 2026, ¥1,320,000 priced for 40 adults + 6 children",
@@ -1355,22 +1369,74 @@ function taskOwner(t){ var m=load("towner",{}); return m[t.id]||t.o; }
 function setTaskOwner(id,v){ var m=load("towner",{});m[id]=v;save("towner",m);renderAll(); }
 function taskDue(t){ var m=load("tdue",{}); var v=m[t.id]; return v==null?t.due:v; }
 function setTaskDue(id,v){ var m=load("tdue",{});m[id]=v;save("tdue",m);renderAll(); }
+/* ---------- bilingual user text ----------
+   Nobody signs in, so typed text is filed under the language it is WRITTEN in,
+   not under who wrote it — the script is the reliable signal. Each entry keeps
+   one slot per language and `src` records which one a person actually typed;
+   the other slot is a translation and may be refilled or cleared freely. */
+var JATEXT=/[぀-ヿ㐀-鿿ｦ-ﾟ]/;
+function langOf(s){ s=String(s==null?"":s);
+  if(JATEXT.test(s)) return "ja";
+  if(/[A-Za-z]/.test(s)) return "en";
+  return L(); }                       /* digits or symbols only — go with the toggle */
+/* Entries written before this existed put the same string in BOTH slots, so an
+   identical pair means one language, not two. Split it back apart on read. */
+function biNorm(o){
+  if(o==null) return {n:"",nj:""};
+  if(typeof o==="string") return (langOf(o)==="ja")?{n:"",nj:o,src:"ja"}:{n:o,nj:"",src:"en"};
+  var e=o.n||"", j=o.nj||"";
+  if(e&&j&&e===j) return (langOf(e)==="ja")?{n:"",nj:j,src:"ja"}:{n:e,nj:"",src:"en"};
+  return {n:e,nj:j,src:o.src}; }
+/* Someone typing in one language makes the OTHER language stale — but only
+   clear it when it was a translation. Text a person wrote is never destroyed. */
+function biSet(prev,v){
+  var o=biNorm(prev), l=langOf(v), was=o.src;
+  if(l==="ja"){ o.nj=v; if(was!=="en") o.n=""; }
+  else        { o.n=v;  if(was!=="ja") o.nj=""; }
+  o.src=l; return o; }
+/* Show your language. If it has not been translated yet, show the other one
+   marked rather than showing nothing — a row going blank is worse. */
+function biUser(o){ var p=biNorm(o), e=p.n?esc(p.n):"", j=p.nj?esc(p.nj):"";
+  return '<span lang-en>'+(e||(j?'<i class="untr" title="Not translated into English yet">'+j+'</i>':''))+'</span>'+
+         '<span lang-ja>'+(j||(e?'<i class="untr" title="まだ日本語に翻訳されていません">'+e+'</i>':''))+'</span>'; }
+function biUserPlain(o){ var p=biNorm(o); return L()==="ja"?(p.nj||p.n):(p.n||p.nj); }
+/* The edit box holds YOUR language only, so typing supplies the translation
+   instead of overwriting what the other person wrote. */
+function biUserEdit(o){ var p=biNorm(o); return (L()==="ja"?p.nj:p.n)||""; }
+/* How many user-written entries are still waiting for their other language */
+function untranslated(){
+  var n=0;
+  function chk(o){ var p=biNorm(o); if((p.n&&!p.nj)||(p.nj&&!p.n)) n++; }
+  var tn=load("tname",{}); for(var k in tn) chk(tn[k]);
+  var td=load("tdesc",{}); for(var k2 in td) chk(td[k2]);
+  load("mytasks",[]).forEach(function(x){ if(!tn[x.id]) chk({n:x.n,nj:x.nj,src:x.src}); });
+  (load("sched",null)||[]).forEach(function(e){ if(!e.fixed) chk({n:e.en,nj:e.ja,src:e.src}); });
+  return n; }
 function taskName(tk){ var m=load("tname",{})[tk.id];
-  if(m) return tk.mine?esc(m.n):bi(m.n,m.nj||m.n);
-  return tk.mine?esc(tk.n):bi(tk.n,tk.nj); }
+  if(m) return biUser(m);
+  return tk.mine?biUser({n:tk.n,nj:tk.nj,src:tk.src}):bi(tk.n,tk.nj); }
+function taskNameEdit(tk){ var m=load("tname",{})[tk.id];
+  if(m) return biUserEdit(m);
+  if(tk.mine) return biUserEdit({n:tk.n,nj:tk.nj,src:tk.src});
+  return taskNamePlain(tk); }
+function taskDescEdit(tk){ var m=load("tdesc",{})[tk.id];
+  if(m!=null) return biUserEdit(m); return taskDescPlain(tk); }
 function taskNamePlain(tk){ var m=load("tname",{})[tk.id];
-  if(m) return t(m.n,m.nj||m.n); return t(tk.n,tk.nj).replace(/&rsquo;/g,"’").replace(/&amp;/g,"&").replace(/&gt;/g,">"); }
-function setTaskName(id,v){ var m=load("tname",{});m[id]={n:v,nj:v};save("tname",m);renderAll(); }
+  if(m) return biUserPlain(m);
+  if(tk.mine) return biUserPlain({n:tk.n,nj:tk.nj,src:tk.src});
+  return t(tk.n,tk.nj).replace(/&rsquo;/g,"’").replace(/&amp;/g,"&").replace(/&gt;/g,">"); }
+function setTaskName(id,v){ var m=load("tname",{});m[id]=biSet(m[id],v);save("tname",m);renderAll(); }
 function taskDesc(tk){ var m=load("tdesc",{})[tk.id];
-  if(m!=null) return m?esc(m):""; return bi(tk.d||"",tk.dj||""); }
+  if(m!=null) return biUser(m); return bi(tk.d||"",tk.dj||""); }
 function taskDescPlain(tk){ var m=load("tdesc",{})[tk.id];
-  if(m!=null) return m;
+  if(m!=null) return biUserPlain(m);
   return t(tk.d||"",tk.dj||"").replace(/&rsquo;/g,"\u2019").replace(/&amp;/g,"&").replace(/&gt;/g,">").replace(/&lt;/g,"<"); }
-function setTaskDesc(id,v){ var m=load("tdesc",{});m[id]=v;save("tdesc",m);renderAll(); }
+function setTaskDesc(id,v){ var m=load("tdesc",{});m[id]=biSet(m[id],v);save("tdesc",m);renderAll(); }
 function taskCat(tk){ var m=load("tcat",{}); return m[tk.id]!=null?m[tk.id]:tk.c; }
 function setTaskCat(id,v){ var m=load("tcat",{});m[id]=v;save("tcat",m);renderAll(); }
 function myTasks(){ return load("mytasks",[]).map(function(x,i){
-  return {id:x.id||("my"+i),c:(x.c==null?0:x.c),o:x.o||"b",n:x.n,nj:x.nj||x.n,due:x.due||"",d:"",dj:"",mine:true}; }); }
+  var p=biNorm({n:x.n,nj:x.nj,src:x.src});
+  return {id:x.id||("my"+i),c:(x.c==null?0:x.c),o:x.o||"b",n:p.n,nj:p.nj,src:p.src,due:x.due||"",d:"",dj:"",mine:true}; }); }
 function allTasks(){ return TASKS.concat(myTasks()); }
 function daysTo(iso){ if(!iso) return null;
   var p=iso.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]),n=new Date();
@@ -1468,11 +1534,11 @@ function taskRow(tk,showCat){
     var p=PENDOWN[tk.id]; if(!p)return; delete PENDOWN[tk.id]; setTaskOwner(tk.id,p); });
   d.querySelector(".duein").addEventListener("change",function(e){ setTaskDue(tk.id,e.target.value); });
   d.querySelector(".pen-n").addEventListener("click",function(){
-    inlineEdit(d.querySelector(".tk-n"),taskNamePlain(tk),function(v){
+    inlineEdit(d.querySelector(".tk-n"),taskNameEdit(tk),function(v){
       if(v.trim())setTaskName(tk.id,v.trim());else renderAll();},false); });
   var editDesc=function(){
     var host=d.querySelector(".tk-d")||d.querySelector(".tk-note");
-    inlineEdit(host,taskDescPlain(tk),function(v){setTaskDesc(tk.id,v.trim());},true); };
+    inlineEdit(host,taskDescEdit(tk),function(v){setTaskDesc(tk.id,v.trim());},true); };
   var pd=d.querySelector(".pen-d"); if(pd) pd.addEventListener("click",editDesc);
   var nb=d.querySelector(".tk-note"); if(nb) nb.addEventListener("click",editDesc);
   var ab=d.querySelector(".arch");
@@ -1517,8 +1583,10 @@ function addRow(cid,who){
   var go=function(){
     var nm=wrap.querySelector(".a-n"),v=nm.value.trim(); if(!v)return;
     var a=load("mytasks",[]);
-    a.push({id:"my_"+Date.now(),n:v,nj:v,o:oB.dataset.o,due:wrap.querySelector(".a-d").value||"",
-            c:(cid!=null?cid:(sel?+sel.value:0))});
+    var np=biSet(null,v);
+    np.id="my_"+Date.now(); np.o=oB.dataset.o; np.due=wrap.querySelector(".a-d").value||"";
+    np.c=(cid!=null?cid:(sel?+sel.value:0));
+    a.push(np);
     save("mytasks",a); nm.value=""; renderAll();
   };
   wrap.querySelector(".a-go").addEventListener("click",go);
@@ -2510,6 +2578,10 @@ function renderUpdates(){var w=document.getElementById("updates");w.innerHTML=""
   var le=load("lastedit",null);
   w.appendChild(el("div","stamp",le?bi("Jay last put information in on "+fmtStamp(le),"ジェイの最終入力："+fmtStamp(le))
                                   :bi("Jay hasn&rsquo;t put anything in on this device yet","ジェイの入力はまだありません")));
+  var un=untranslated();
+  if(un) w.appendChild(el("div","stamp",bi(
+    "🈳 "+un+" thing"+(un===1?"":"s")+" written in Japanese are still waiting for an English version — ask Claude to translate them.",
+    "🈳 英語版がまだない項目が"+un+"件あります。クロードに翻訳を頼んでください。")));
   var xfer=el("div");xfer.style.cssText="margin-bottom:.8rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center";
   if(!window.FBCONFIG){
     var ex=el("button","arch","📤 "+t("Copy my data for the live site","ライブ版へデータをコピー"));
@@ -3443,7 +3515,7 @@ function renderDay(){
     d.innerHTML='<span class="ev-bar" style="background:'+col+'"></span>'+
       '<span class="ev-t"><input type="time" class="ev-t1" value="'+(ev.t||"")+'" title="'+t("start","開始")+'">'+
       '<input type="time" class="ev-t2" value="'+(ev.t2||"")+'" title="'+t("end (optional)","終了（任意）")+'"></span>'+
-      '<div class="ev-b"><div class="ev-n">'+(ev.fixed?bi(ev.en,ev.ja):esc(ev.en))+'</div></div>'+
+      '<div class="ev-b"><div class="ev-n">'+(ev.fixed?bi(ev.en,ev.ja):biUser({n:ev.en,nj:ev.ja,src:ev.src}))+'</div></div>'+
       '<button class="ev-c" title="'+t("colour","色")+'" style="background:'+col+'"></button>'+
       '<button class="pen ev-e" title="'+t("edit","編集")+'">✎</button>'+
       '<button class="del ev-x">✕</button>';
@@ -3453,10 +3525,12 @@ function renderDay(){
     d.querySelector(".ev-c").addEventListener("click",function(){ upd(function(x){x.c=((x.c||0)+1)%EVCOLORS.length;}); });
     d.querySelector(".ev-e").addEventListener("click",function(){
       var host=d.querySelector(".ev-n");
-      var plain=ev.fixed?t(ev.en,ev.ja).replace(/<[^>]*>/g,"").replace(/&rsquo;/g,"\u2019").replace(/&amp;/g,"&"):ev.en;
+      var plain=ev.fixed?t(ev.en,ev.ja).replace(/<[^>]*>/g,"").replace(/&rsquo;/g,"\u2019").replace(/&amp;/g,"&")
+                        :biUserEdit({n:ev.en,nj:ev.ja,src:ev.src});
       inlineEdit(host,plain,function(v){
         if(!v.trim()){renderAll();return;}
-        upd(function(x){x.en=v.trim();x.ja=v.trim();x.fixed=false;});},true); });
+        upd(function(x){ var p=biSet(x.fixed?null:{n:x.en,nj:x.ja,src:x.src},v.trim());
+          x.en=p.n; x.ja=p.nj; x.src=p.src; x.fixed=false; });},true); });
     armDanger(d.querySelector(".ev-x"),function(){
       schedSave(schedList().filter(function(x){return x.id!==ev.id;})); renderAll(); });
     w.appendChild(d);});
@@ -3464,7 +3538,8 @@ function renderDay(){
   row.innerHTML='<input type="time" class="ea-t"><input type="text" class="ea-n" placeholder="'+t("Add to the schedule…","予定を追加…")+'"><button class="btn ea-go" style="margin-top:0">＋</button>';
   var go=function(){
     var nm=row.querySelector(".ea-n"),v=nm.value.trim(); if(!v)return;
-    var a=schedList(); a.push({id:"ev_"+Date.now(),t:row.querySelector(".ea-t").value||"",en:v,ja:v,c:0});
+    var a=schedList(), ep=biSet(null,v);
+    a.push({id:"ev_"+Date.now(),t:row.querySelector(".ea-t").value||"",en:ep.n,ja:ep.nj,src:ep.src,c:0});
     schedSave(a); renderAll(); };
   row.querySelector(".ea-go").addEventListener("click",go);
   row.querySelector(".ea-n").addEventListener("keydown",function(e){if(e.key==="Enter")go();});
