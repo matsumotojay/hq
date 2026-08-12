@@ -863,7 +863,7 @@ function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=c
 function bi(e,j){return '<span lang-en>'+e+'</span><span lang-ja>'+j+'</span>';}
 var FBCONFIG=window.FBCONFIG={"apiKey": "AIzaSyAAnT69AtL-m53iQ-DuCF0PRNrdHcmvZaM", "authDomain": "lake-toya-hq.firebaseapp.com", "projectId": "lake-toya-hq", "storageBucket": "lake-toya-hq.firebasestorage.app", "messagingSenderId": "246123481676", "appId": "1:246123481676:web:8017ebd6ac8b8f3530c2e9"};
 /* keys that are personal viewing preferences stay per-device; everything else syncs */
-var SYNCSKIP=window.SYNCSKIP=/^(tab|lang|cur|curbind|lastedit|moreopen|driveday|nextfilter|tboxopen|fwopen|hpopen|jpopen|hopen|jopen|dock\.)/;
+var SYNCSKIP=window.SYNCSKIP=/^(tab|lang|cur|curbind|imgsplit|lastedit|moreopen|driveday|nextfilter|tboxopen|fwopen|hpopen|jpopen|hopen|jopen|dock\.)/;
 var UNDO=[];
 function save(k,v){try{
   if(k!=="lastedit"&&k!=="tab"&&k!=="moreopen"){
@@ -1730,30 +1730,88 @@ function renderNext(){
 
 /* ---------- reference image boards ---------- */
 function imgKey(b){ return "refimg."+b; }
-function refImgs(b){ return load(imgKey(b),[]); }
+/* ---------- pictures ----------
+   Every picture either of you adds is shared with the other; that is the whole
+   point of them. Sync stores one record per key and a record cannot exceed 1 MB,
+   so a board that kept all of its images inside a single key stopped syncing as
+   soon as it filled up. Each picture now lives in its own key and the board
+   holds only the list of ids. */
+function blobKey(id){ return "imgblob."+id; }
+function imgList(key){
+  var out=[];
+  load(key,[]).forEach(function(o){
+    if(o&&o.src){ out.push(o); return; }        /* older boards kept it inline */
+    var id=(typeof o==="string")?o:(o&&o.id); if(!id) return;
+    var b=load(blobKey(id),null);
+    if(b&&b.src) out.push({id:id,src:b.src,cap:b.cap||"",w:b.w,h:b.h});
+  });
+  return out;
+}
+function imgPush(key,rec){
+  save(blobKey(rec.id),{src:rec.src,cap:rec.cap||"",w:rec.w,h:rec.h});
+  var l=load(key,[]); l.push({id:rec.id}); save(key,l);
+}
+function imgDrop(key,id){
+  save(key,load(key,[]).filter(function(o){return (o&&o.id||o)!==id;}));
+  save(blobKey(id),null);
+}
+function imgCap(key,id,cap){
+  var b=load(blobKey(id),null);
+  if(b){ b.cap=cap; save(blobKey(id),b); return; }
+  var l=load(key,[]);                            /* still inline — caption in place */
+  l.forEach(function(o){ if(o&&o.id===id) o.cap=cap; }); save(key,l);
+}
+/* move any picture still stored inline out into its own key, once per device */
+function splitImgs(){
+  if(load("imgsplit1",false)) return;
+  var keys=[];
+  for(var i=0;i<localStorage.length;i++){ var K=localStorage.key(i);
+    if(K&&/^lt4\.(refimg|qimg)\./.test(K)) keys.push(K.slice(4)); }
+  keys.forEach(function(k){
+    var arr=load(k,[]); if(!arr.some(function(o){return o&&o.src;})) return;
+    var refs=arr.map(function(o){
+      if(!o||!o.src) return o;
+      save(blobKey(o.id),{src:o.src,cap:o.cap||"",w:o.w,h:o.h});
+      return {id:o.id};
+    });
+    save(k,refs);
+  });
+  save("imgsplit1",true);
+}
+function refImgs(b){ return imgList(imgKey(b)); }
 function addRefImgs(board,files,after){ addImgsTo(imgKey(board),files,1000,0.7,after); }
 /* shared by the mood boards and by photos attached to answers */
 function addImgsTo(key,files,mx,qual,after){
-  var arr=load(key,[]),left=files.length;
+  var left=files.length;
   if(!left){after&&after();return;}
   Array.prototype.forEach.call(files,function(f){
-    if(f.type.indexOf("image/")!==0){ if(!--left){save(key,arr);after&&after();} return; }
+    if(f.type.indexOf("image/")!==0){ if(!--left){after&&after();} return; }
     var r=new FileReader();
     r.onload=function(ev){
       var im=new Image();
       im.onload=function(){
-        var sc=Math.min(1,mx/Math.max(im.width,im.height));
-        var cv=document.createElement("canvas");
-        cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
-        cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
-        arr.push({id:"i_"+Date.now()+"_"+Math.round(Math.random()*1e4),src:cv.toDataURL("image/jpeg",qual),cap:"",w:cv.width,h:cv.height});
-        if(!--left){
-          try{ save(key,arr); }
-          catch(err){ if(typeof toast==="function") toast(t("That image didn't fit — delete one and try again","画像を保存できませんでした。ほかの画像を削除してからお試しください")); }
-          after&&after();
+        /* shrink until the encoded picture is comfortably inside one sync
+           record, so adding a big photo never silently fails to reach them */
+        var wide=mx, q=qual, src="";
+        for(var pass=0;pass<4;pass++){
+          var sc=Math.min(1,wide/Math.max(im.width,im.height));
+          var cv=document.createElement("canvas");
+          cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
+          cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+          src=cv.toDataURL("image/jpeg",q);
+          if(src.length<700000) break;
+          wide=Math.round(wide*0.8); q=Math.max(0.45,q-0.08);
         }
+        var w=Math.round(im.width*Math.min(1,wide/Math.max(im.width,im.height)));
+        var h=Math.round(im.height*Math.min(1,wide/Math.max(im.width,im.height)));
+        try{
+          imgPush(key,{id:"i_"+Date.now()+"_"+Math.round(Math.random()*1e4),src:src,cap:"",w:w,h:h});
+        }catch(err){
+          if(typeof toast==="function") toast(t("That picture wouldn't save — try a smaller one","画像を保存できませんでした。小さい画像でお試しください"));
+        }
+        if(!--left){ after&&after(); }
       };
-      im.onerror=function(){ if(!--left){save(key,arr);after&&after();} };
+      im.onerror=function(){ if(!--left){after&&after();} };
       im.src=ev.target.result;
     };
     r.readAsDataURL(f);
@@ -1789,7 +1847,7 @@ function renderBoard(holder,board){
   var arr=refImgs(board);
   var drop=el("label","drop");
   drop.innerHTML='<span class="drop-i">🖼</span><span>'+bi("Add reference pictures","参考画像を追加")+'</span>'+
-    '<small>'+bi("Tap to choose, or drop them here. They stay on this device — they don&rsquo;t travel to the other person.","タップして選択、またはここにドロップ。画像はこの端末にのみ保存され、相手には共有されません。")+'</small>'+
+    '<small>'+bi("Tap to choose, or drop them here. Anything you add shows up for both of you.","タップして選択、またはここにドロップ。追加した画像はふたりとも見られます。")+'</small>'+
     '<input type="file" accept="image/*" multiple hidden>';
   var inp=drop.querySelector("input");
   inp.addEventListener("change",function(){ addRefImgs(board,inp.files,renderAll); inp.value=""; });
@@ -1809,12 +1867,10 @@ function renderBoard(holder,board){
     c.innerHTML='<img src="'+o.src+'" alt="" loading="lazy"><button class="bdel" title="'+t("Remove","削除")+'">✕</button>'+
       '<figcaption><input class="bcap" placeholder="'+t("Add a note…","メモを追加…")+'" value="'+esc(o.cap||"")+'"></figcaption>';
     c.querySelector("img").addEventListener("click",function(){ lightbox(refImgs(board),o.id); });
-    armDanger(c.querySelector(".bdel"),function(){
-      save(imgKey(board),refImgs(board).filter(function(y){return y.id!==o.id;}));renderAll();});
+    armDanger(c.querySelector(".bdel"),function(){ imgDrop(imgKey(board),o.id); renderAll(); });
     var cap=c.querySelector(".bcap");
     cap.addEventListener("click",function(e){e.stopPropagation();});
-    cap.addEventListener("change",function(){
-      var a=refImgs(board);a.forEach(function(y){if(y.id===o.id)y.cap=cap.value;});save(imgKey(board),a);});
+    cap.addEventListener("change",function(){ imgCap(imgKey(board),o.id,cap.value); });
     g.appendChild(c);
   });
   w.appendChild(g);
@@ -2303,15 +2359,14 @@ function renderCulture(){
 /* a small strip of photos under a question; stored already shrunk, click to enlarge */
 function qImgKey(pfx,id){ return "qimg."+pfx+"."+id; }
 function qThumbs(pfx,id,editable){
-  var key=qImgKey(pfx,id), arr=load(key,[]);
+  var key=qImgKey(pfx,id), arr=imgList(key);
   var wrap=el("div","qimgs");
   arr.forEach(function(o){
     var b=el("div","qth");
     b.innerHTML='<img src="'+o.src+'" alt="" loading="lazy">'+(editable?'<button class="qx">✕</button>':'');
-    b.querySelector("img").addEventListener("click",function(){ lightbox(load(key,[]),o.id); });
+    b.querySelector("img").addEventListener("click",function(){ lightbox(imgList(key),o.id); });
     var x=b.querySelector(".qx");
-    if(x)armDanger(x,function(){
-      save(key,load(key,[]).filter(function(y){return y.id!==o.id;}));renderAll();});
+    if(x)armDanger(x,function(){ imgDrop(key,o.id); renderAll(); });
     wrap.appendChild(b);});
   if(editable){
     var lab=el("label","qadd");
@@ -3957,6 +4012,7 @@ function tick(){
   var e2=document.getElementById("hms"); if(e2) e2.textContent=h+"h "+m+"m "+sec+"s";
 }
 tick(); setInterval(tick,1000);
+splitImgs();
 renderAll();
 
 })();
