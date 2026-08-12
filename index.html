@@ -340,6 +340,36 @@ a{color:var(--sky)}
 #p-drive .zgrp.zsm .zgrp-h{margin-bottom:.45rem}
 /* text still in the other person's language — shown rather than hidden, but
    marked so you know it is waiting on a translation */
+/* calendar */
+.cal-h{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem}
+.cal-h b{font-family:var(--disp);font-size:1.05rem;flex:1;text-align:center}
+.cal-nav,.cal-today{font:inherit;font-size:.8rem;font-weight:800;padding:.3rem .7rem;border:2px solid var(--line-2);border-radius:999px;background:var(--card);color:var(--ink);cursor:pointer}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;margin-bottom:1.2rem}
+.cal-dow{text-align:center;font-size:.7rem;font-weight:800;color:var(--ink-faint);padding:.2rem 0}
+.cal-d{min-height:3.4rem;border:2px solid var(--line);border-radius:12px;padding:.25rem;background:var(--card);font-size:.7rem;display:flex;flex-wrap:wrap;gap:.1rem;align-content:flex-start}
+.cal-d.empty{border:0;background:transparent}
+.cal-d.now{border-color:var(--accent)}
+.cal-d.has{background:var(--sunk)}
+.cal-dn{width:100%;font-weight:800;color:var(--ink-faint)}
+.cal-pip{font-size:.85rem;line-height:1}
+.cal-pip.done{opacity:.35}
+.cal-pip.over{filter:saturate(1.4)}
+.cal-more{font-size:.62rem;font-weight:800;color:var(--ink-faint)}
+.cal-list{display:flex;flex-direction:column;gap:.5rem}
+.cal-it{display:flex;gap:.6rem;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:.6rem .75rem;background:var(--card)}
+.cal-it.over{border-color:var(--coral)}
+.cal-it.done{opacity:.55}
+.cal-it.done .cal-t{text-decoration:line-through}
+.cal-ic{font-size:1.1rem;line-height:1.3}
+.cal-b{flex:1;min-width:0}
+.cal-t{font-weight:700;font-size:.92rem}
+.cal-m{font-size:.73rem;color:var(--ink-faint);margin-top:.1rem}
+.cal-x{color:var(--coral)}
+.cal-n{font-size:.78rem;color:var(--ink-soft);margin-top:.3rem;line-height:1.6}
+.cal-ck{font:inherit;font-size:.9rem;width:1.7rem;height:1.7rem;flex:0 0 auto;border:2px solid var(--line-2);border-radius:50%;background:transparent;color:var(--ink-faint);cursor:pointer}
+.cal-add{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+.cal-add input{font:inherit;font-size:.85rem;padding:.5rem .7rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink)}
+.cal-add .ca-n{flex:1;min-width:9rem}
 /* picture groups */
 .catbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.7rem}
 .catbar-l{font-size:.78rem;font-weight:800;color:var(--ink-faint)}
@@ -519,9 +549,31 @@ a{color:var(--sky)}
   <p style="font-size:.84rem;color:var(--ink-soft);margin:0 0 .7rem"><span lang-en>Self-arranged is usually cheaper than buying through the caterer. Beverage staff run about ¥10,000 each per day — three cover 50 guests.</span><span lang-ja>自己手配の方が安くなることが多いです。ドリンク担当は1名1日約10,000円、50名なら3名。</span></p>
   <div class="card pad" id="drinkcount" style="margin-bottom:.8rem"></div>
   <div class="opts" id="o-drinks"></div>
+  <div class="card pad" style="margin-top:1rem;border-color:color-mix(in srgb,var(--accent) 45%,var(--line))">
+    <b>🛒 <span lang-en>Hikaru&rsquo;s shopping list, already priced — <span class="m" data-yen="89700"></span></span><span lang-ja>光が試算済みの買い出しリスト — <span class="m" data-yen="89700"></span></span></b>
+    <div style="font-size:.82rem;color:var(--ink-soft);margin:.35rem 0 .6rem;line-height:1.6"><span lang-en>From her own planning sheet. This is the plan for the welcome hour and the late evening, when you are pouring your own rather than paying Teranishi&rsquo;s per-head drink fee.</span><span lang-ja>光のシートより。ウェルカムタイムと夜遅くの時間帯を、寺西さんのドリンク料金ではなく自分たちで用意する想定です。</span></div>
+    <div class="tscroll"><table class="btable"><tbody>
+      <tr><td>🍾 <span lang-en>Sparkling wine — for the toast</span><span lang-ja>スパークリングワイン・乾杯用</span></td><td><span lang-en>8 bottles</span><span lang-ja>8本</span></td><td class="amt"><span class="m" data-yen="16000"></span></td></tr>
+      <tr><td>🍺 <span lang-en>Sapporo Classic keg, 19 L</span><span lang-ja>サッポロクラシック 19L樽</span></td><td><span lang-en>1</span><span lang-ja>1本</span></td><td class="amt"><span class="m" data-yen="12000"></span></td></tr>
+      <tr><td>🍺 <span lang-en>Dispenser &amp; gas rental</span><span lang-ja>サーバー・ガスレンタル</span></td><td><span lang-en>1 set</span><span lang-ja>1式</span></td><td class="amt"><span class="m" data-yen="5000"></span></td></tr>
+      <tr><td>🍺 <span lang-en>Backup cans</span><span lang-ja>予備ビール（缶）</span></td><td><span lang-en>24</span><span lang-ja>24本</span></td><td class="amt"><span class="m" data-yen="6000"></span></td></tr>
+      <tr><td>🍷 <span lang-en>White wine, mostly dry</span><span lang-ja>白ワイン・辛口中心</span></td><td><span lang-en>5 bottles</span><span lang-ja>5本</span></td><td class="amt"><span class="m" data-yen="10000"></span></td></tr>
+      <tr><td>🍷 <span lang-en>Red wine, medium body</span><span lang-ja>赤ワイン・ミディアム中心</span></td><td><span lang-en>5 bottles</span><span lang-ja>5本</span></td><td class="amt"><span class="m" data-yen="10000"></span></td></tr>
+      <tr><td>🥃 <span lang-en>Whisky, for highballs</span><span lang-ja>ウィスキー・ハイボール用</span></td><td><span lang-en>3 bottles</span><span lang-ja>3本</span></td><td class="amt"><span class="m" data-yen="7500"></span></td></tr>
+      <tr><td>🫧 <span lang-en>Soda water</span><span lang-ja>炭酸水</span></td><td>25 L</td><td class="amt"><span class="m" data-yen="3000"></span></td></tr>
+      <tr><td>🍇 <span lang-en>Haskap syrup — her Hokkaido touch</span><span lang-ja>ハスカップシロップ</span></td><td><span lang-en>4 bottles</span><span lang-ja>4本</span></td><td class="amt"><span class="m" data-yen="7200"></span></td></tr>
+      <tr><td>🍎 <span lang-en>Apple juice, Hokkaido</span><span lang-ja>りんごジュース・道産</span></td><td>8 L</td><td class="amt"><span class="m" data-yen="3000"></span></td></tr>
+      <tr><td>🍵 <span lang-en>Oolong tea</span><span lang-ja>ウーロン茶</span></td><td>10 L</td><td class="amt"><span class="m" data-yen="1500"></span></td></tr>
+      <tr><td>💧 <span lang-en>Water</span><span lang-ja>ミネラルウォーター</span></td><td>20 L</td><td class="amt"><span class="m" data-yen="2000"></span></td></tr>
+      <tr><td>🧒 <span lang-en>Orange juice, for the children</span><span lang-ja>オレンジジュース・子ども用</span></td><td>5 L</td><td class="amt"><span class="m" data-yen="1500"></span></td></tr>
+      <tr><td>☕ <span lang-en>Decaf coffee</span><span lang-ja>デカフェコーヒー</span></td><td></td><td class="amt"><span class="m" data-yen="3000"></span></td></tr>
+      <tr><td>🫖 <span lang-en>Tea — for the cold evening</span><span lang-ja>紅茶・寒い夜用</span></td><td></td><td class="amt"><span class="m" data-yen="2000"></span></td></tr>
+      <tr><td><b><span lang-en>Total</span><span lang-ja>合計</span></b></td><td></td><td class="amt"><b><span class="m" data-yen="89700"></span></b></td></tr>
+    </tbody></table></div>
+  </div>
   <h3 style="margin:1.6rem 0 .6rem;font-size:1.05rem">🍰 <span lang-en>Extras</span><span lang-ja>その他</span></h3>
   <div class="opts" id="o-food2"></div>
-  <p class="note"><span lang-en>Every caterer quote includes serving staff. Aroi&rsquo;s total leaves out its ¥198,000 tablecloth charge — you don&rsquo;t need it, Ayuko lends white cloths free. Where a vendor gave a range, the budget uses the midpoint. Nobody has asked about child rates yet — worth doing.</span><span lang-ja>各見積もりはサーブスタッフ込み。Aroiの合計はクロス198,000円を含みませんが、鮎子さんが白クロスを無償貸与のため不要です。幅がある場合は中間値を使用。お子様料金は未確認です。</span></p>
+  <p class="note"><span lang-en><b>There are 100 plates at the Lakehouse</b> — Ayuko&rsquo;s own count, so you almost certainly need no crockery rental at all. Every caterer quote includes serving staff. Aroi&rsquo;s total leaves out its ¥198,000 tablecloth charge — you don&rsquo;t need it, Ayuko lends white cloths free. Where a vendor gave a range, the budget uses the midpoint. Nobody has asked about child rates yet — worth doing.</span><span lang-ja>各見積もりはサーブスタッフ込み。Aroiの合計はクロス198,000円を含みませんが、鮎子さんが白クロスを無償貸与のため不要です。幅がある場合は中間値を使用。お子様料金は未確認です。</span></p>
 </div>
 
 <div class="page" id="p-decor">
@@ -539,14 +591,41 @@ a{color:var(--sky)}
   <div id="decorboard"></div>
 </div>
 
+<div class="page" id="p-cal">
+  <div class="ph"><h2>🗓 <span lang-en>Calendar</span><span lang-ja>カレンダー</span></h2>
+    <p><span lang-en>Everything with a date on it — task deadlines, the four payments, the days that are already fixed, and anything either of you adds.</span><span lang-ja>日付のあるものすべて。タスクの期限、4回の支払い、確定済みの予定、ふたりが追加した予定。</span></p></div>
+  <div id="calwrap"></div>
+</div>
+
 <div class="page" id="p-beauty">
   <div class="ph"><h2>💄 <span lang-en>Hair &amp; makeup</span><span lang-ja>ヘアメイク・衣装</span></h2>
     <p><span lang-en>Category ⑧ from the planning sheet — dress, tux, hair, makeup, nails.</span><span lang-ja>プランニングシートの⑧。ドレス・タキシード・ヘアメイク・ネイル。</span></p></div>
   <div class="card pad warnbox" style="margin-bottom:1.3rem">
-    <b><span lang-en>Don&rsquo;t pay for hair and makeup twice</span><span lang-ja>ヘアメイクの二重払いに注意</span></b>
-    <div style="font-size:.86rem;color:var(--ink-soft);margin-top:.35rem;line-height:1.6"><span lang-en>Makiko is <span class="m" data-yen="38000"></span> in the brochure, cheaper than all five quotes gathered. But Niki&rsquo;s <span class="m" data-yen="180000"></span> photography package <i>already includes</i> Makiko&rsquo;s hair and makeup, six hours of the grounds, and the Lavender Suite as a prep room. Settle the photographer first, then book beauty.</span><span lang-ja>まきこさんは表記<span class="m" data-yen="38000"></span>で、集めた5件よりも安価です。ただしNikiさんの<span class="m" data-yen="180000"></span>のパッケージには、まきこさんのヘアメイク・敷地6時間・支度部屋（ラベンダースイート）が<i>すでに含まれます</i>。先にカメラマンを決めてからヘアメイクを手配してください。</span></div>
+    <b><span lang-en>Makiko does the decor, not your hair</span><span lang-ja>まきこさんは装飾担当（ヘアメイクではありません）</span></b>
+    <div style="font-size:.86rem;color:var(--ink-soft);margin-top:.35rem;line-height:1.6"><span lang-en>This page used to say Makiko&rsquo;s <span class="m" data-yen="38000"></span> covered hair and makeup. Hikaru&rsquo;s own sheet is clear that Makiko Shimoda is the decoration and flower person — she has florist connections for the artificial flowers — and that hair and makeup is a separate booking from the two below.</span><span lang-ja>以前このページには、まきこさんの<span class="m" data-yen="38000"></span>にヘアメイクが含まれると記載していました。光のシートによると下田まきこさんは装飾・お花の担当（造花を安く手配できるつながりあり）で、ヘアメイクは別手配です。</span></div>
   </div>
-  <div class="ph"><h2>📋 <span lang-en>The checklist</span><span lang-ja>チェックリスト</span></h2>
+  <div class="ph"><h2>💇 <span lang-en>Her two candidates</span><span lang-ja>ヘアメイクの2候補</span></h2>
+    <p><span lang-en>From her sheet — both land at the same price, so it comes down to how long they stay.</span><span lang-ja>光のシートより。金額は同額なので、どこまで対応してもらえるかが判断材料です。</span></p></div>
+  <div class="grid g2" style="margin-bottom:1.3rem">
+    <div class="card pad">
+      <h4><span lang-en>Matsumoto-san</span><span lang-ja>松本さん</span> <span class="est">★</span></h4>
+      <div style="font-size:.84rem;color:var(--ink-soft);line-height:1.7;margin-top:.3rem">
+        <b><span class="m" data-yen="64900"></span></b> <span lang-en>including tax — <span class="m" data-yen="75900"></span> if a guest is added.</span><span lang-ja>税込。ゲスト1名追加なら<span class="m" data-yen="75900"></span>。</span><br>
+        <span lang-en><b>Attends to the very end.</b> Base <span class="m" data-yen="49000"></span> + travel <span class="m" data-yen="10000"></span>, extra hair <span class="m" data-yen="5000"></span>, extra makeup <span class="m" data-yen="5000"></span>, makeup rehearsal <span class="m" data-yen="17000"></span>. Groom&rsquo;s hair and makeup <span class="m" data-yen="3000"></span> each.<br><br>She already works with Higuchi-san and Nom-san, so travel may be shared and the day runs with people who know each other.</span>
+        <span lang-ja><b>最後までアテンド。</b>基本<span class="m" data-yen="49000"></span>＋交通費<span class="m" data-yen="10000"></span>、追加ヘア<span class="m" data-yen="5000"></span>、追加メイク<span class="m" data-yen="5000"></span>、メイクリハーサル<span class="m" data-yen="17000"></span>。新郎ヘア・メイク各<span class="m" data-yen="3000"></span>。<br><br>樋口さん・のむさんとの仕事経験があり、交通費を抑えられる可能性あり。</span>
+      </div>
+    </div>
+    <div class="card pad">
+      <h4><span lang-en>bonita</span><span lang-ja>bonita</span> <span class="est">★</span></h4>
+      <div style="font-size:.84rem;color:var(--ink-soft);line-height:1.7;margin-top:.3rem">
+        <b><span class="m" data-yen="64900"></span></b> <span lang-en>including tax — the same, and the same with a guest added.</span><span lang-ja>税込。ゲスト追加でも同額。</span><br>
+        <span lang-en><b>Attends only until the reception starts</b> — about seven hours, then it is extra. Base <span class="m" data-yen="50000"></span> + travel <span class="m" data-yen="9000"></span>.<br><br>Would do both mothers&rsquo; hair and makeup at no extra charge if it is something simple. Hikaru did her Sapporo pre-shoot with them, and they rent a dress at <span class="m" data-yen="19900"></span> and a tuxedo at <span class="m" data-yen="19900"></span>.</span>
+        <span lang-ja><b>アテンドは披露宴開始まで（約7時間）</b>、以降は追加料金。基本<span class="m" data-yen="50000"></span>＋交通費<span class="m" data-yen="9000"></span>。<br><br>簡単なものであれば両家のお母様のヘアメイクを追加料金なしで対応可。札幌の前撮りでお世話になった方で、ドレス<span class="m" data-yen="19900"></span>・タキシード<span class="m" data-yen="19900"></span>のレンタルもあります。</span>
+      </div>
+    </div>
+  </div>
+  <p class="note"><span lang-en>Also quoted, and cheaper, but not on her shortlist: Toyako <span class="m" data-yen="50050"></span>, Sato-san <span class="m" data-yen="50000"></span>, Iwami-san <span class="m" data-yen="60500"></span>, Komatsu-san <span class="m" data-yen="66000"></span>, Onodera-san <span class="m" data-yen="83050"></span>.<br><br><b>Dress:</b> Hikaru is renting, somewhere between <span class="m" data-yen="30000"></span> and <span class="m" data-yen="100000"></span>, and paying for it herself — but she has about ten candidates and wants Jay to help choose. Jay can rent a tuxedo in Japan; bonita holds the one he wore for the Hokkaido pre-shoot, though their range is small.</span><span lang-ja>候補外ですが見積もりあり：洞爺湖<span class="m" data-yen="50050"></span>、佐藤さん<span class="m" data-yen="50000"></span>、iwamiさん<span class="m" data-yen="60500"></span>、小松さん<span class="m" data-yen="66000"></span>、小野寺さん<span class="m" data-yen="83050"></span>。<br><br><b>ドレス：</b>光はレンタル予定で<span class="m" data-yen="30000"></span>〜<span class="m" data-yen="100000"></span>、費用は自分で負担。候補が10着ほどあり、ジェイにも一緒に選んでほしいそうです。ジェイのタキシードも日本でレンタル可能。北海道の前撮りで着たものはbonitaさんが保有していますが、種類は多くありません。</span></p>
+    <div class="ph"><h2>📋 <span lang-en>The checklist</span><span lang-ja>チェックリスト</span></h2>
     <p><span lang-en>Owners and dates are editable — tap them.</span><span lang-ja>担当と期限はタップで変更できます。</span></p></div>
   <div id="beautytasks" style="margin-bottom:1.9rem"></div>
   <div class="ph"><h2>🖼 <span lang-en>Reference pictures</span><span lang-ja>参考画像</span></h2>
@@ -1476,6 +1555,34 @@ function sendBtn(tk){
   return '<button class="sendo" data-send="'+tk.id+'" style="border-color:var('+k.c+');color:var('+k.c+')">'+
     esc(t("Send to "+k.l,k.lj+"に送る"))+'</button>';
 }
+/* ---------- calendar model ---------- */
+function calAdded(){ return load("calevt",[]); }
+function calDel(){ return load("caldel",{}); }
+function todayISO(){ var d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+/* every dated thing, as {d,ic,kind,title(html),note(html),done,id} */
+function calItems(){
+  var out=[],del=calDel();
+  MILESTONES.forEach(function(m){ if(del[m.id])return;
+    out.push({id:m.id,d:m.d,ic:m.ic,kind:"fixed",title:bi(m.n,m.nj),note:bi(m.note||"",m.notej||""),
+              done:!!load("caldone",{})[m.id]}); });
+  PAY.forEach(function(p,i){ var d=PAYDATE[i]; if(!d||del["pay"+i])return;
+    out.push({id:"pay"+i,d:d,ic:"💴",kind:"pay",title:bi(p[2],p[3]),
+              note:bi((p[4]||"")+(p[0].indexOf("~")===0?" (approximate — 2–3 months before the day)":""),
+                      (p[5]||"")+(p[0].indexOf("~")===0?"（目安・挙式の2〜3ヶ月前）":"")),
+              done:!!load("caldone",{})[("pay"+i)]}); });
+  calAdded().forEach(function(e){ if(del[e.id])return;
+    out.push({id:e.id,d:e.d,ic:e.ic||"📌",kind:"mine",title:biUser({n:e.n,nj:e.nj,src:e.src}),
+              note:e.note?biUser({n:e.note,nj:e.notej,src:e.nsrc}):"",
+              done:!!load("caldone",{})[e.id]}); });
+  allTasks().forEach(function(tk){ var due=taskDue(tk); if(!due||load("tarch",{})[tk.id])return;
+    var c=catById(taskCat(tk));
+    out.push({id:"t:"+tk.id,d:due,ic:(c&&c.ic)||"✅",kind:"task",title:taskName(tk),note:"",
+              done:taskDone(tk.id),owner:taskOwner(tk)}); });
+  out.sort(function(a,b){ return a.d<b.d?-1:(a.d>b.d?1:0); });
+  return out;
+}
+function calDone(id,v){ var m=load("caldone",{}); if(v)m[id]=1; else delete m[id]; save("caldone",m); renderAll(); }
 function catById(c){ for(var i=0;i<TCAT.length;i++) if(TCAT[i].id===c) return TCAT[i];
   return {id:0,ic:"✏️",n:"Added by you",nj:"自分で追加",o:"b"}; }
 function catList(){ return TCAT.concat([{id:0,ic:"✏️",n:"Added by you",nj:"自分で追加",o:"b"}]); }
@@ -1981,6 +2088,84 @@ function renderBoard(holder,board){
     var g2=el("div","collage"); rest.forEach(function(o){ g2.appendChild(card(o)); }); w.appendChild(g2);
   }
 }
+var MON=[["January","1月"],["February","2月"],["March","3月"],["April","4月"],["May","5月"],["June","6月"],
+         ["July","7月"],["August","8月"],["September","9月"],["October","10月"],["November","11月"],["December","12月"]];
+var DOW=[["S","日"],["M","月"],["T","火"],["W","水"],["T","木"],["F","金"],["S","土"]];
+function calRow(it,today){
+  var overdue=(!it.done&&it.d<today);
+  var r=el("div","cal-it"+(it.done?" done":"")+(overdue?" over":""));
+  r.innerHTML='<span class="cal-ic">'+it.ic+'</span>'+
+    '<div class="cal-b"><div class="cal-t">'+it.title+'</div>'+
+      '<div class="cal-m">'+fmtDue(it.d)+
+        (it.kind==="pay"?' · <b>'+t("payment","支払い")+'</b>':'')+
+        (it.owner&&OWN[it.owner]?' · '+t(OWN[it.owner].l,OWN[it.owner].lj):'')+
+        (overdue?' · <b class="cal-x">'+t("missed","期限切れ")+'</b>':'')+'</div>'+
+      (it.note?'<div class="cal-n">'+it.note+'</div>':'')+'</div>'+
+    (it.kind==="task"?'':'<button class="cal-ck" title="'+t("mark done","完了にする")+'">'+(it.done?"✓":"○")+'</button>');
+  var ck=r.querySelector(".cal-ck");
+  if(ck) ck.addEventListener("click",function(){ calDone(it.id,!it.done); });
+  return r;
+}
+function renderCal(){
+  var w=document.getElementById("calwrap"); if(!w) return; w.innerHTML="";
+  var items=calItems(), today=todayISO();
+  var cur=load("calmon",today.slice(0,7));
+  var y=+cur.slice(0,4), m=+cur.slice(5,7)-1;
+
+  /* month grid */
+  var head=el("div","cal-h");
+  head.innerHTML='<button class="cal-nav" data-mv="-1">‹</button>'+
+    '<b>'+t(MON[m][0]+" "+y, y+"年"+MON[m][1])+'</b>'+
+    '<button class="cal-nav" data-mv="1">›</button>'+
+    '<button class="cal-today">'+t("Today","今日")+'</button>';
+  head.querySelectorAll("[data-mv]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var d=new Date(y,m+(+b.dataset.mv),1);
+      save("calmon",d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")); renderAll(); }); });
+  head.querySelector(".cal-today").addEventListener("click",function(){ save("calmon",today.slice(0,7)); renderAll(); });
+  w.appendChild(head);
+
+  var grid=el("div","cal-g");
+  DOW.forEach(function(d){ grid.appendChild(el("div","cal-dow",t(d[0],d[1]))); });
+  var first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  for(var i=0;i<first;i++) grid.appendChild(el("div","cal-d empty"));
+  for(var dn=1;dn<=days;dn++){
+    var iso=y+"-"+String(m+1).padStart(2,"0")+"-"+String(dn).padStart(2,"0");
+    var mine=items.filter(function(x){ return x.d===iso; });
+    var cell=el("div","cal-d"+(iso===today?" now":"")+(mine.length?" has":""));
+    cell.innerHTML='<span class="cal-dn">'+dn+'</span>'+
+      mine.slice(0,3).map(function(x){
+        return '<span class="cal-pip'+(x.done?" done":(x.d<today?" over":""))+'" title="'+esc(x.ic)+'">'+x.ic+'</span>';}).join("")+
+      (mine.length>3?'<span class="cal-more">+'+(mine.length-3)+'</span>':'');
+    grid.appendChild(cell);
+  }
+  w.appendChild(grid);
+
+  /* missed, then what is coming */
+  var over=items.filter(function(x){ return !x.done&&x.d<today; });
+  if(over.length){
+    w.appendChild(el("h4","cathead","⚠️ "+bi("Missed","期限切れ")+' <span class="catn">'+over.length+'</span>'));
+    var ow=el("div","cal-list"); over.forEach(function(x){ ow.appendChild(calRow(x,today)); }); w.appendChild(ow);
+  }
+  var soon=items.filter(function(x){ return !x.done&&x.d>=today; }).slice(0,14);
+  w.appendChild(el("h4","cathead","🔜 "+bi("Coming up","これから")+' <span class="catn">'+soon.length+'</span>'));
+  if(!soon.length) w.appendChild(el("div","bnone",bi("Nothing dated ahead of you.","予定はありません。")));
+  var sw=el("div","cal-list"); soon.forEach(function(x){ sw.appendChild(calRow(x,today)); }); w.appendChild(sw);
+
+  /* add your own */
+  var add=el("div","cal-add");
+  add.innerHTML='<input type="date" class="ca-d"><input class="ca-n" placeholder="'+t("Add something with a date…","日付のある予定を追加…")+'"><button class="btn ca-go" style="margin-top:0">＋</button>';
+  var go=function(){
+    var d=add.querySelector(".ca-d").value, v=add.querySelector(".ca-n").value.trim();
+    if(!d||!v) return;
+    var p=biSet(null,v), a=calAdded();
+    a.push({id:"e_"+Date.now(),d:d,n:p.n,nj:p.nj,src:p.src,ic:"📌"});
+    save("calevt",a); renderAll();
+  };
+  add.querySelector(".ca-go").addEventListener("click",go);
+  add.querySelector(".ca-n").addEventListener("keydown",function(e){ if(e.key==="Enter")go(); });
+  w.appendChild(add);
+}
 function renderDecor2(){ renderCatTasks("decortasks",4); renderBoard("decorboard","decor"); }
 function renderBeauty(){ renderCatTasks("beautytasks",8); renderBoard("beautyboard","beauty"); }
 
@@ -2008,6 +2193,23 @@ var DAYRUN=[
  ["20:00","Music and drinks carry on for whoever stays","残る方向けに音楽とドリンクを継続"],
  ["21:00","Second cars leave","2便目のお車出発"],
  ["23:00","Last cars — nothing runs after this","最終便・以降の運行はありません"]];
+/* ---------- the calendar ----------
+   Everything with a date on it in one place: task deadlines, the four payments,
+   the days that are fixed, and anything either of you adds. */
+var MILESTONES=[
+ {id:"m_makiko",d:"2026-09-05",ic:"🎀",n:"Answer Makiko about decor",nj:"まきこさんへ装飾の回答期限",
+  note:"Her hard deadline — June books out fast. Blocked until Ayuko answers the table layout question, because the decoration count depends on how the tables are arranged.",
+  notej:"まきこさんの締切。6月は予約が埋まりやすいとのこと。テーブル配列で装飾数が変わるため、鮎子さんからの回答待ちです。"},
+ {id:"m_shoot",d:"2026-11-16",ic:"📸",n:"Pre-wedding shoot — Kagaen, Osaka",nj:"前撮り — 華雅苑 大阪店",
+  note:"Booked. Arrive 08:45, shot at Daisen Park. <b>¥110,000 including tax</b> for the one-kimono plan. Jay gets one outfit and no hair set. Hikaru is deciding on a second colour uchikake for +¥10,000.",
+  notej:"予約済み。8:45来店、大仙公園で撮影。和装壱点プラン<b>110,000円（税込）</b>。ジェイは衣装1点でヘアセットなし。色打掛の追加（+10,000円）を検討中。"},
+ {id:"m_nom",d:"2027-03-31",ic:"📷",n:"Nom-san confirms 5 June",nj:"のむさんの6/5可否が判明",
+  note:"He works at a nursery and cannot confirm until the end of March, so keep a backup photographer warm until then.",
+  notej:"保育園勤務のため3月末まで確定できません。それまで別のカメラマン候補も残しておきましょう。"},
+ {id:"m_wed",d:"2027-06-05",ic:"💒",n:"The wedding",nj:"結婚式当日",
+  note:"Ceremony at 15:30.",notej:"挙式15:30。"}];
+/* the four payment dates, as real dates the calendar can use */
+var PAYDATE={0:"2026-12-01",1:"2027-03-01",2:"2027-03-01",3:"2027-04-01"};
 var PAY=[["1 Dec 2026","2026年12月1日","Accommodation deposit, 20%","宿泊費デポジット20%","Refundable up to 60 days before arrival","到着60日前まで返金可"],["1 Mar 2027","2027年3月1日","Planner fee &amp; garden package","プランナー費・ガーデンパッケージ","",""],["~Mar 2027","2027年3月頃","Catering in full","ケータリング全額","Due 2–3 months before","挙式の2〜3ヶ月前"],["1 Apr 2027","2027年4月1日","Accommodation balance","宿泊費残金","Cancelling inside 2 months is charged in full","2ヶ月以内は全額"]];
 
 var KB=[
@@ -3421,8 +3623,8 @@ var LEGS=[
   notej:"徒歩、またはジェイと光が車でお送りします。光はお父様のレンタカー、ジェイも滞在中レンタカーを手配するため、2台と徒歩で対応でき、車両の手配は不要です。財田のケビン泊の方は徒歩5〜10分です。"},
  {id:"l2",ic:"🌙",n:"On the night — getting home after the party",nj:"当日夜 — パーティー後の帰り",
   sub:"Saturday night · not a leg to arrange, taxi early, walk late",subj:"土曜の夜・手配不要／早めはタクシー、遅くは徒歩",
-  note:"<b>Before 22:00</b> — anyone who wants an early night can take a taxi back to their accommodation.<br><b>After 22:00</b> — whoever stays on to drink walks home. It is only a five to ten minute walk from the Lakehouse, which is the whole reason for putting people at Takarada.<br>Nothing to book, and nobody drives after drinking.",
-  notej:"<b>22時まで</b> — 早めに休みたい方はタクシーで宿泊先へお戻りいただけます。<br><b>22時以降</b> — 残って飲まれる方は徒歩でお帰りいただきます。レイクハウスから徒歩5〜10分で、財田に宿泊いただく最大の理由がこれです。<br>手配は不要で、飲酒後の運転も発生しません。"}];
+  note:"<b>Before 22:00</b> — anyone who wants an early night can take a taxi back to their accommodation. Ayuko quoted <b>¥5,000 one way</b> for a local taxi around the lake, and that is the reason for the 22:00 line: <b>the taxis stop running at 22:00</b>, so this is not a price you can pay later in the night.<br><b>After 22:00</b> — whoever stays on to drink walks home. It is only a five to ten minute walk from the Lakehouse, which is the whole reason for putting people at Takarada.<br>Ayuko can also line up <b>two or three <i>daiko</i></b> — a driving service where a second driver takes your own car home for you, so anyone who drove up and then drank still gets their car back. Nothing to book, and nobody drives after drinking.",
+  notej:"<b>22時まで</b> — 早めに休みたい方はタクシーで宿泊先へ。鮎子さんの回答では湖周辺のタクシーは<b>片道5,000円</b>で、<b>22時で営業終了</b>です。22時という区切りはこのためです。<br><b>22時以降</b> — 残って飲まれる方は徒歩でお帰りいただきます。レイクハウスから徒歩5〜10分で、財田に宿泊いただく最大の理由がこれです。<br><b>運転代行も2〜3台</b>手配可能とのこと（自分の車で来て飲まれた方も、代行運転で車ごと帰れます）。手配は不要で、飲酒後の運転も発生しません。"}];
 /* a zone with slots:3 becomes three separate drop boxes, so each vehicle is its own load */
 function legZones(lg){
   var out=[];
@@ -3992,7 +4194,7 @@ function renderAyuko(){
   row.appendChild(inp);row.appendChild(btn);w.appendChild(row);
 }
 /* ---------- tabs ---------- */
-var TABS=[["home","🏠","Home","ホーム","--coral"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","From her","光より","--pink"],["jay","💙","From Jay","ジェイより","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["inv","💌","Invites","招待状","--pink"]];
+var TABS=[["home","🏠","Home","ホーム","--coral"],["cal","🗓","Calendar","カレンダー","--teal"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","From her","光より","--pink"],["jay","💙","From Jay","ジェイより","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["inv","💌","Invites","招待状","--pink"]];
 function buildTabs(){
   var w=document.getElementById("tabs");w.innerHTML="";
   TABS.forEach(function(tb){var b=el("button","tab");b.type="button";b.setAttribute("role","tab");b.dataset.go=tb[0];
@@ -4060,7 +4262,7 @@ function renderAll(){
   renderOpts("o-decor","decor");renderNights();renderSupport();renderUs();renderNotes();
   renderBudget();renderUpdates();
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
-  renderDecor2();renderBeauty();
+  renderCal();renderDecor2();renderBeauty();
   renderStay();renderSeat();renderDrive();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
