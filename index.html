@@ -1411,6 +1411,11 @@ function untranslated(){
   var td=load("tdesc",{}); for(var k2 in td) chk(td[k2]);
   load("mytasks",[]).forEach(function(x){ if(!tn[x.id]) chk({n:x.n,nj:x.nj,src:x.src}); });
   (load("sched",null)||[]).forEach(function(e){ if(!e.fixed) chk({n:e.en,nj:e.ja,src:e.src}); });
+  ["asked","askedj","ayq"].forEach(function(store){
+    load(store,[]).forEach(function(q){ chk({n:q.n,nj:q.nj,src:q.src}); }); });
+  ["h","j"].forEach(function(pfx){
+    load(pfx==="h"?"asked":"askedj",[]).forEach(function(q){
+      var a=load(pfx+"ans."+q.id,""); if(a) chk(a); }); });
   return n; }
 function taskName(tk){ var m=load("tname",{})[tk.id];
   if(m) return biUser(m);
@@ -2321,11 +2326,18 @@ function renderQA(pfx,seed,store,askLabel,askLabelJ){
   var f=(load(pfx+"filter","")||"").toLowerCase();
   var pend=[],ansd=[];
   load(store,[]).slice().reverse().forEach(function(q){
-    var a=load(pfx+"ans."+q.id,"");
-    (a?ansd:pend).push({id:q.id,q:q.n,qj:q.n,a:a,aj:a,live:true});});
+    /* the seeded rows carry HTML entities; biUser escapes, so decode first */
+    var qp=biNorm({n:decodeEnt(q.n||""),nj:decodeEnt(q.nj||""),src:q.src});
+    /* the seeded askedj rows were stored English-only, but J2HER already holds
+       the Japanese — take it from there rather than paying to translate it */
+    if(!qp.nj&&store==="askedj"){ var sm=/^js(\d+)$/.exec(q.id||"");
+      if(sm&&J2HER[+sm[1]]){ qp.nj=J2HER[+sm[1]].qj; qp.src="en"; } }
+    var ap=biNorm(load(pfx+"ans."+q.id,""));
+    ((ap.n||ap.nj)?ansd:pend).push({id:q.id,q:qp.n,qj:qp.nj,qsrc:qp.src,
+                                    a:ap.n,aj:ap.nj,asrc:ap.src,live:true});});
   seed.slice().reverse().forEach(function(x){ansd.push({q:x.q,qj:x.qj,a:x.a,aj:x.aj});});
   function match(o){ if(!f) return true;
-    return (t(o.q,o.qj)+" "+t(o.a,o.aj)+" "+o.q+" "+(o.qj||"")+" "+o.a+" "+(o.aj||"")).toLowerCase().indexOf(f)>-1; }
+    return ((o.q||"")+" "+(o.qj||"")+" "+(o.a||"")+" "+(o.aj||"")).toLowerCase().indexOf(f)>-1; }
   var pw=document.getElementById(pfx+"pend"); if(!pw) return;
   pw.innerHTML="";
   if(!pend.length) pw.innerHTML='<div class="card pad" style="text-align:center;color:var(--ink-faint);font-size:.85rem">'+t("Nothing waiting.","未回答はありません。")+'</div>';
@@ -2334,11 +2346,12 @@ function renderQA(pfx,seed,store,askLabel,askLabelJ){
   pShow.forEach(function(o){
     var c=el("div","card pad");c.style.borderColor="var(--amber)";
     c.innerHTML='<div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.3rem"><span class="est">'+t(askLabel,askLabelJ)+'</span><button class="del" data-dq="'+o.id+'" style="margin-left:auto">✕</button></div>'+
-      '<div style="font-family:var(--disp);font-weight:800;font-size:.95rem;margin-bottom:.5rem">'+o.q+'</div>'+
+      '<div style="font-family:var(--disp);font-weight:800;font-size:.95rem;margin-bottom:.5rem">'+biUser({n:o.q,nj:o.qj,src:o.qsrc})+'</div>'+
       '<textarea rows="3" style="width:100%;font:inherit;font-size:.87rem;line-height:1.6;padding:.55rem .7rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink);resize:vertical"></textarea>'+
-      '<div style="font-size:.73rem;color:var(--ink-faint);margin-top:.3rem">'+t("Saved here only — ask Claude to write it up in both languages.","この端末のみ保存。日英の清書はクロードへ。")+'</div>';
-    var ta=c.querySelector("textarea"); ta.value=load(pfx+"ans."+o.id,"");
-    ta.addEventListener("input",function(e){save(pfx+"ans."+o.id,e.target.value);});
+      '<div style="font-size:.73rem;color:var(--ink-faint);margin-top:.3rem">'+t("Answer in your own language — the other one is filled in for you.","自分の言語で回答してください。もう一方は自動で補われます。")+'</div>';
+    var ta=c.querySelector("textarea"); ta.value=biUserEdit(load(pfx+"ans."+o.id,""));
+    ta.addEventListener("input",function(e){
+      save(pfx+"ans."+o.id,biSet(load(pfx+"ans."+o.id,""),e.target.value));});
     ta.addEventListener("blur",function(){renderAll();});
     var th=qThumbs(pfx,o.id,true); if(th) c.appendChild(th);
     c.querySelector("[data-dq]").addEventListener("click",function(){
@@ -2356,9 +2369,9 @@ function renderQA(pfx,seed,store,askLabel,askLabelJ){
   show.forEach(function(o){
     var card=el("div","card pad",
       '<div style="font-size:.78rem;font-weight:800;color:var(--pink);margin-bottom:.1rem">'+t("Asked","質問")+(o.live?' · '+t("added","追加分"):'')+'</div>'+
-      '<div style="font-family:var(--disp);font-weight:800;font-size:.95rem;margin-bottom:.45rem">'+(o.live?o.q:bi(o.q,o.qj))+'</div>'+
+      '<div style="font-family:var(--disp);font-weight:800;font-size:.95rem;margin-bottom:.45rem">'+(o.live?biUser({n:o.q,nj:o.qj,src:o.qsrc}):bi(o.q,o.qj))+'</div>'+
       '<div style="font-size:.78rem;font-weight:800;color:var(--sky);margin-bottom:.1rem">'+t("Answer","回答")+'</div>'+
-      '<div style="font-size:.87rem;line-height:1.7">'+(o.live?o.a:bi(o.a,o.aj))+'</div>');
+      '<div style="font-size:.87rem;line-height:1.7">'+(o.live?biUser({n:o.a,nj:o.aj,src:o.asrc}):bi(o.a,o.aj))+'</div>');
     if(o.live){ var th=qThumbs(pfx,o.id,true); if(th) card.appendChild(th); }
     aw.appendChild(card);});
   var more=document.getElementById(pfx+"more");
@@ -3788,7 +3801,8 @@ var AYUKOQ=[
 function ayList(){
   var del=load("ayqdel",{});
   return AYUKOQ.filter(function(x){return !del[x.id];})
-    .concat(load("ayq",[]).map(function(x){return {id:x.id,q:x.n,qj:x.n,mine:true};}));
+    .concat(load("ayq",[]).map(function(x){ var p=biNorm({n:x.n,nj:x.nj,src:x.src});
+      return {id:x.id,q:p.n,qj:p.nj,src:p.src,mine:true};}));
 }
 function renderAyuko(){
   var w=document.getElementById("ayuko"); if(!w) return; w.innerHTML="";
@@ -3796,7 +3810,7 @@ function renderAyuko(){
   ayList().forEach(function(x){
     var d=el("div","tk"+(done[x.id]?" done":""));
     d.innerHTML='<input type="checkbox" '+(done[x.id]?"checked":"")+' title="'+t("tick when she has answered","回答済みになったらチェック")+'">'+
-      '<div class="tk-b"><div class="tk-n" style="font-weight:600">'+(x.mine?esc(x.q):bi(x.q,x.qj))+
+      '<div class="tk-b"><div class="tk-n" style="font-weight:600">'+(x.mine?biUser({n:x.q,nj:x.qj,src:x.src}):bi(x.q,x.qj))+
       (done[x.id]?'<span class="dtag">'+bi("Answered","回答済み")+'</span>':'')+'</div></div>'+
       '<button class="del" data-dq="'+x.id+'">✕</button>';
     d.querySelector("input").addEventListener("change",function(e){
@@ -3811,7 +3825,8 @@ function renderAyuko(){
   inp.style.cssText="flex:1;font:inherit;padding:.55rem .85rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink)";
   var btn=el("button","btn","＋");btn.style.marginTop="0";
   btn.addEventListener("click",function(){var v=inp.value.trim();if(!v)return;
-    var a=load("ayq",[]);a.push({id:"ay_"+Date.now(),n:v});save("ayq",a);renderAll();});
+    var a=load("ayq",[]),qp=biSet(null,v);
+    a.push({id:"ay_"+Date.now(),n:qp.n,nj:qp.nj,src:qp.src});save("ayq",a);renderAll();});
   inp.addEventListener("keydown",function(e){if(e.key==="Enter")btn.click();});
   row.appendChild(inp);row.appendChild(btn);w.appendChild(row);
 }
@@ -3844,7 +3859,7 @@ function hydratePeople(){
 hydratePeople();
 (function seedJay(){ if(load("jseed",false))return;
   var a=load("askedj",[]);
-  J2HER.forEach(function(x,i){ a.push({id:"js"+i,n:x.q}); });
+  J2HER.forEach(function(x,i){ a.push({id:"js"+i,n:x.q,nj:x.qj,src:"en"}); });
   save("askedj",a); save("jseed",true);
 })();
 function dockLabel(b,f){b.innerHTML='<span lang-en>'+(f?"show":"hide")+'</span><span lang-ja>'+(f?"表示":"隠す")+'</span>';}
@@ -3904,7 +3919,8 @@ document.getElementById("usemaybe").addEventListener("change",function(e){save("
   document.getElementById(C[3]).addEventListener("click",function(){save(C[0]+"open",!load(C[0]+"open",false));renderNotes();});
   document.getElementById(C[5]).addEventListener("click",function(){
     var i=document.getElementById(C[4]),v=i.value.trim();if(!v)return;
-    var a=load(C[1],[]);a.push({id:"q"+Date.now(),n:v});save(C[1],a);i.value="";renderAll();});
+    var a=load(C[1],[]),qp=biSet(null,v);
+    a.push({id:"q"+Date.now(),n:qp.n,nj:qp.nj,src:qp.src});save(C[1],a);i.value="";renderAll();});
   document.getElementById(C[4]).addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById(C[5]).click();});
 });
 document.getElementById("addnote").addEventListener("click",function(){var i=document.getElementById("newnote"),v=i.value.trim();if(!v)return;var m=load("mynotes",[]);m.push({id:"n"+Date.now(),n:v});save("mynotes",m);i.value="";renderAll();});
