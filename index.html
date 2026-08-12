@@ -4476,7 +4476,7 @@ function renderAyuko(){
   row.appendChild(inp);row.appendChild(btn);w.appendChild(row);
 }
 /* ---------- tabs ---------- */
-var TABS=[["home","🏠","Home","ホーム","--coral"],["cal","🗓","Calendar","カレンダー","--teal"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","Hikaru","光","--pink"],["jay","💙","Jay","ジェイ","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["feed","📥","For Claude","クロードへ","--mint"],["inv","💌","Invites","招待状","--pink"]];
+var TABS=[["home","🏠","Home","ホーム","--coral"],["cal","🗓","Calendar","カレンダー","--teal"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","Hikaru","光","--pink"],["jay","💙","Jay","ジェイ","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["inv","💌","Invites","招待状","--pink"],["feed","📥","For Claude","クロードへ","--mint"]];
 function buildTabs(){
   var w=document.getElementById("tabs");w.innerHTML="";
   TABS.forEach(function(tb){var b=el("button","tab");b.type="button";b.setAttribute("role","tab");b.dataset.go=tb[0];
