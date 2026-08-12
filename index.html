@@ -1336,7 +1336,7 @@ var TOGGLES={
 
 var MUSIC=[
  {id:"firepit",n:"Fire pits &amp; marshmallows",nj:"焚き火とマシュマロ",amt:30000,art:A("arch"),d:"Chairs round a fire for the late crowd. Cheaper than a DJ and better suited to who is still there at 20:00.",dj:"焚き火を囲む椅子で後半をゆったりと。DJより安く、20時以降に残る顔ぶれに合っています。",def:true},
- {id:"jbl",n:"Their JBL + your playlist",nj:"備品JBL＋自作プレイリスト",amt:0,art:A("speaker"),d:"Ayuko cues the first dance",dj:"ファーストダンスは鮎子さんが対応",def:true},
+ {id:"jbl",n:"Their JBL + your playlist",nj:"備品JBL＋自作プレイリスト",amt:0,art:A("speaker"),d:"Ayuko handles the music cues",dj:"音出しは鮎子さんが対応",def:true},
  {id:"quartet",n:"Live quartet",nj:"生演奏カルテット",amt:30000,art:A("violin"),d:"Ceremony and cocktails",dj:"挙式・カクテル向き"},
  {id:"dj",n:"DJ",nj:"DJ",amt:100000,art:A("dj"),d:"¥80–120,000 · rate rose this year",dj:"80,000〜120,000円・今年値上"}];
 
@@ -1442,7 +1442,6 @@ var TASKS=[
  {id:"q8",  c:4,o:"h",n:"Order the welcome bags",nj:"ウェルカムギフトを発注",due:"2027-03-01",d:"¥1,500–5,000 a guest",dj:"お一人様1,500〜5,000円"},
  {id:"t405",c:4,o:"h",n:"Reception desk items",nj:"受付小物準備",due:"2027-04-01",d:"",dj:""},
  {id:"t406",c:4,o:"h",n:"Welcome area setup",nj:"ウェルカムスペース準備",due:"2027-04-01",d:"",dj:""},
- {id:"t409",c:4,o:"h",n:"Marriage certificate design",nj:"結婚証明書デザイン",due:"2027-04-01",d:"Guests sign it during check-in",dj:"受付時にゲストがサインします"},
  {id:"q7",  c:4,o:"h",n:"Buy hand-held fireworks",nj:"手持ち花火を購入",due:"2027-04-15",d:"Already in the running order. Handheld only — Ayuko confirmed no aerial",dj:"当日の進行に入っています。鮎子さん確認済みで手持ちのみ可"},
  {id:"t407",c:4,o:"h",n:"Candles and fire stand",nj:"キャンドル・花火手配",due:"2027-04-15",d:"Bonfire is allowed with a fire stand",dj:"焚き火は焚き火台があれば可"},
 
@@ -1457,7 +1456,6 @@ var TASKS=[
  {id:"t602",c:6,o:"j",n:"MC / host arrangements",nj:"司会手配",due:"2027-01-15",d:"",dj:""},
  {id:"t604",c:6,o:"j",n:"Opening performance or introduction",nj:"オープニング演出",due:"2027-03-01",d:"",dj:""},
  {id:"t607",c:6,o:"j",n:"Decide on surprises",nj:"サプライズ有無決定",due:"2027-03-01",d:"",dj:""},
- {id:"q6",  c:6,o:"b",n:"Choose the first dance song",nj:"ファーストダンスの曲を決める",due:"2027-03-01",d:"Ayuko offered to cue it",dj:"音出しは鮎子さんが対応"},
  {id:"t605",c:6,o:"j",n:"Couple introduction / profile",nj:"プロフィール紹介",due:"2027-03-15",d:"",dj:""},
  {id:"t606",c:6,o:"j",n:"Games and activities",nj:"ゲーム・余興",due:"2027-03-15",d:"The culture quiz is on The day tab",dj:"文化クイズは「当日」タブ"},
  {id:"t603",c:6,o:"j",n:"Music playlist selection",nj:"BGM選定",due:"2027-04-01",d:"",dj:""},
@@ -2390,7 +2388,7 @@ var UPDATES=[
 
 var DAYRUN=[
  ["14:00","Guests arrive from the hotels","各ホテルからゲスト到着"],
- ["—","Welcome &amp; check-in · sign the marriage certificate · self-serve apple juice and tea","受付・結婚証明書サイン・セルフドリンク"],
+ ["—","Welcome &amp; check-in · self-serve apple juice and tea","受付・セルフドリンク"],
  ["15:30","Ceremony","挙式"],
  ["16:00","Cocktail hour, photos &amp; lawn games","カクテルタイム・写真・芝生でのゲーム"],
  ["16:30","Dinner buffet — sushi, wagyu, ramen, scallops, sweets","ビュッフェ・寿司、和牛、ラーメン、ホタテ、スイーツ"],
@@ -2398,7 +2396,7 @@ var DAYRUN=[
  ["17:45","<b>Table visits</b> — the two of you go round every table, photos and thank-yous","<b>各テーブル回り</b>・全テーブルで写真とご挨拶"],
  ["18:30","Culture quiz — tables compete on Japan vs America","文化クイズ・テーブル対抗で日米の違いを当てる"],
  ["19:00","Letters to our parents — each of us to both sets","両親への手紙・お互いが両家へ"],
- ["19:20","First dance · hand-held fireworks","ファーストダンス・手持ち花火"],
+ ["19:20","Hand-held fireworks","手持ち花火"],
  ["<b>19:30</b>","<b>First cars leave</b> — announced from the start so leaving early is easy","<b>1便目のお車出発</b>・最初に案内するので早めの退出も気兼ねなく"],
  ["20:00","Music and drinks carry on for whoever stays","残る方向けに音楽とドリンクを継続"],
  ["21:00","Second cars leave","2便目のお車出発"],
@@ -3643,7 +3641,7 @@ var TOGETHER=[
 var CULTURE=[
  {n:"Cash gifts (go-shugi)",nj:"ご祝儀",us:"A gift off a registry, or nothing.",usj:"レジストリからの贈り物、または無し。",jp:"Guests bring about ¥30,000 in a special envelope.",jpj:"ご祝儀として約3万円を祝儀袋で持参。",note:"<b>You&rsquo;ve decided not to take go-shugi.</b> Say so plainly in Japanese on the invitation, or guests will bring envelopes anyway and feel awkward.",notej:"<b>今回はご祝儀を辞退する方針です。</b>招待状に日本語で明記しないと、持参された方が気まずい思いをします。"},
  {n:"Bridesmaids &amp; groomsmen",nj:"ブライズメイド・グルームズマン",us:"A wedding party stands with the couple.",usj:"付き添い役が新郎新婦の横に並びます。",jp:"Doesn&rsquo;t exist — it&rsquo;s just the two of you.",jpj:"この習慣はなく、基本は二人だけです。"},
- {n:"Dancing",nj:"ダンス",us:"A dance floor, and everyone on it.",usj:"ダンスフロアに全員が出ます。",jp:"Essentially never happens.",jpj:"ほとんど行われません。",note:"The biggest single gap. A first dance as a watched moment is fine; &ldquo;everyone up&rdquo; will not happen on its own.",notej:"最大の文化差です。「見せる」ファーストダンスは問題ありませんが、全員参加は自然には起こりません。"},
+ {n:"Dancing",nj:"ダンス",us:"A dance floor, and everyone on it.",usj:"ダンスフロアに全員が出ます。",jp:"Essentially never happens.",jpj:"ほとんど行われません。",note:"The biggest single gap. &ldquo;Everyone up&rdquo; will not happen on its own.",notej:"最大の文化差です。全員参加は自然には起こりません。"},
  {n:"Speeches",nj:"スピーチ",us:"Best man, maid of honour, father of the bride.",usj:"ベストマン、メイドオブオナー、新婦の父など。",jp:"Highly structured — guest of honour, toast, friend speeches, all arranged well in advance.",jpj:"主賓挨拶・乾杯・友人スピーチと、事前に依頼された構成。",note:"An open mic is unusual in Japan. Ask your speakers privately first.",notej:"日本では突然のマイクは不慣れです。事前に個別依頼を。"},
  {n:"Going table to table",nj:"各テーブルを回る",us:"Uncommon — usually a receiving line instead.",usj:"あまりなく、代わりに出口での挨拶列が一般的。",jp:"Standard. The couple visits every table.",jpj:"定番。新郎新婦が各テーブルを回ります。",note:"Jay&rsquo;s idea is already a Japanese norm — it will feel completely familiar to Hikaru&rsquo;s guests.",notej:"ジェイの案は既に日本の定番。光側のゲストには馴染み深い演出です。"},
  {n:"Outfit change",nj:"お色直し",us:"Rare.",usj:"ほとんどありません。",jp:"The bride returns in a second dress — a highlight of the day.",jpj:"新婦が別のドレスで再入場する、披露宴の見せ場。",note:"The Lakehouse prices it at ¥12,000 per change of dress and hair.",notej:"レイクハウスの資料ではドレス・ヘア各1回12,000円。"},
@@ -3666,7 +3664,7 @@ var GAPS=[
  ["Ask Hikaru about the letter to her parents","新婦の手紙について光に聞く","It&rsquo;s the emotional centre of most Japanese receptions and it isn&rsquo;t on any list you have. She may be assuming it, or may have decided against it — either way you should know.","日本の披露宴では感動の中心となる演目ですが、現在どのリストにもありません。光は当然やるつもりかもしれないし、やらないと決めているかもしれません。確認を。"],
  ["The 23:00 end time may be too long","23時終了は長すぎるかも","Japanese receptions end after about three hours. Yours runs 15:30 to 23:00. Plan for a natural exit point around 19:00–20:00 for guests who want it, with taxis available then and not only at the end.","日本の披露宴は約3時間で終わります。今回は15:30〜23:00。19〜20時頃に自然に帰れるタイミングを設け、その時間にもタクシーを用意しておくべきです。"],
  ["Warn speakers in advance","スピーチ依頼は事前に","An open mic is a lovely idea, but ask your chosen people privately first. Japanese guests handed a surprise microphone will often decline, and that reads as a failure rather than a moment.","マイクを回す案は素敵ですが、話してほしい人には事前に個別で依頼を。日本では突然振られると辞退される方が多く、盛り上がりに欠ける結果になりがちです。"],
- ["Dancing needs a plan, not a hope","ダンスは仕掛けが必要","If you want dancing, someone has to start it and it usually isn&rsquo;t the Japanese side. Either accept a short first dance and move on, or plan something structured — the culture quiz game is honestly a better fit for this crowd.","ダンスをするなら誰かが最初に踊る必要があり、日本側からは起こりにくいです。ファーストダンスだけにするか、構成のある演出にするか。今回のゲスト構成なら文化クイズの方が合っています。"],
+ ["Dancing needs a plan, not a hope","ダンスは仕掛けが必要","If you want dancing, someone has to start it and it usually isn&rsquo;t the Japanese side. It needs something structured — the culture quiz game is honestly a better fit for this crowd.","ダンスをするなら誰かが最初に踊る必要があり、日本側からは起こりにくいです。構成のある演出が必要で、今回のゲスト構成なら文化クイズの方が合っています。"],
  ["The kids are an untapped idea","子どもたちの出番","You have several children coming. Ring bearers, flower girls or handing out the sweets gives them a job, delights their parents, and costs nothing.","お子さんが数名参加されます。リングボーイ・フラワーガール・お菓子配りなど役割があると、本人もご両親も嬉しく、費用もかかりません。"],
  ["Her mother&rsquo;s origami needs a home","お母さんの折り紙の飾り場所","This is free, deeply personal, and currently has no place in the decoration plan. Tell Makiko about it — a welcome table display would be perfect.","無料で、とても想いのこもったものですが、装飾計画に入っていません。まきこさんに伝えて、ウェルカムスペースに飾るのが良さそうです。"]];
 var VIETNAM=[
