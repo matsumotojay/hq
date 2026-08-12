@@ -350,6 +350,14 @@ a{color:var(--sky)}
 #p-drive .zgrp.zsm .zgrp-h{margin-bottom:.45rem}
 /* text still in the other person's language — shown rather than hidden, but
    marked so you know it is waiting on a translation */
+/* the drop-anything-for-Claude list */
+.fd{display:flex;gap:.7rem;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:.6rem .75rem;background:var(--card);margin-bottom:.5rem}
+.fd-i{font-size:1.3rem;line-height:1.3}
+.fd-b{flex:1;min-width:0}
+.fd-n{font-weight:700;font-size:.88rem;word-break:break-all}
+.fd-m{font-size:.72rem;color:var(--ink-faint);margin-top:.1rem}
+.fd-t{font-size:.86rem;line-height:1.65;white-space:pre-wrap}
+.fd-th{max-width:100%;border-radius:10px;margin-top:.45rem;display:block}
 /* the "you have questions waiting" banner */
 .inbox{display:flex;align-items:center;gap:.7rem;border:2px solid var(--mint);border-radius:16px;
   padding:.7rem .95rem;margin-bottom:1rem;background:color-mix(in srgb,var(--mint) 14%,var(--card));cursor:pointer}
@@ -362,6 +370,16 @@ a{color:var(--sky)}
 .cal-h b{font-family:var(--disp);font-size:1.15rem;flex:1;text-align:center}
 .cal-nav,.cal-today{font:inherit;font-size:.8rem;font-weight:800;padding:.3rem .7rem;border:2px solid var(--line-2);border-radius:999px;background:var(--card);color:var(--ink);cursor:pointer}
 .cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:.35rem;margin-bottom:1.4rem}
+/* The whole month should be on screen the moment you open the tab, on any
+   monitor. Cells stay square, so capping the grid's WIDTH by the height left
+   over — seven columns to six rows — makes the month fit whatever the window
+   happens to be, instead of running off the bottom on a short screen. */
+@media(min-width:70rem){
+  #p-cal .ph{margin-bottom:.5rem}
+  #p-cal .ph p{font-size:.82rem}
+  .cal-g{max-width:min(100%,calc((100vh - 17.5rem) * 7 / 6));margin-left:auto;margin-right:auto}
+  .cal-h{max-width:min(100%,calc((100vh - 17.5rem) * 7 / 6));margin-left:auto;margin-right:auto}
+}
 .cal-dow{text-align:center;font-size:.72rem;font-weight:800;color:var(--ink-faint);padding:.2rem 0}
 .cal-d{aspect-ratio:1;border:2px solid var(--line);border-radius:12px;padding:.3rem;background:var(--card);
   display:flex;flex-direction:column;gap:.12rem;overflow:hidden;cursor:pointer}
@@ -895,6 +913,33 @@ a{color:var(--sky)}
   <div class="ph"><h2>📮 <span lang-en>Questions for Ayuko</span><span lang-ja>鮎子さんへの質問</span></h2>
     <p><span lang-en>Pile them up here — either of you — and tick each one once she answers. When you&rsquo;re ready to send, ask Claude to draft the email from whatever is open.</span><span lang-ja>ふたりで質問をためて、回答が来たらチェック。送るときはクロードに「未回答分でメールを書いて」と頼んでください。</span></p></div>
   <div id="ayuko" style="margin-bottom:1.8rem"></div>
+</div>
+
+<div class="page" id="p-feed">
+  <div class="ph"><h2>📥 <span lang-en>For Claude</span><span lang-ja>クロードへ</span></h2>
+    <p><span lang-en>Drop anything here that Claude should know — screenshots, quotes, PDFs, messages from a vendor, or just a note. Jay asks Claude to read it, everything gets written into the right places on this site, and then this page is emptied.</span><span lang-ja>クロードに知っておいてほしいものは何でもここへ。スクリーンショット、見積もり、PDF、業者とのやりとり、メモなど。ジェイがクロードに読み込みを頼み、内容はサイトの各所に反映されたあと、このページは空にします。</span></p></div>
+
+  <div class="card pad" style="margin-bottom:1.1rem;border-color:var(--mint);background:color-mix(in srgb,var(--mint) 8%,var(--card))">
+    <div style="font-size:.88rem;line-height:1.75">
+      <span lang-en><b>光へ：</b> クロード（このサイトを作っているAI）は、あなたの手元にある情報を自動では読めません。業者からの見積もり、LINEのスクリーンショット、資料のPDFなど、共有したいものをここに置いていただければ、ジェイがまとめてクロードに渡します。日本語のままで大丈夫です。<br>ファイルは1つ2MBまで、合計6MBまで。写真は自動的に縮小されます。</span>
+      <span lang-ja><b>光へ：</b> クロード（このサイトを作っているAI）は、あなたの手元にある情報を自動では読めません。業者からの見積もり、LINEのスクリーンショット、資料のPDFなど、共有したいものをここに置いていただければ、ジェイがまとめてクロードに渡します。日本語のままで大丈夫です。<br>ファイルは1つ2MBまで、合計6MBまで。写真は自動的に縮小されます。</span>
+    </div>
+  </div>
+
+  <label class="drop" id="feeddrop">
+    <span class="drop-i">📎</span><span><span lang-en>Add files</span><span lang-ja>ファイルを追加</span></span>
+    <small><span lang-en>Screenshots, photos, PDF, Word, Excel — anything. Tap to choose or drop them here.</span><span lang-ja>スクリーンショット・写真・PDF・Word・Excelなど何でも。タップまたはドロップで追加。</span></small>
+    <input type="file" multiple hidden>
+  </label>
+
+  <div style="display:flex;gap:.5rem;margin-top:.8rem;align-items:flex-start">
+    <textarea id="feednote" rows="3" placeholder="" style="flex:1;font:inherit;line-height:1.6;padding:.6rem .8rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink);resize:vertical;min-height:4rem"></textarea>
+    <button class="btn" id="feedadd" style="margin-top:0">＋</button>
+  </div>
+
+  <div class="ph" style="margin-top:1.6rem"><h2>📦 <span lang-en>Waiting for Claude</span><span lang-ja>クロード読み込み待ち</span></h2>
+    <p id="feedsize"></p></div>
+  <div id="feedlist"></div>
 </div>
 
 <div class="page" id="p-inv">
@@ -2222,6 +2267,109 @@ function renderCal(){
   add.querySelector(".ca-go").addEventListener("click",go);
   add.querySelector(".ca-n").addEventListener("keydown",function(e){ if(e.key==="Enter")go(); });
   w.appendChild(add);
+}
+
+/* ---------- the "for Claude" drop box ----------
+   Hikaru has vendor quotes, LINE screenshots and PDFs that Claude cannot see.
+   She drops them here, Jay asks Claude to read the lot, it gets written into the
+   right places on the site, and then this is emptied. Deliberately temporary.
+   Sync stores one record per key with a 1 MB ceiling, so a file is split into
+   chunks and reassembled when it is read back. */
+var FEEDMAX=2000000, FEEDTOTAL=6000000, FEEDCHUNK=600000;
+function feedList(){ return load("feed",[]); }
+function feedBytes(){ var n=0; feedList().forEach(function(f){ n+=(f.size||0); }); return n; }
+function feedIcon(f){
+  if(f.kind==="note") return "📝";
+  var m=(f.mime||"")+" "+(f.name||"");
+  if(/image/i.test(f.mime)) return "🖼";
+  if(/pdf/i.test(m)) return "📕";
+  if(/sheet|excel|csv|numbers/i.test(m)) return "📊";
+  if(/word|document|\.docx?$/i.test(m)) return "📄";
+  return "📎";
+}
+function feedPut(rec,dataUrl){
+  var parts=[];
+  for(var i=0;i<dataUrl.length;i+=FEEDCHUNK) parts.push(dataUrl.slice(i,i+FEEDCHUNK));
+  parts.forEach(function(pt,i){ save("feedblob."+rec.id+"."+i,pt); });
+  rec.n=parts.length;
+  var a=feedList(); a.push(rec); save("feed",a);
+}
+function feedDrop(id){
+  var a=feedList(),rec=null;
+  a=a.filter(function(f){ if(f.id===id){rec=f;return false;} return true; });
+  if(rec&&rec.n) for(var i=0;i<rec.n;i++) save("feedblob."+id+"."+i,null);
+  save("feed",a); renderAll();
+}
+function feedClear(){
+  feedList().forEach(function(f){ if(f.n) for(var i=0;i<f.n;i++) save("feedblob."+f.id+"."+i,null); });
+  save("feed",[]); renderAll();
+  if(typeof toast==="function") toast(t("Cleared — ready for the next lot","クリアしました"));
+}
+function feedAddFiles(files,after){
+  var left=files.length; if(!left){after&&after();return;}
+  Array.prototype.forEach.call(files,function(f){
+    var done=function(){ if(!--left){ after&&after(); } };
+    if(feedBytes()>FEEDTOTAL){
+      if(typeof toast==="function") toast(t("That is as much as this page can hold — ask Claude to read it, then clear.","容量の上限です。クロードに読み込んでもらってからクリアしてください。"));
+      return done();
+    }
+    var r=new FileReader();
+    r.onload=function(ev){
+      var url=ev.target.result;
+      var finish=function(u){
+        if(u.length>FEEDMAX){
+          if(typeof toast==="function") toast(t(f.name+" is too big — under 2 MB please","「"+f.name+"」が大きすぎます（2MBまで）"));
+          return done();
+        }
+        feedPut({id:"f_"+Date.now()+"_"+Math.round(Math.random()*1e4),kind:"file",
+                 name:f.name||"file",mime:f.type||"",size:u.length,t:Date.now()},u);
+        done();
+      };
+      /* photos and screenshots get shrunk; everything else is stored as it is */
+      if(/^image\//.test(f.type)){
+        var im=new Image();
+        im.onload=function(){
+          var sc=Math.min(1,1600/Math.max(im.width,im.height));
+          var cv=document.createElement("canvas");
+          cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
+          cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+          finish(cv.toDataURL("image/jpeg",0.75));
+        };
+        im.onerror=function(){ finish(url); };
+        im.src=url;
+      } else finish(url);
+    };
+    r.onerror=done;
+    r.readAsDataURL(f);
+  });
+}
+function renderFeed(){
+  var w=document.getElementById("feedlist"); if(!w) return; w.innerHTML="";
+  var a=feedList(), sz=document.getElementById("feedsize");
+  if(sz) sz.innerHTML=a.length
+    ? bi(a.length+" item"+(a.length===1?"":"s")+" · "+Math.round(feedBytes()/1024)+" KB of the 6 MB this page holds",
+         a.length+"件 ・ "+Math.round(feedBytes()/1024)+"KB（上限6MB）")
+    : bi("Nothing here yet.","まだ何もありません。");
+  a.slice().reverse().forEach(function(f){
+    var d=el("div","fd");
+    var when=new Date(f.t||Date.now());
+    var meta=(f.kind==="note"?t("note","メモ"):(f.mime||t("file","ファイル"))+" · "+Math.round((f.size||0)/1024)+" KB")+
+             " · "+when.getFullYear()+"/"+(when.getMonth()+1)+"/"+when.getDate();
+    d.innerHTML='<span class="fd-i">'+feedIcon(f)+'</span><div class="fd-b">'+
+      (f.kind==="note"
+        ? '<div class="fd-t">'+biUser({n:f.n,nj:f.nj,src:f.src})+'</div>'
+        : '<div class="fd-n">'+esc(f.name||"")+'</div>')+
+      '<div class="fd-m">'+esc(meta)+'</div></div>'+
+      '<button class="del fd-x">✕</button>';
+    armDanger(d.querySelector(".fd-x"),function(){ feedDrop(f.id); });
+    w.appendChild(d);
+  });
+  if(a.length){
+    var clr=el("button","arch","🧹 "+t("Clear everything","すべて削除"));
+    clr.style.marginTop=".6rem";
+    armDanger(clr,feedClear);
+    w.appendChild(clr);
+  }
 }
 function renderDecor2(){ renderCatTasks("decortasks",4); renderBoard("decorboard","decor"); }
 function renderBeauty(){ renderCatTasks("beautytasks",8); renderBoard("beautyboard","beauty"); }
@@ -4326,7 +4474,7 @@ function renderAyuko(){
   row.appendChild(inp);row.appendChild(btn);w.appendChild(row);
 }
 /* ---------- tabs ---------- */
-var TABS=[["home","🏠","Home","ホーム","--coral"],["cal","🗓","Calendar","カレンダー","--teal"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","Hikaru","光","--pink"],["jay","💙","Jay","ジェイ","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["inv","💌","Invites","招待状","--pink"]];
+var TABS=[["home","🏠","Home","ホーム","--coral"],["cal","🗓","Calendar","カレンダー","--teal"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","Hikaru","光","--pink"],["jay","💙","Jay","ジェイ","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["feed","📥","For Claude","クロードへ","--mint"],["inv","💌","Invites","招待状","--pink"]];
 function buildTabs(){
   var w=document.getElementById("tabs");w.innerHTML="";
   TABS.forEach(function(tb){var b=el("button","tab");b.type="button";b.setAttribute("role","tab");b.dataset.go=tb[0];
@@ -4394,7 +4542,7 @@ function renderAll(){
   renderOpts("o-decor","decor");renderNights();renderSupport();renderUs();renderNotes();
   renderBudget();renderUpdates();
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
-  renderCal();renderInbox();renderDecor2();renderBeauty();
+  renderCal();renderInbox();renderFeed();renderDecor2();renderBeauty();
   renderStay();renderSeat();renderDrive();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
@@ -4452,6 +4600,30 @@ function tick(){
   var e=document.getElementById("days"); if(e) e.textContent=d.toLocaleString("en-US");
   var e2=document.getElementById("hms"); if(e2) e2.textContent=h+"h "+m+"m "+sec+"s";
 }
+/* the drop box and the note box on the For Claude tab */
+(function(){
+  var d=document.getElementById("feeddrop");
+  if(d){
+    var inp=d.querySelector("input");
+    inp.addEventListener("change",function(){ feedAddFiles(inp.files,renderAll); inp.value=""; });
+    d.addEventListener("dragover",function(e){e.preventDefault();d.classList.add("over");});
+    d.addEventListener("dragleave",function(){d.classList.remove("over");});
+    d.addEventListener("drop",function(e){e.preventDefault();d.classList.remove("over");
+      feedAddFiles(e.dataTransfer.files,renderAll);});
+  }
+  var nb=document.getElementById("feednote"), ng=document.getElementById("feedadd");
+  if(nb&&ng){
+    nb.placeholder=t("Type anything Claude should know…","クロードに伝えたいことを入力…");
+    var add=function(){
+      var v=nb.value.trim(); if(!v) return;
+      var p=biSet(null,v), a=feedList();
+      a.push({id:"n_"+Date.now(),kind:"note",n:p.n,nj:p.nj,src:p.src,size:v.length,t:Date.now()});
+      save("feed",a); nb.value=""; renderAll();
+    };
+    ng.addEventListener("click",add);
+    nb.addEventListener("keydown",function(e){ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) add(); });
+  }
+})();
 tick(); setInterval(tick,1000);
 splitImgs();
 migrateLeg3();
