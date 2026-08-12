@@ -287,6 +287,7 @@ a{color:var(--sky)}
 .tmore:hover{color:var(--accent);border-color:var(--accent)}
 .addr{margin-top:.55rem;padding-top:.55rem;border-top:2px solid var(--line)}
 .addr .a-n{width:100%;font:inherit;font-size:.83rem;padding:.42rem .6rem;border:2px solid var(--line-2);border-radius:10px;background:var(--card);color:var(--ink)}
+.addr .a-note{width:100%;font:inherit;font-size:.8rem;line-height:1.55;padding:.42rem .6rem;margin-top:.35rem;border:2px solid var(--line-2);border-radius:10px;background:var(--card);color:var(--ink);resize:vertical;min-height:2.6rem}
 .addr .a-m{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;margin-top:.4rem}
 .addr .a-d{font:inherit;font-size:.71rem;padding:.1rem .45rem;border:2px solid var(--line-2);border-radius:999px;background:transparent;color:var(--ink-faint);color-scheme:light dark}
 .addr .a-c{font:inherit;font-size:.71rem;padding:.12rem .4rem;border:2px solid var(--line-2);border-radius:999px;background:var(--card);color:var(--ink-soft);max-width:11rem}
@@ -349,6 +350,15 @@ a{color:var(--sky)}
 #p-drive .zgrp.zsm .zgrp-h{margin-bottom:.45rem}
 /* text still in the other person's language — shown rather than hidden, but
    marked so you know it is waiting on a translation */
+/* the "you have questions waiting" banner */
+.inbox{display:flex;align-items:center;gap:.7rem;border:2px solid var(--accent);border-radius:16px;
+  padding:.7rem .95rem;margin-bottom:1rem;background:color-mix(in srgb,var(--accent) 12%,var(--card));cursor:pointer}
+.inbox-n{font-family:var(--disp);font-weight:800;font-size:1.35rem;min-width:2rem;height:2rem;padding:0 .5rem;
+  display:grid;place-content:center;border-radius:999px;background:var(--accent);color:#fff}
+.inbox-t{flex:1;font-size:.9rem;font-weight:700;line-height:1.4}
+.inbox-go{font-size:.78rem;font-weight:800;color:var(--ink-faint);white-space:nowrap}
+.inbox.clear{border-color:var(--line);background:var(--card);cursor:default}
+.inbox.clear .inbox-n{background:var(--mint)}
 /* calendar */
 .cal-h{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem}
 .cal-h b{font-family:var(--disp);font-size:1.15rem;flex:1;text-align:center}
@@ -788,7 +798,8 @@ a{color:var(--sky)}
 </div>
 
 <div class="page" id="p-us">
-  <div class="ph"><h2>💛 <span lang-en>From Hikaru</span><span lang-ja>光より</span></h2>
+  <div id="inbox-us"></div>
+  <div class="ph"><h2>💛 <span lang-en>Dashboard</span><span lang-ja>ダッシュボード</span></h2>
     <p><span lang-en>Everything from her &ldquo;addtional&rdquo; sheet — the things she hadn&rsquo;t managed to say out loud yet.</span><span lang-ja>「addtional」シートの内容 — まだ直接伝えられていなかったこと。</span></p></div>
 
   <div class="card pad" style="margin-bottom:1.1rem;border-color:var(--pink);background:color-mix(in srgb,var(--pink) 7%,var(--card))">
@@ -810,7 +821,7 @@ a{color:var(--sky)}
   <div class="qcols">
     <div><h3 style="font-size:1rem;margin-bottom:.5rem">⏳ <span lang-en>Waiting for Jay</span><span lang-ja>ジェイの回答待ち</span></h3>
       <div class="grid" id="hpend"></div>
-      <div style="display:flex;gap:.5rem;margin-top:.7rem"><input id="newh" style="flex:1;font:inherit;padding:.6rem .8rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink)"><button class="btn" id="addh" style="margin-top:0">＋</button></div></div>
+      <div style="display:flex;gap:.5rem;margin-top:.7rem;align-items:flex-start"><textarea id="newh" rows="2" style="flex:1;font:inherit;line-height:1.55;padding:.6rem .8rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink);resize:vertical;min-height:3.2rem"></textarea><button class="btn" id="addh" style="margin-top:0">＋</button></div></div>
     <div><h3 style="font-size:1rem;margin-bottom:.5rem">✅ <span lang-en>Jay answered</span><span lang-ja>回答済み</span></h3>
       <div class="grid" id="hans"></div>
       <button class="btn" id="hmore" style="display:none"></button></div>
@@ -836,7 +847,8 @@ a{color:var(--sky)}
 </div>
 
 <div class="page notes-wide" id="p-jay">
-  <div class="ph"><h2>💙 <span lang-en>From Jay</span><span lang-ja>ジェイより</span></h2>
+  <div id="inbox-jay"></div>
+  <div class="ph"><h2>💙 <span lang-en>Dashboard</span><span lang-ja>ダッシュボード</span></h2>
     <p><span lang-en>His ideas, and his questions for Hikaru.</span><span lang-ja>ジェイのアイデアと、光への質問。</span></p></div>
 
   <div class="ph"><h2>✅ <span lang-en>Jay&rsquo;s tasks</span><span lang-ja>ジェイのタスク一覧</span></h2>
@@ -850,7 +862,7 @@ a{color:var(--sky)}
   <div class="qcols">
     <div><h3 style="font-size:1rem;margin-bottom:.5rem">⏳ <span lang-en>Waiting for Hikaru</span><span lang-ja>光の回答待ち</span></h3>
       <div class="grid" id="jpend"></div>
-      <div style="display:flex;gap:.5rem;margin-top:.7rem"><input id="newj" style="flex:1;font:inherit;padding:.6rem .8rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink)"><button class="btn" id="addj" style="margin-top:0">＋</button></div></div>
+      <div style="display:flex;gap:.5rem;margin-top:.7rem;align-items:flex-start"><textarea id="newj" rows="2" style="flex:1;font:inherit;line-height:1.55;padding:.6rem .8rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink);resize:vertical;min-height:3.2rem"></textarea><button class="btn" id="addj" style="margin-top:0">＋</button></div></div>
     <div><h3 style="font-size:1rem;margin-bottom:.5rem">✅ <span lang-en>Hikaru answered</span><span lang-ja>回答済み</span></h3>
       <div class="grid" id="jans"></div>
       <button class="btn" id="jmore" style="display:none"></button></div>
@@ -1711,6 +1723,7 @@ function taskRow(tk,showCat){
 function addRow(cid,who){
   var wrap=el("div","addr");
   wrap.innerHTML='<input class="a-n" placeholder="'+t("Add a task…","タスクを追加…")+'">'+
+    '<textarea class="a-note" rows="2" placeholder="'+t("Any details or notes… (optional)","詳細やメモ…（任意）")+'"></textarea>'+
     '<div class="a-m"><button class="own a-o" data-o="'+(who&&who!=="all"?who:"b")+'"></button>'+
     '<input type="date" class="duein a-d">'+
     (cid==null?'<select class="a-c"></select>':'')+
@@ -1723,12 +1736,16 @@ function addRow(cid,who){
   if(sel) sel.innerHTML=catList().map(function(c){return '<option value="'+c.id+'">'+c.ic+' '+t(c.n,c.nj).replace(/&amp;/g,"&")+'</option>';}).join("");
   var go=function(){
     var nm=wrap.querySelector(".a-n"),v=nm.value.trim(); if(!v)return;
+    var nt=wrap.querySelector(".a-note"), note=nt.value.trim();
     var a=load("mytasks",[]);
     var np=biSet(null,v);
     np.id="my_"+Date.now(); np.o=oB.dataset.o; np.due=wrap.querySelector(".a-d").value||"";
     np.c=(cid!=null?cid:(sel?+sel.value:0));
     a.push(np);
-    save("mytasks",a); nm.value=""; renderAll();
+    save("mytasks",a);
+    /* the notes live where every other task note lives, so the ✎ edits them too */
+    if(note){ var m=load("tdesc",{}); m[np.id]=biSet(null,note); save("tdesc",m); }
+    nm.value=""; nt.value=""; renderAll();
   };
   wrap.querySelector(".a-go").addEventListener("click",go);
   wrap.querySelector(".a-n").addEventListener("keydown",function(e){if(e.key==="Enter")go();});
@@ -2744,6 +2761,39 @@ function qThumbs(pfx,id,editable){
   }
   return (arr.length||editable)?wrap:null;
 }
+/* a question either of you added can be rewritten — filed by the language it is
+   written in, like everything else typed on this site */
+function setQuestion(store,id,v){
+  var a=load(store,[]);
+  a.forEach(function(q){ if(q.id===id){ var p=biSet({n:q.n,nj:q.nj,src:q.src},v); q.n=p.n; q.nj=p.nj; q.src=p.src; } });
+  save(store,a); renderAll();
+}
+/* An inbox count on each person's dashboard: how many questions the other one
+   has asked that are still unanswered. It falls as they answer, so you can
+   watch it go to zero. */
+function pendingFrom(store,pfx){
+  var n=0;
+  load(store,[]).forEach(function(q){
+    var a=biNorm(load(pfx+"ans."+q.id,""));
+    if(!a.n&&!a.nj) n++; });
+  return n;
+}
+function renderInbox(){
+  [["inbox-us","askedj","j","jay","Jay","ジェイ"],
+   ["inbox-jay","asked","h","us","Hikaru","光"]].forEach(function(C){
+    var w=document.getElementById(C[0]); if(!w) return; w.innerHTML="";
+    var n=pendingFrom(C[1],C[2]);
+    var b=el("div","inbox"+(n?"":" clear"));
+    b.innerHTML='<span class="inbox-n">'+(n||"✓")+'</span>'+
+      '<span class="inbox-t">'+(n
+        ? bi(C[4]+" asked you "+n+" question"+(n===1?"":"s")+" — they are waiting for an answer.",
+             C[5]+"さんからの質問が"+n+"件、回答待ちです。")
+        : bi("Nothing waiting. You are all caught up.","未回答の質問はありません。"))+'</span>'+
+      (n?'<span class="inbox-go">'+bi("Answer them ›","回答する ›")+'</span>':'');
+    if(n) b.addEventListener("click",function(){ go(C[3]); });
+    w.appendChild(b);
+  });
+}
 function renderQA(pfx,seed,store,askLabel,askLabelJ){
   var f=(load(pfx+"filter","")||"").toLowerCase();
   var pend=[],ansd=[];
@@ -2768,9 +2818,13 @@ function renderQA(pfx,seed,store,askLabel,askLabelJ){
   pShow.forEach(function(o){
     var c=el("div","card pad");c.style.borderColor="var(--amber)";
     c.innerHTML='<div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.3rem"><span class="est">'+t(askLabel,askLabelJ)+'</span><button class="del" data-dq="'+o.id+'" style="margin-left:auto">✕</button></div>'+
-      '<div style="font-family:var(--disp);font-weight:800;font-size:.95rem;margin-bottom:.5rem">'+biUser({n:o.q,nj:o.qj,src:o.qsrc})+'</div>'+
+      '<div class="qq" style="font-family:var(--disp);font-weight:800;font-size:.95rem;margin-bottom:.5rem">'+biUser({n:o.q,nj:o.qj,src:o.qsrc})+'<button class="pen pen-q" title="'+t("edit the question","質問を編集")+'">✎</button></div>'+
       '<textarea rows="3" style="width:100%;font:inherit;font-size:.87rem;line-height:1.6;padding:.55rem .7rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink);resize:vertical"></textarea>'+
       '<div style="font-size:.73rem;color:var(--ink-faint);margin-top:.3rem">'+t("Answer in your own language — the other one is filled in for you.","自分の言語で回答してください。もう一方は自動で補われます。")+'</div>';
+    var pq=c.querySelector(".pen-q");
+    if(pq) pq.addEventListener("click",function(){
+      inlineEdit(c.querySelector(".qq"),biUserEdit({n:o.q,nj:o.qj,src:o.qsrc}),function(v){
+        if(v.trim()) setQuestion(store,o.id,v.trim()); else renderAll(); },true); });
     var ta=c.querySelector("textarea"); ta.value=biUserEdit(load(pfx+"ans."+o.id,""));
     ta.addEventListener("input",function(e){
       save(pfx+"ans."+o.id,biSet(load(pfx+"ans."+o.id,""),e.target.value));});
@@ -2791,10 +2845,14 @@ function renderQA(pfx,seed,store,askLabel,askLabelJ){
   show.forEach(function(o){
     var card=el("div","card pad",
       '<div style="font-size:.78rem;font-weight:800;color:var(--pink);margin-bottom:.1rem">'+t("Asked","質問")+(o.live?' · '+t("added","追加分"):'')+'</div>'+
-      '<div style="font-family:var(--disp);font-weight:800;font-size:.95rem;margin-bottom:.45rem">'+(o.live?biUser({n:o.q,nj:o.qj,src:o.qsrc}):bi(o.q,o.qj))+'</div>'+
+      '<div class="qq" style="font-family:var(--disp);font-weight:800;font-size:.95rem;margin-bottom:.45rem">'+(o.live?biUser({n:o.q,nj:o.qj,src:o.qsrc})+'<button class="pen pen-q" title="'+t("edit the question","質問を編集")+'">✎</button>':bi(o.q,o.qj))+'</div>'+
       '<div style="font-size:.78rem;font-weight:800;color:var(--sky);margin-bottom:.1rem">'+t("Answer","回答")+'</div>'+
       '<div style="font-size:.87rem;line-height:1.7">'+(o.live?biUser({n:o.a,nj:o.aj,src:o.asrc}):bi(o.a,o.aj))+'</div>');
-    if(o.live){ var th=qThumbs(pfx,o.id,true); if(th) card.appendChild(th); }
+    if(o.live){ var th=qThumbs(pfx,o.id,true); if(th) card.appendChild(th);
+      var pq2=card.querySelector(".pen-q");
+      if(pq2) pq2.addEventListener("click",function(){
+        inlineEdit(card.querySelector(".qq"),biUserEdit({n:o.q,nj:o.qj,src:o.qsrc}),function(v){
+          if(v.trim()) setQuestion(store,o.id,v.trim()); else renderAll(); },true); }); }
     aw.appendChild(card);});
   var more=document.getElementById(pfx+"more");
   if(hits.length>2&&!f){ more.style.display="";
@@ -4264,7 +4322,7 @@ function renderAyuko(){
   row.appendChild(inp);row.appendChild(btn);w.appendChild(row);
 }
 /* ---------- tabs ---------- */
-var TABS=[["home","🏠","Home","ホーム","--coral"],["cal","🗓","Calendar","カレンダー","--teal"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","From her","光より","--pink"],["jay","💙","From Jay","ジェイより","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["inv","💌","Invites","招待状","--pink"]];
+var TABS=[["home","🏠","Home","ホーム","--coral"],["cal","🗓","Calendar","カレンダー","--teal"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","Hikaru","光","--pink"],["jay","💙","J","ジェイ","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["inv","💌","Invites","招待状","--pink"]];
 function buildTabs(){
   var w=document.getElementById("tabs");w.innerHTML="";
   TABS.forEach(function(tb){var b=el("button","tab");b.type="button";b.setAttribute("role","tab");b.dataset.go=tb[0];
@@ -4332,7 +4390,7 @@ function renderAll(){
   renderOpts("o-decor","decor");renderNights();renderSupport();renderUs();renderNotes();
   renderBudget();renderUpdates();
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
-  renderCal();renderDecor2();renderBeauty();
+  renderCal();renderInbox();renderDecor2();renderBeauty();
   renderStay();renderSeat();renderDrive();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
@@ -4354,7 +4412,8 @@ document.getElementById("usemaybe").addEventListener("change",function(e){save("
     var i=document.getElementById(C[4]),v=i.value.trim();if(!v)return;
     var a=load(C[1],[]),qp=biSet(null,v);
     a.push({id:"q"+Date.now(),n:qp.n,nj:qp.nj,src:qp.src});save(C[1],a);i.value="";renderAll();});
-  document.getElementById(C[4]).addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById(C[5]).click();});
+  document.getElementById(C[4]).addEventListener("keydown",function(e){
+    if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) document.getElementById(C[5]).click(); });
 });
 document.getElementById("addnote").addEventListener("click",function(){var i=document.getElementById("newnote"),v=i.value.trim();if(!v)return;var m=load("mynotes",[]);m.push({id:"n"+Date.now(),n:v});save("mynotes",m);i.value="";renderAll();});
 function setLang(l,s){
