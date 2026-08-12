@@ -350,6 +350,9 @@ a{color:var(--sky)}
 #p-drive .zgrp.zsm .zgrp-h{margin-bottom:.45rem}
 /* text still in the other person's language — shown rather than hidden, but
    marked so you know it is waiting on a translation */
+.qa-send{display:flex;align-items:center;gap:.7rem;margin-top:.45rem;flex-wrap:wrap}
+.qa-hint{flex:1;min-width:11rem;font-size:.73rem;color:var(--ink-faint);line-height:1.5}
+.qa-send .qa-go{margin-top:0;white-space:nowrap}
 /* the drop-anything-for-Claude list */
 .fd{display:flex;gap:.7rem;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:.6rem .75rem;background:var(--card);margin-bottom:.5rem}
 .fd-i{font-size:1.3rem;line-height:1.3}
@@ -2974,15 +2977,29 @@ function renderQA(pfx,seed,store,askLabel,askLabelJ){
     c.innerHTML='<div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.3rem"><span class="est">'+t(askLabel,askLabelJ)+'</span><button class="del" data-dq="'+o.id+'" style="margin-left:auto">✕</button></div>'+
       '<div class="qq" style="font-family:var(--disp);font-weight:800;font-size:.95rem;margin-bottom:.5rem">'+biUser({n:o.q,nj:o.qj,src:o.qsrc})+'<button class="pen pen-q" title="'+t("edit the question","質問を編集")+'">✎</button></div>'+
       '<textarea rows="3" style="width:100%;font:inherit;font-size:.87rem;line-height:1.6;padding:.55rem .7rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink);resize:vertical"></textarea>'+
-      '<div style="font-size:.73rem;color:var(--ink-faint);margin-top:.3rem">'+t("Answer in your own language — the other one is filled in for you.","自分の言語で回答してください。もう一方は自動で補われます。")+'</div>';
+      '<div class="qa-send"><span class="qa-hint">'+t("Answer in your own language — the other one is filled in for you. Saved as you type.","自分の言語で回答してください。もう一方は自動で補われます。入力内容は自動保存されます。")+'</span>'+
+      '<button class="btn qa-go">'+t("Send answer","回答を送る")+'</button></div>';
     var pq=c.querySelector(".pen-q");
     if(pq) pq.addEventListener("click",function(){
       inlineEdit(c.querySelector(".qq"),biUserEdit({n:o.q,nj:o.qj,src:o.qsrc}),function(v){
         if(v.trim()) setQuestion(store,o.id,v.trim()); else renderAll(); },true); });
-    var ta=c.querySelector("textarea"); ta.value=biUserEdit(load(pfx+"ans."+o.id,""));
-    ta.addEventListener("input",function(e){
-      save(pfx+"ans."+o.id,biSet(load(pfx+"ans."+o.id,""),e.target.value));});
-    ta.addEventListener("blur",function(){renderAll();});
+    /* What she types is a draft until she presses Send. It used to be written
+       straight into the answer, so typing one character marked the question
+       answered and the card jumped out of the list under her. */
+    var ta=c.querySelector("textarea");
+    var draft=load(pfx+"draft."+o.id,null);
+    ta.value=(draft!=null)?draft:biUserEdit(load(pfx+"ans."+o.id,""));
+    ta.addEventListener("input",function(e){ save(pfx+"draft."+o.id,e.target.value); });
+    var send=function(){
+      var v=ta.value.trim();
+      if(!v){ if(typeof toast==="function") toast(t("Write an answer first","先に回答を入力してください")); return; }
+      save(pfx+"ans."+o.id,biSet(load(pfx+"ans."+o.id,""),v));
+      save(pfx+"draft."+o.id,null);
+      if(typeof toast==="function") toast(t("Sent — it is on their side now","送信しました"));
+      renderAll();
+    };
+    c.querySelector(".qa-go").addEventListener("click",send);
+    ta.addEventListener("keydown",function(e){ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) send(); });
     var th=qThumbs(pfx,o.id,true); if(th) c.appendChild(th);
     c.querySelector("[data-dq]").addEventListener("click",function(){
       save(store,load(store,[]).filter(function(y){return y.id!==o.id;}));renderAll();});
