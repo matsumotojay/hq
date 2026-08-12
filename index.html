@@ -1564,7 +1564,7 @@ function todayISO(){ var d=new Date();
 function calItems(){
   var out=[],del=calDel();
   MILESTONES.forEach(function(m){ if(del[m.id])return;
-    out.push({id:m.id,d:m.d,ic:m.ic,kind:"fixed",title:bi(m.n,m.nj),note:bi(m.note||"",m.notej||""),
+    out.push({id:m.id,d:m.d,d2:m.d2||"",ic:m.ic,kind:"fixed",title:bi(m.n,m.nj),note:bi(m.note||"",m.notej||""),
               done:!!load("caldone",{})[m.id]}); });
   PAY.forEach(function(p,i){ var d=PAYDATE[i]; if(!d||del["pay"+i])return;
     out.push({id:"pay"+i,d:d,ic:"💴",kind:"pay",title:bi(p[2],p[3]),
@@ -1572,7 +1572,7 @@ function calItems(){
                       (p[5]||"")+(p[0].indexOf("~")===0?"（目安・挙式の2〜3ヶ月前）":"")),
               done:!!load("caldone",{})[("pay"+i)]}); });
   calAdded().forEach(function(e){ if(del[e.id])return;
-    out.push({id:e.id,d:e.d,ic:e.ic||"📌",kind:"mine",title:biUser({n:e.n,nj:e.nj,src:e.src}),
+    out.push({id:e.id,d:e.d,d2:e.d2||"",ic:e.ic||"📌",kind:"mine",title:biUser({n:e.n,nj:e.nj,src:e.src}),
               note:e.note?biUser({n:e.note,nj:e.notej,src:e.nsrc}):"",
               done:!!load("caldone",{})[e.id]}); });
   allTasks().forEach(function(tk){ var due=taskDue(tk); if(!due||load("tarch",{})[tk.id])return;
@@ -2092,11 +2092,13 @@ var MON=[["January","1月"],["February","2月"],["March","3月"],["April","4月"
          ["July","7月"],["August","8月"],["September","9月"],["October","10月"],["November","11月"],["December","12月"]];
 var DOW=[["S","日"],["M","月"],["T","火"],["W","水"],["T","木"],["F","金"],["S","土"]];
 function calRow(it,today){
-  var overdue=(!it.done&&it.d<today);
+  var ends=it.d2||it.d, overdue=(!it.done&&ends<today), running=(!it.done&&it.d<=today&&today<=ends);
   var r=el("div","cal-it"+(it.done?" done":"")+(overdue?" over":""));
+  if(running) r.className+=" now";
   r.innerHTML='<span class="cal-ic">'+it.ic+'</span>'+
     '<div class="cal-b"><div class="cal-t">'+it.title+'</div>'+
-      '<div class="cal-m">'+fmtDue(it.d)+
+      '<div class="cal-m">'+fmtDue(it.d)+(it.d2?' – '+fmtDue(it.d2):'')+
+        (running?' · <b>'+t("on now","進行中")+'</b>':'')+
         (it.kind==="pay"?' · <b>'+t("payment","支払い")+'</b>':'')+
         (it.owner&&OWN[it.owner]?' · '+t(OWN[it.owner].l,OWN[it.owner].lj):'')+
         (overdue?' · <b class="cal-x">'+t("missed","期限切れ")+'</b>':'')+'</div>'+
@@ -2131,7 +2133,7 @@ function renderCal(){
   for(var i=0;i<first;i++) grid.appendChild(el("div","cal-d empty"));
   for(var dn=1;dn<=days;dn++){
     var iso=y+"-"+String(m+1).padStart(2,"0")+"-"+String(dn).padStart(2,"0");
-    var mine=items.filter(function(x){ return x.d===iso; });
+    var mine=items.filter(function(x){ return iso>=x.d && iso<=(x.d2||x.d); });
     var cell=el("div","cal-d"+(iso===today?" now":"")+(mine.length?" has":""));
     cell.innerHTML='<span class="cal-dn">'+dn+'</span>'+
       mine.slice(0,3).map(function(x){
@@ -2142,12 +2144,12 @@ function renderCal(){
   w.appendChild(grid);
 
   /* missed, then what is coming */
-  var over=items.filter(function(x){ return !x.done&&x.d<today; });
+  var over=items.filter(function(x){ return !x.done&&(x.d2||x.d)<today; });
   if(over.length){
     w.appendChild(el("h4","cathead","⚠️ "+bi("Missed","期限切れ")+' <span class="catn">'+over.length+'</span>'));
     var ow=el("div","cal-list"); over.forEach(function(x){ ow.appendChild(calRow(x,today)); }); w.appendChild(ow);
   }
-  var soon=items.filter(function(x){ return !x.done&&x.d>=today; }).slice(0,14);
+  var soon=items.filter(function(x){ return !x.done&&(x.d2||x.d)>=today; }).slice(0,14);
   w.appendChild(el("h4","cathead","🔜 "+bi("Coming up","これから")+' <span class="catn">'+soon.length+'</span>'));
   if(!soon.length) w.appendChild(el("div","bnone",bi("Nothing dated ahead of you.","予定はありません。")));
   var sw=el("div","cal-list"); soon.forEach(function(x){ sw.appendChild(calRow(x,today)); }); w.appendChild(sw);
@@ -2197,6 +2199,9 @@ var DAYRUN=[
    Everything with a date on it in one place: task deadlines, the four payments,
    the days that are fixed, and anything either of you adds. */
 var MILESTONES=[
+ {id:"m_vietnam",d:"2026-08-21",d2:"2026-08-28",ic:"🇻🇳",n:"Vietnam — the two of you away",nj:"ベトナム旅行",
+  note:"The five decisions filed under 🇻🇳 are meant to be settled on this trip: the catering contract, the decoration contract, the videographer, the look of the day, and the menu with the chef. <b>Makiko's deadline falls eight days after you land</b>, so the decor answer really does have to come out of this week.",
+  notej:"🇻🇳のタスク5件はこの旅行中に決める想定です：ケータリング契約、装飾担当の契約、ビデオグラファー、当日の装飾イメージ、シェフとのメニューすり合わせ。<b>まきこさんの締切は帰国の8日後</b>のため、装飾の回答はこの期間に固めておく必要があります。"},
  {id:"m_makiko",d:"2026-09-05",ic:"🎀",n:"Answer Makiko about decor",nj:"まきこさんへ装飾の回答期限",
   note:"Her hard deadline — June books out fast. Blocked until Ayuko answers the table layout question, because the decoration count depends on how the tables are arranged.",
   notej:"まきこさんの締切。6月は予約が埋まりやすいとのこと。テーブル配列で装飾数が変わるため、鮎子さんからの回答待ちです。"},
