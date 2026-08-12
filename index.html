@@ -340,6 +340,14 @@ a{color:var(--sky)}
 #p-drive .zgrp.zsm .zgrp-h{margin-bottom:.45rem}
 /* text still in the other person's language — shown rather than hidden, but
    marked so you know it is waiting on a translation */
+/* picture groups */
+.catbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.7rem}
+.catbar-l{font-size:.78rem;font-weight:800;color:var(--ink-faint)}
+.catbar select,.catbar input{font:inherit;font-size:.82rem;padding:.4rem .6rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink)}
+.catbar .catnew{flex:1;min-width:8rem}
+.cathead{font-family:var(--disp);font-size:1rem;margin:1.3rem 0 .5rem;display:flex;align-items:center;gap:.45rem}
+.catn{font-size:.72rem;font-weight:800;color:var(--ink-faint);border:2px solid var(--line-2);border-radius:999px;padding:0 .45rem}
+.ccard .bmove{width:100%;font:inherit;font-size:.72rem;padding:.3rem .4rem;margin-top:.25rem;border:2px solid var(--line-2);border-radius:10px;background:var(--card);color:var(--ink-soft)}
 .untr{font-style:normal;opacity:.82;border-bottom:1px dotted var(--ink-faint);cursor:help}
 .untr::after{content:"訳";font-size:.6em;font-weight:800;vertical-align:super;margin-left:.15em;opacity:.7}
 :root[data-lang="ja"] .untr::after{content:"EN"}
@@ -1782,35 +1790,69 @@ function splitImgs(){
    ship inside the page, so both of you always have them without either device
    syncing a byte — and either of you can still remove one or caption it. */
 var SEEDBOARD={decor:[
- {k:"dec01",w:900,h:720},
- {k:"dec02",w:600,h:900},
- {k:"dec03",w:900,h:891},
- {k:"dec04",w:900,h:675},
- {k:"dec05",w:900,h:720},
- {k:"dec06",w:900,h:720},
- {k:"dec07",w:415,h:900},
- {k:"dec08",w:415,h:900},
- {k:"dec09",w:415,h:900},
- {k:"dec10",w:900,h:720},
- {k:"dec11",w:415,h:900},
- {k:"dec12",w:415,h:900},
- {k:"dec13",w:415,h:900},
- {k:"dec14",w:415,h:900},
- {k:"dec15",w:415,h:900},
- {k:"dec16",w:415,h:900},
- {k:"dec17",w:900,h:720},
- {k:"dec18",w:900,h:519},
- {k:"dec19",w:900,h:720},
- {k:"dec20",w:900,h:626}]};
+ {k:"dec01",w:900,h:720,c:"welcome"},
+ {k:"dec02",w:600,h:900,c:"tables"},
+ {k:"dec03",w:900,h:891,c:"tables"},
+ {k:"dec04",w:900,h:675,c:"welcome"},
+ {k:"dec05",w:900,h:720,c:"look"},
+ {k:"dec06",w:900,h:720,c:"look"},
+ {k:"dec07",w:415,h:900,c:"extras"},
+ {k:"dec08",w:415,h:900,c:"flowers"},
+ {k:"dec09",w:415,h:900,c:"extras"},
+ {k:"dec10",w:900,h:720,c:"look"},
+ {k:"dec11",w:415,h:900,c:"extras"},
+ {k:"dec12",w:415,h:900,c:"flowers"},
+ {k:"dec13",w:415,h:900,c:"extras"},
+ {k:"dec14",w:415,h:900,c:"flowers"},
+ {k:"dec15",w:415,h:900,c:"flowers"},
+ {k:"dec16",w:415,h:900,c:"flowers"},
+ {k:"dec17",w:900,h:720,c:"tables"},
+ {k:"dec18",w:900,h:519,c:"extras"},
+ {k:"dec19",w:900,h:720,c:"welcome"},
+ {k:"dec20",w:900,h:626,c:"welcome"}]};
+/* Pictures are grouped, because a wall of twenty is not a mood board. Either of
+   you can add a group of your own; both of you see the same ones. */
+var BOARDCATS={decor:[
+ {id:"welcome",ic:"🌸",n:"Welcome table",nj:"受付まわり"},
+ {id:"tables", ic:"🍽",n:"Tables &amp; the room",nj:"会場とテーブル"},
+ {id:"look",   ic:"🎨",n:"The overall look",nj:"全体のイメージ"},
+ {id:"flowers",ic:"💐",n:"Flowers to buy",nj:"造花の候補"},
+ {id:"extras", ic:"🕯",n:"Candles, glass &amp; extras",nj:"キャンドル・花器など"}]};
+function boardCats(b){
+  return (BOARDCATS[b]||[]).concat(load("catadd."+b,[]).map(function(c){
+    return {id:c.id,ic:c.ic||"📌",n:c.n,nj:c.nj,src:c.src,mine:true};}));
+}
+function catLabel(c){ return (c.ic||"")+" "+(c.mine?biUser({n:c.n,nj:c.nj,src:c.src}):bi(c.n,c.nj)); }
+function catPlain(c){ return (c.ic||"")+" "+(c.mine?biUserPlain({n:c.n,nj:c.nj,src:c.src}):t(c.n,c.nj)).replace(/&amp;/g,"&"); }
+function catOf(b,id,def){ var m=load("refcat."+b,{}); return m[id]!=null?m[id]:(def||""); }
+function setCat(b,id,c){ var m=load("refcat."+b,{}); m[id]=c; save("refcat."+b,m); renderAll(); }
+function addCat(b,v){
+  var p=biSet(null,v), a=load("catadd."+b,[]);
+  a.push({id:"c_"+Date.now(),n:p.n,nj:p.nj,src:p.src,ic:"📌"});
+  save("catadd."+b,a); renderAll();
+}
 function seedImgs(b){
   var del=load("refdel."+b,{}), cap=load("refcap."+b,{});
   return (SEEDBOARD[b]||[]).filter(function(s){return !del[s.k]&&IMG[s.k];}).map(function(s){
-    return {id:"seed_"+s.k,src:IMG[s.k],cap:cap[s.k]||"",w:s.w,h:s.h,seed:s.k};});
+    return {id:"seed_"+s.k,src:IMG[s.k],cap:cap[s.k]||"",w:s.w,h:s.h,seed:s.k,c:s.c||""};});
 }
 function seedDrop(b,k){ var d=load("refdel."+b,{}); d[k]=1; save("refdel."+b,d); }
 function seedCap(b,k,v){ var c=load("refcap."+b,{}); c[k]=v; save("refcap."+b,c); }
-function refImgs(b){ return seedImgs(b).concat(imgList(imgKey(b))); }
-function addRefImgs(board,files,after){ addImgsTo(imgKey(board),files,1000,0.7,after); }
+function refImgs(b){
+  return seedImgs(b).concat(imgList(imgKey(b))).map(function(o){
+    o.c=catOf(b,o.id,o.c||""); return o; });
+}
+/* whatever group is selected when you add is the group the pictures land in */
+function addRefImgs(board,files,after){
+  var had={}; imgList(imgKey(board)).forEach(function(o){ had[o.id]=1; });
+  addImgsTo(imgKey(board),files,1000,0.7,function(){
+    var c=load("catsel."+board,"");
+    if(c){ var m=load("refcat."+board,{}),n=0;
+      imgList(imgKey(board)).forEach(function(o){ if(!had[o.id]){ m[o.id]=c; n++; } });
+      if(n) save("refcat."+board,m); }
+    after&&after();
+  });
+}
 /* shared by the mood boards and by photos attached to answers */
 function addImgsTo(key,files,mx,qual,after){
   var left=files.length;
@@ -1886,17 +1928,33 @@ function renderBoard(holder,board){
   drop.addEventListener("dragleave",function(){drop.classList.remove("over");});
   drop.addEventListener("drop",function(e){e.preventDefault();drop.classList.remove("over");
     addRefImgs(board,e.dataTransfer.files,renderAll);});
+
+  var cats=boardCats(board), sel=load("catsel."+board,cats.length?cats[0].id:"");
+  var bar=el("div","catbar");
+  bar.innerHTML='<span class="catbar-l">'+bi("Add to","追加先")+'</span>'+
+    '<select class="catpick">'+cats.map(function(c){
+      return '<option value="'+c.id+'"'+(c.id===sel?" selected":"")+'>'+esc(catPlain(c))+'</option>';}).join("")+
+    '</select>'+
+    '<input class="catnew" placeholder="'+t("New group…","グループを追加…")+'"><button class="btn catgo" style="margin-top:0">＋</button>';
+  bar.querySelector(".catpick").addEventListener("change",function(e){ save("catsel."+board,e.target.value); });
+  var ni=bar.querySelector(".catnew"), ng=bar.querySelector(".catgo");
+  ng.addEventListener("click",function(){ var v=ni.value.trim(); if(v){ ni.value=""; addCat(board,v); } });
+  ni.addEventListener("keydown",function(e){ if(e.key==="Enter") ng.click(); });
+  w.appendChild(bar);
   w.appendChild(drop);
+
   if(!arr.length){
     w.appendChild(el("div","bnone",bi("Nothing pinned yet. Anything you both keep coming back to belongs here.","まだ画像がありません。ふたりが何度も見返すものをここに。")));
     return;
   }
-  var g=el("div","collage");
-  arr.forEach(function(o){
+  function card(o){
     var tall=(o.h&&o.w&&o.h/o.w>1.25);
     var c=el("figure","ccard"+(tall?" tall":""));
     c.innerHTML='<img src="'+o.src+'" alt="" loading="lazy"><button class="bdel" title="'+t("Remove","削除")+'">✕</button>'+
-      '<figcaption><input class="bcap" placeholder="'+t("Add a note…","メモを追加…")+'" value="'+esc(o.cap||"")+'"></figcaption>';
+      '<figcaption><input class="bcap" placeholder="'+t("Add a note…","メモを追加…")+'" value="'+esc(o.cap||"")+'">'+
+      '<select class="bmove" title="'+t("Move to another group","グループを移動")+'">'+
+        cats.map(function(x){return '<option value="'+x.id+'"'+(x.id===o.c?" selected":"")+'>'+esc(catPlain(x))+'</option>';}).join("")+
+      '</select></figcaption>';
     c.querySelector("img").addEventListener("click",function(){ lightbox(refImgs(board),o.id); });
     armDanger(c.querySelector(".bdel"),function(){
       if(o.seed) seedDrop(board,o.seed); else imgDrop(imgKey(board),o.id);
@@ -1905,9 +1963,23 @@ function renderBoard(holder,board){
     cap.addEventListener("click",function(e){e.stopPropagation();});
     cap.addEventListener("change",function(){
       if(o.seed) seedCap(board,o.seed,cap.value); else imgCap(imgKey(board),o.id,cap.value); });
-    g.appendChild(c);
+    var mv=c.querySelector(".bmove");
+    mv.addEventListener("click",function(e){e.stopPropagation();});
+    mv.addEventListener("change",function(){ setCat(board,o.id,mv.value); });
+    return c;
+  }
+  var known={}; cats.forEach(function(c){ known[c.id]=1; });
+  cats.forEach(function(c){
+    var mine=arr.filter(function(o){ return o.c===c.id; });
+    if(!mine.length) return;
+    w.appendChild(el("h4","cathead",catLabel(c)+' <span class="catn">'+mine.length+'</span>'));
+    var g=el("div","collage"); mine.forEach(function(o){ g.appendChild(card(o)); }); w.appendChild(g);
   });
-  w.appendChild(g);
+  var rest=arr.filter(function(o){ return !o.c||!known[o.c]; });
+  if(rest.length){
+    w.appendChild(el("h4","cathead",bi("Not sorted yet","未分類")+' <span class="catn">'+rest.length+'</span>'));
+    var g2=el("div","collage"); rest.forEach(function(o){ g2.appendChild(card(o)); }); w.appendChild(g2);
+  }
 }
 function renderDecor2(){ renderCatTasks("decortasks",4); renderBoard("decorboard","decor"); }
 function renderBeauty(){ renderCatTasks("beautytasks",8); renderBoard("beautyboard","beauty"); }
