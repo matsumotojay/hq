@@ -2285,7 +2285,7 @@ function supportNightly(grp){
 }
 function suppNights(key,def){ return load(key,def); }
 function jayFriendsSupport(){ return supportNightly("jf").total*(getChoice("jaynights")==="one"?1:2); }
-function hikFriendsSupport(){ var c=load("hikanights","two");
+function hikFriendsSupport(){ var c=load("hikanights","undecided");
   if(c==="none") return 0;
   return Math.round(supportNightly("hf").total*(c==="one"?1:2)/2); }
 function hikFamilySupport(){ return supportNightly("hF").total*2; }   /* family stays both nights, in full */
@@ -2598,9 +2598,16 @@ function renderVideo(){
   d.addEventListener("click",function(e){if(e.target.tagName==="A")return;setTog("video",!getTog("video"));});
   w.appendChild(d);
 }
+/* Three states, because "we haven't decided" is the true one for now. Undecided
+   still counts the money — Jay would rather carry the higher number than be
+   surprised — but it is labelled so nobody reads it as agreed. */
+function travelState(){ var v=load("htravelstate",null);
+  if(v) return v;
+  return getTog("htravel")?"undecided":"no"; }
+function setTravelState(v){ save("htravelstate",v); setTog("htravel",v!=="no"); }
 function renderSupport(){
   var w=document.getElementById("o-support");w.innerHTML="";
-  var on=getTog("htravel"),n=travelHeads(),total=travelHalf();
+  var st=travelState(), on=(st!=="no"), n=travelHeads(), total=travelHalf();
   var c=el("div","card pad"+(on?"":" zoff"));
   c.innerHTML='<div style="display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap"><h4>'+bi("Her side&rsquo;s travel — half","光側の交通費 — 半額")+'</h4>'+
     '<span class="lock">'+t("live from Guests","ゲストタブ連動")+'</span>'+
@@ -2610,19 +2617,21 @@ function renderSupport(){
       '<input type="text" inputmode="numeric" class="fr" value="'+money(flyRate())+'" style="width:5.5rem;font:inherit;font-size:.76rem;padding:.1rem .35rem;border:2px solid var(--line-2);border-radius:8px;background:var(--card);color:var(--ink);text-align:right">'+
       t(" return each ÷ 2 = ","（往復）÷ 2 ＝ ")+'<b>'+money(total)+'</b><br>'+
       bi("Tokyo⇄New Chitose runs ¥15–30,000 booked ahead. Tomomi can&rsquo;t fly — her shinkansen fare is higher, so nudge the rate up if you want to cover that properly.","東京⇄新千歳は早期予約で15,000〜30,000円。友美さんは飛行機不可（新幹線は割高）のため、含めるなら単価を上げてください。")+'</div>'+
-    '<div class="nfil" style="margin:0"><button class="nf'+(on?" on":"")+'" data-tg="1">'+t("Helping with travel","交通費を補助する")+'</button>'+
-    '<button class="nf'+(on?"":" on")+'" data-tg="0">'+t("Not helping","補助しない")+'</button></div>';
+    '<div class="nfil" style="margin:0"><button class="nf'+(st==="yes"?" on":"")+'" data-st="yes">'+t("Helping with travel","交通費を補助する")+'</button>'+
+    '<button class="nf'+(st==="undecided"?" on":"")+'" data-st="undecided">'+t("Undecided","未定")+'</button>'+
+    '<button class="nf'+(st==="no"?" on":"")+'" data-st="no">'+t("Not helping","補助しない")+'</button></div>'+
+    (st==="undecided"?'<div style="font-size:.74rem;color:var(--ink-faint);margin-top:.45rem">'+bi("Counted in the budget while it is undecided, so the total can only come down.","未定の間も予算に計上しています。決まれば下がることはあっても増えません。")+'</div>':'');
   var fr=c.querySelector(".fr");
   fr.addEventListener("change",function(){var v=parseYen(fr.value);
     if(root.getAttribute("data-cur")==="usd")v=Math.round(v*RATE);
     if(v>0){save("flyrate",v);renderAll();}});
-  c.querySelectorAll("[data-tg]").forEach(function(b){
-    b.addEventListener("click",function(){setTog("htravel",b.dataset.tg==="1");});});
+  c.querySelectorAll("[data-st]").forEach(function(b){
+    b.addEventListener("click",function(){setTravelState(b.dataset.st);renderAll();});});
   w.appendChild(c);
 }
 function nightsCard(title,titlej,grp,storeKey,cur,setFn,half,allowNone){
   var s=supportNightly(grp);
-  var nights=cur==="one"?1:2;
+  var nights=cur==="one"?1:2;   /* undecided budgets the full two nights on purpose */
   var total=cur==="none"?0:(half?Math.round(s.total*nights/2):s.total*nights);
   var c=el("div","card pad");
   var brk=s.parts.length
@@ -2632,8 +2641,8 @@ function nightsCard(title,titlej,grp,storeKey,cur,setFn,half,allowNone){
   c.innerHTML='<div style="display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap"><h4>'+bi(title,titlej)+'</h4>'+
     '<span class="lock">'+t("live from Stay","宿泊タブ連動")+'</span>'+
     '<b style="margin-left:auto;font-family:var(--disp)" class="m" data-yen="'+total+'"></b></div>'+
-    '<div style="font-size:.76rem;color:var(--ink-faint);margin:.3rem 0 .55rem;line-height:1.5">'+(cur==="none"?t("Not helping with her friends&rsquo; stay — their nights are on them.","友人の宿泊は補助しない設定です。"):brk)+'</div>'+
-    '<div class="nfil" style="margin:0">'+(allowNone?'<button class="nf'+(cur==="none"?" on":"")+'" data-nn="none">'+t("Not helping","補助しない")+'</button>':'')+
+    '<div style="font-size:.76rem;color:var(--ink-faint);margin:.3rem 0 .55rem;line-height:1.5">'+(cur==="none"?t("Not helping with her friends&rsquo; stay — their nights are on them.","友人の宿泊は補助しない設定です。"):brk+(cur==="undecided"?"<br>"+t("Undecided, so it is budgeted at the full two nights — the total can only come down.","未定のため2泊分で計上しています。決まれば下がることはあっても増えません。"):""))+'</div>'+
+    '<div class="nfil" style="margin:0">'+(allowNone?'<button class="nf'+(cur==="undecided"?" on":"")+'" data-nn="undecided">'+t("Undecided","未定")+'</button><button class="nf'+(cur==="none"?" on":"")+'" data-nn="none">'+t("Not helping","補助しない")+'</button>':'')+
     '<button class="nf'+(cur==="one"?" on":"")+'" data-nn="one">'+t("1 night","1泊")+'</button>'+
     '<button class="nf'+(cur==="two"?" on":"")+'" data-nn="two">'+t("2 nights","2泊")+'</button></div>';
   c.querySelectorAll("[data-nn]").forEach(function(b){
@@ -2643,7 +2652,7 @@ function nightsCard(title,titlej,grp,storeKey,cur,setFn,half,allowNone){
 function renderNights(){
   var w=document.getElementById("o-jaynights"); if(!w) return; w.innerHTML="";
   w.appendChild(nightsCard("Jay&rsquo;s friends — in full","ジェイの友人 — 全額","jf","jaynights",getChoice("jaynights"),function(v){setChoice("jaynights",v);},false));
-  w.appendChild(nightsCard("Hikaru&rsquo;s friends — half","光の友人 — 半額","hf","hikanights",load("hikanights","two"),function(v){save("hikanights",v);renderAll();},true,true));
+  w.appendChild(nightsCard("Hikaru&rsquo;s friends — half","光の友人 — 半額","hf","hikanights",load("hikanights","undecided"),function(v){save("hikanights",v);renderAll();},true,true));
 }
 
 function renderCulture(){
@@ -3085,7 +3094,7 @@ function placeCard(o,zone){
 function renderStayTotals(){
   var w=document.getElementById("staytotals"); if(!w) return;
   var jf=jayFriendsSupport(), hf=hikFriendsSupport(), fam=hikFamilySupport();
-  var jn=getChoice("jaynights")==="one"?1:2, hn=load("hikanights","two")==="one"?1:2;
+  var jn=getChoice("jaynights")==="one"?1:2, hn=load("hikanights","undecided")==="one"?1:2;
   w.innerHTML='<div class="card stat"><div class="l">'+bi("Jay&rsquo;s friends — you pay","ジェイの友人 — 負担額")+'</div>'+
     '<div class="v" style="color:var(--sky)"><span class="m" data-yen="'+jf+'"></span></div>'+
     '<div class="d">'+bi("in full × "+jn+(jn>1?" nights":" night"),"全額 × "+jn+"泊")+'</div></div>'+
