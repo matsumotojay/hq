@@ -1060,7 +1060,7 @@ function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=c
 function bi(e,j){return '<span lang-en>'+e+'</span><span lang-ja>'+j+'</span>';}
 var FBCONFIG=window.FBCONFIG={"apiKey": "AIzaSyAAnT69AtL-m53iQ-DuCF0PRNrdHcmvZaM", "authDomain": "lake-toya-hq.firebaseapp.com", "projectId": "lake-toya-hq", "storageBucket": "lake-toya-hq.firebasestorage.app", "messagingSenderId": "246123481676", "appId": "1:246123481676:web:8017ebd6ac8b8f3530c2e9"};
 /* keys that are personal viewing preferences stay per-device; everything else syncs */
-var SYNCSKIP=window.SYNCSKIP=/^(tab|lang|cur|curbind|imgsplit|l3ids|lastedit|moreopen|driveday|nextfilter|tboxopen|fwopen|hpopen|jpopen|hopen|jopen|dock\.)/;
+var SYNCSKIP=window.SYNCSKIP=/^(tab|lang|cur|curbind|imgsplit|l3ids|hseed|jseed|lastedit|moreopen|driveday|nextfilter|tboxopen|fwopen|hpopen|jpopen|hopen|jopen|dock\.)/;
 var UNDO=[];
 function save(k,v){try{
   if(k!=="lastedit"&&k!=="tab"&&k!=="moreopen"){
@@ -3069,7 +3069,7 @@ var J2HER=[
  {q:"Final theme colour — which of the swatches?",qj:"テーマカラーは最終的にどれ？",a:"",aj:""},
  {q:"How much travel support feels right for your family?",qj:"ご家族の交通費はどこまで出す？",a:"",aj:""}];
 function renderNotes(){
-  renderQA("h",J2H,"asked","waiting for Jay","ジェイの回答待ち");
+  renderQA("h",J2H.filter(function(x){return !x.a;}),"asked","waiting for Jay","ジェイの回答待ち");
   renderQA("j",J2HER.filter(function(x){return x.a;}),"askedj","waiting for Hikaru","光の回答待ち");
   editList("usideas","us",USIDEAS,fmtSimple,t("Add an idea…","アイデアを追加…"));
   var mn=document.getElementById("mynotes");
@@ -4558,6 +4558,18 @@ hydratePeople();
   var a=load("askedj",[]);
   J2HER.forEach(function(x,i){ a.push({id:"js"+i,n:x.q,nj:x.qj,src:"en"}); });
   save("askedj",a); save("jseed",true);
+})();
+/* Her board was the odd one out: his questions were seeded as live records, so
+   they can be edited, answered and counted, while hers were baked in as fixed
+   pairs you could only look at. Same treatment, so both boards behave alike. */
+(function seedHer(){ if(load("hseed",false))return;
+  var a=load("asked",[]);
+  J2H.forEach(function(x,i){
+    var id="hs"+i;
+    a.push({id:id,n:x.q,nj:x.qj,src:"ja"});
+    if(x.a||x.aj) save("hans."+id,{n:x.a||"",nj:x.aj||"",src:"en"});
+  });
+  save("asked",a); save("hseed",true);
 })();
 function dockLabel(b,f){b.innerHTML='<span lang-en>'+(f?"show":"hide")+'</span><span lang-ja>'+(f?"表示":"隠す")+'</span>';}
 function applyDocks(){
