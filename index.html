@@ -1640,8 +1640,12 @@ function inlineEdit(host,initial,onSave,multi){
   row.appendChild(ok);row.appendChild(no);host.appendChild(row);
   ed.focus(); try{ed.setSelectionRange(ed.value.length,ed.value.length);}catch(e){}
   var done=false;
+  /* Cancelling used to just put the old markup back — which recreates the ✎ as a
+     fresh element with no click handler on it, so the pencil was dead until
+     something else happened to re-render. Rebuild instead, so it stays live. */
   function fin(saveIt){ if(done)return; done=true;
-    if(saveIt) onSave(ed.value); else host.innerHTML=was; }
+    if(saveIt){ onSave(ed.value); }
+    else { host.innerHTML=was; if(typeof renderAll==="function") renderAll(); } }
   ok.addEventListener("click",function(){fin(true);});
   no.addEventListener("click",function(){fin(false);});
   ed.addEventListener("keydown",function(e){
