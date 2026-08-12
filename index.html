@@ -377,17 +377,17 @@ a{color:var(--sky)}
 @media(min-width:70rem){
   #p-cal .ph{margin-bottom:.5rem}
   #p-cal .ph p{font-size:.82rem}
-  .cal-g{max-width:min(100%,calc((100vh - 17.5rem) * 7 / 6));margin-left:auto;margin-right:auto}
-  .cal-h{max-width:min(100%,calc((100vh - 17.5rem) * 7 / 6));margin-left:auto;margin-right:auto}
+  .cal-g{max-width:min(100%,calc((100vh - 17.5rem) * 7 * 1.45 / 6));margin-left:auto;margin-right:auto}
+  .cal-h{max-width:min(100%,calc((100vh - 17.5rem) * 7 * 1.45 / 6));margin-left:auto;margin-right:auto}
 }
 .cal-dow{text-align:center;font-size:.72rem;font-weight:800;color:var(--ink-faint);padding:.2rem 0}
-.cal-d{aspect-ratio:1;border:2px solid var(--line);border-radius:12px;padding:.3rem;background:var(--card);
+.cal-d{aspect-ratio:1.45;border:2px solid var(--line);border-radius:12px;padding:.3rem;background:var(--card);
   display:flex;flex-direction:column;gap:.12rem;overflow:hidden;cursor:pointer}
 .cal-d.empty{border:0;background:transparent;cursor:default}
 .cal-d.now{border-color:var(--accent)}
 .cal-d.sel{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
 .cal-dn{font-weight:800;font-size:.76rem;color:var(--ink-faint);line-height:1}
-.cal-ev{font-size:.6rem;line-height:1.25;padding:.12rem .22rem;border-radius:5px;background:var(--sunk);
+.cal-ev{font-size:.64rem;line-height:1.3;padding:.12rem .22rem;border-radius:5px;background:var(--sunk);
   color:var(--ink-soft);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .cal-ev.over{background:color-mix(in srgb,var(--coral) 22%,var(--sunk));color:var(--ink)}
 .cal-ev.done{opacity:.45;text-decoration:line-through}
@@ -405,8 +405,10 @@ a{color:var(--sky)}
   .cal-ev,.cal-band{font-size:.5rem}
   .cal-dn{font-size:.64rem}
 }
-.cal-list{display:flex;flex-direction:column;gap:.5rem}
-.cal-it{display:flex;gap:.6rem;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:.6rem .75rem;background:var(--card)}
+.cal-list{display:grid;grid-auto-rows:1fr;gap:.5rem}   /* every row matches the tallest */
+.cal-it .cal-t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cal-it .cal-n{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cal-it{display:flex;gap:.6rem;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:.5rem .7rem;background:var(--card)}
 .cal-it.over{border-color:var(--coral)}
 .cal-it.now{border-color:var(--accent)}
 .cal-it.done{opacity:.55}
@@ -2183,7 +2185,7 @@ function calRow(it,today){
         (it.kind==="pay"?' · <b>'+t("payment","支払い")+'</b>':'')+
         (it.owner&&OWN[it.owner]?' · '+t(OWN[it.owner].l,OWN[it.owner].lj):'')+
         (overdue?' · <b class="cal-x">'+t("missed","期限切れ")+'</b>':'')+'</div>'+
-      (it.note?'<div class="cal-n">'+it.note+'</div>':'')+'</div>'+
+      (it.note?'<div class="cal-n" title="'+esc(String(it.note).replace(/<[^>]*>/g,""))+'">'+it.note+'</div>':'')+'</div>'+
     (it.kind==="task"
       ? '<input type="checkbox" class="cal-tk"'+(it.done?" checked":"")+' title="'+t("mark done","完了にする")+'">'
       : '<button class="cal-ck" title="'+t("mark done","完了にする")+'">'+(it.done?"✓":"○")+'</button>');
