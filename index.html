@@ -366,8 +366,9 @@ a{color:var(--sky)}
 .cal-ev.over{background:color-mix(in srgb,var(--coral) 22%,var(--sunk));color:var(--ink)}
 .cal-ev.done{opacity:.45;text-decoration:line-through}
 /* a run of days reads as one continuous banner */
-.cal-band{font-size:.6rem;font-weight:800;line-height:1.3;padding:.14rem .3rem;background:var(--accent);
-  color:#fff;white-space:nowrap;overflow:visible;margin:0 -.3rem;position:relative;z-index:1}
+/* one even thickness the whole way across, whether or not this day carries the label */
+.cal-band{font-size:.6rem;font-weight:800;height:1.15rem;line-height:1.15rem;padding:0 .3rem;background:var(--accent);
+  color:#fff;white-space:nowrap;overflow:visible;margin:0 -.3rem;position:relative;z-index:1;flex:0 0 auto}
 .cal-band.s{margin-left:0;border-radius:5px 0 0 5px}
 .cal-band.e{margin-right:0;border-radius:0 5px 5px 0}
 .cal-band.s.e{border-radius:5px}
@@ -390,6 +391,7 @@ a{color:var(--sky)}
 .cal-m{font-size:.73rem;color:var(--ink-faint);margin-top:.1rem}
 .cal-x{color:var(--coral)}
 .cal-n{font-size:.78rem;color:var(--ink-soft);margin-top:.3rem;line-height:1.6}
+.cal-tk{width:1.15rem;height:1.15rem;flex:0 0 auto;accent-color:var(--mint);cursor:pointer;margin-top:.15rem}
 .cal-ck{font:inherit;font-size:.9rem;width:1.7rem;height:1.7rem;flex:0 0 auto;border:2px solid var(--line-2);border-radius:50%;background:transparent;color:var(--ink-faint);cursor:pointer}
 .cal-add{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
 .cal-add input{font:inherit;font-size:.85rem;padding:.5rem .7rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink)}
@@ -1583,7 +1585,7 @@ function todayISO(){ var d=new Date();
 function calItems(){
   var out=[],del=calDel();
   MILESTONES.forEach(function(m){ if(del[m.id])return;
-    out.push({id:m.id,d:m.d,d2:m.d2||"",ic:m.ic,kind:"fixed",title:bi(m.n,m.nj),plain:decodeEnt(t(m.n,m.nj)),note:bi(m.note||"",m.notej||""),
+    out.push({id:m.id,d:m.d,d2:m.d2||"",ic:m.ic,col:m.col||"",fg:m.fg||"",kind:"fixed",title:bi(m.n,m.nj),plain:decodeEnt(t(m.n,m.nj)),note:bi(m.note||"",m.notej||""),
               done:!!load("caldone",{})[m.id]}); });
   PAY.forEach(function(p,i){ var d=PAYDATE[i]; if(!d||del["pay"+i])return;
     out.push({id:"pay"+i,d:d,ic:"💴",kind:"pay",title:bi(p[2],p[3]),plain:decodeEnt(t(p[2],p[3])),
@@ -2122,9 +2124,15 @@ function calRow(it,today){
         (it.owner&&OWN[it.owner]?' · '+t(OWN[it.owner].l,OWN[it.owner].lj):'')+
         (overdue?' · <b class="cal-x">'+t("missed","期限切れ")+'</b>':'')+'</div>'+
       (it.note?'<div class="cal-n">'+it.note+'</div>':'')+'</div>'+
-    (it.kind==="task"?'':'<button class="cal-ck" title="'+t("mark done","完了にする")+'">'+(it.done?"✓":"○")+'</button>');
+    (it.kind==="task"
+      ? '<input type="checkbox" class="cal-tk"'+(it.done?" checked":"")+' title="'+t("mark done","完了にする")+'">'
+      : '<button class="cal-ck" title="'+t("mark done","完了にする")+'">'+(it.done?"✓":"○")+'</button>');
   var ck=r.querySelector(".cal-ck");
   if(ck) ck.addEventListener("click",function(){ calDone(it.id,!it.done); });
+  /* the same tick as on every other tab — it writes to tdone, so the task reads
+     as done wherever it appears */
+  var tk=r.querySelector(".cal-tk");
+  if(tk) tk.addEventListener("change",function(e){ setTaskDone(it.id.slice(2),e.target.checked); renderAll(); });
   return r;
 }
 function renderCal(){
@@ -2162,8 +2170,9 @@ function renderCal(){
     /* a run of days reads as one banner rather than a mark on every day */
     run.forEach(function(x){
       var startsHere=(x.d===iso), weekStart=(new Date(y,m,dn).getDay()===0);
-      html+='<div class="cal-band'+(x.d===iso?" s":"")+(x.d2===iso?" e":"")+'">'+
-        ((startsHere||weekStart)?'<span>'+x.plain+'</span>':'')+'</div>';
+      var st=x.col?' style="background:'+x.col+';color:'+(x.fg||"#fff")+'"':'';
+      html+='<div class="cal-band'+(x.d===iso?" s":"")+(x.d2===iso?" e":"")+'"'+st+'>'+
+        ((startsHere||weekStart)?'<span>'+x.plain+'</span>':'&nbsp;')+'</div>';
     });
     single.slice(0,2).forEach(function(x){
       html+='<div class="cal-ev'+(x.done?" done":(x.d<today?" over":""))+'">'+x.plain+'</div>'; });
@@ -2230,9 +2239,14 @@ var DAYRUN=[
    Everything with a date on it in one place: task deadlines, the four payments,
    the days that are fixed, and anything either of you adds. */
 var MILESTONES=[
- {id:"m_vietnam",d:"2026-08-21",d2:"2026-08-28",ic:"🇻🇳",n:"Vietnam — the two of you away",nj:"ベトナム旅行",
-  note:"The five decisions filed under 🇻🇳 are meant to be settled on this trip: the catering contract, the decoration contract, the videographer, the look of the day, and the menu with the chef. <b>Makiko's deadline falls eight days after you land</b>, so the decor answer really does have to come out of this week.",
-  notej:"🇻🇳のタスク5件はこの旅行中に決める想定です：ケータリング契約、装飾担当の契約、ビデオグラファー、当日の装飾イメージ、シェフとのメニューすり合わせ。<b>まきこさんの締切は帰国の8日後</b>のため、装飾の回答はこの期間に固めておく必要があります。"},
+ {id:"m_vietnam",d:"2026-08-21",d2:"2026-08-25",ic:"🇻🇳",col:"#DA251D",fg:"#FFCD00",
+  n:"Vietnam — the two of you",nj:"ベトナム — ふたりで",
+  note:"The five decisions filed under 🇻🇳 are meant to be settled on this trip: the catering contract, the decoration contract, the videographer, the look of the day, and the menu with the chef. <b>Makiko's deadline falls eleven days after Hikaru flies home</b>, so the decor answer really does have to come out of this week.",
+  notej:"🇻🇳のタスク5件はこの旅行中に決める想定です：ケータリング契約、装飾担当の契約、ビデオグラファー、当日の装飾イメージ、シェフとのメニューすり合わせ。<b>まきこさんの締切は光の帰国から11日後</b>のため、装飾の回答はこの期間に固めておく必要があります。"},
+ {id:"m_vietnam2",d:"2026-08-26",d2:"2026-08-28",ic:"🇻🇳",col:"#DA251D",fg:"#FFCD00",
+  n:"Vietnam — Jay stays on",nj:"ベトナム — ジェイのみ滞在",
+  note:"Hikaru flies home on the 25th and Jay carries on to the 28th. Anything that needs the two of you in a room together has to be done by the 25th.",
+  notej:"光は25日に帰国し、ジェイは28日まで滞在。ふたりで決める必要があることは25日までに終わらせる想定です。"},
  {id:"m_makiko",d:"2026-09-05",ic:"🎀",n:"Answer Makiko about decor",nj:"まきこさんへ装飾の回答期限",
   note:"Her hard deadline — June books out fast. Blocked until Ayuko answers the table layout question, because the decoration count depends on how the tables are arranged.",
   notej:"まきこさんの締切。6月は予約が埋まりやすいとのこと。テーブル配列で装飾数が変わるため、鮎子さんからの回答待ちです。"},
