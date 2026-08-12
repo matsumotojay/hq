@@ -382,6 +382,26 @@ a{color:var(--sky)}
 .tk-pal{display:flex;gap:.35rem;flex-wrap:wrap;margin:.45rem 0 .1rem}
 .psw{width:1.7rem;height:1.7rem;border-radius:8px;border:2px solid var(--line-2);cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .psw.on{border-color:var(--mint);box-shadow:0 0 0 2px color-mix(in srgb,var(--mint) 45%,transparent)}
+/* ---- seat-level table plan ---- */
+#seatlay{margin-top:.4rem}
+.headtbl{display:flex;flex-direction:column;align-items:center;gap:.35rem;margin:0 auto 1.4rem;padding:.7rem 1rem;border:2px solid var(--pink);border-radius:18px;background:color-mix(in srgb,var(--pink) 7%,var(--card));width:max-content;max-width:100%}
+.headtbl .hseats{display:flex;gap:.6rem}
+.banks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2.6rem 2.2rem}
+@media(max-width:600px){.banks{grid-template-columns:1fr}}
+@media(min-width:1440px){.banks{grid-template-columns:repeat(4,minmax(0,1fr));gap:2.6rem 2.4rem}}
+.bank{border:1.5px dashed color-mix(in srgb,var(--line-2) 60%,transparent);border-radius:16px;padding:.55rem .6rem}
+.bank{display:flex;flex-direction:column;align-items:stretch}
+.tblh{display:flex;align-items:center;gap:.5rem;font-family:var(--disp);font-weight:800;font-size:.8rem;margin:.15rem 0 .3rem}
+.tbl{position:relative;display:grid;grid-template-columns:auto auto;justify-content:space-between;gap:.4rem 1.9rem;padding:.45rem 0}
+.tbl::before{content:"";position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:1.7rem;background:var(--sunk);border:2px solid var(--line-2);border-radius:6px}
+.tbl.jointop::before{border-top-left-radius:0;border-top-right-radius:0;border-top:0;top:-.45rem}
+.tbl.joinbot::before{border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:0;bottom:-.45rem}
+.seatz{min-height:2.15rem;min-width:4.4rem;border:2px dashed var(--line-2);border-radius:999px;display:flex;align-items:center;justify-content:center;padding:.12rem .15rem;position:relative;z-index:1;background:color-mix(in srgb,var(--card) 60%,transparent)}
+.seatz .chip{margin:0;max-width:none;font-size:.72rem;padding:.18rem .5rem;flex:0 0 auto}
+.seatz .chip .flb{width:1.15rem;height:1.15rem;flex:0 0 auto}
+.seatz.filled{border-style:solid;border-color:var(--line)}
+.seatz.overfull{border-color:var(--coral)}
+.endseat{grid-column:1/-1;justify-self:center;min-width:7.5rem}
 /* ---- editable running order ---- */
 .ev{display:flex;align-items:flex-start;gap:.55rem;padding:.55rem 0;border-bottom:1px solid var(--line);position:relative}
 .ev:last-of-type{border-bottom:0}
@@ -545,7 +565,7 @@ a{color:var(--sky)}
   <div class="card pad" style="margin-top:.8rem"><h4 style="margin-bottom:.5rem">❓ <span lang-en>Makiko&rsquo;s four questions — still unanswered</span><span lang-ja>まきこさんからの4つの質問（未回答）</span></h4><div id="makiko"></div></div>
 
   <h3 style="margin:1.5rem 0 .6rem;font-size:1rem">🏨 <span lang-en>Guest support</span><span lang-ja>ゲストへの支援</span></h3>
-  <p style="font-size:.84rem;color:var(--ink-soft);margin:0 0 .7rem"><span lang-en>Japanese guests won&rsquo;t be giving go-shugi, so support replaces it. Jay&rsquo;s family is already inside the Lakehouse booking — this is about friends.</span><span lang-ja>ご祝儀をいただかない代わりの支援です。ジェイの家族はレイクハウス代に含まれるため、対象は友人です。</span></p>
+  <p style="font-size:.84rem;color:var(--ink-soft);margin:0 0 .7rem"><span lang-en>Japanese guests won&rsquo;t be giving go-shugi, so support replaces it. These numbers are <b>live from the Stay tab</b> — move someone into or out of a paid place and they change. Everyone inside the Lakehouse is already covered by the venue booking. Deal: Jay pays his friends&rsquo; nights in full; Hikaru covers half of her friends&rsquo; hotels; her family off-site is covered in full.</span><span lang-ja>ご祝儀をいただかない代わりの支援です。金額は<b>「宿泊」タブと連動</b>し、有料の宿泊先へ人を動かすと変わります。レイクハウス内は会場費でカバー済み。ジェイの友人は全額、光の友人はホテル代の半額、光のご家族（館外）は全額負担です。</span></p>
   <div class="opts" id="o-jaynights"></div>
   <div class="opts" id="o-support" style="margin-top:.7rem"></div>
   <div class="card pad" style="margin-top:1.2rem"><h4><span lang-en>Settled</span><span lang-ja>決定済み</span></h4>
@@ -567,6 +587,7 @@ a{color:var(--sky)}
     <b><span lang-en>One thing to solve:</span><span lang-ja>ひとつだけ課題：</span></b>
     <span lang-en>Ayuko confirmed <b>8 bedrooms sleeping up to 22</b> — Sakura, Hydrangea and Lavender take 4 each, the rest take 2. The public booking site only lists six, so ask her to name the last two.</span>
     <span lang-ja>鮎子さんより<b>寝室8室・最大22名</b>と回答。さくら・ハイドレンジャー・ラベンダーが各4名、残りは2名。予約サイトには6室のみ掲載のため、残り2室の名称を要確認。</span></div></div>
+  <div class="grid g3" id="staytotals" style="margin-bottom:1rem"></div>
   <div class="staysplit">
   <div class="card pad dock" style="margin-bottom:.9rem">
     <div class="dock-h"><span style="font-family:var(--disp);font-weight:800"><span lang-en>Needs a home</span><span lang-ja>未割り当て</span></span><span class="cap" data-cap-for="pool">—</span>
@@ -617,9 +638,9 @@ a{color:var(--sky)}
 </div>
 
 <div class="page" id="p-seat">
-  <div class="ph"><h2>🪑 <span lang-en>Table plan</span><span lang-ja>席次</span></h2><p><span lang-en>Eight long tables, 120×180cm, eight seats each — the number Makiko has on file. She recommends joining four 1800×120 tables into two long rows.</span><span lang-ja>まきこさん認識の8卓。120×180cm、1卓8席。1800×120を4台繋げて2列配置を推奨されています。</span></p></div>
+  <div class="ph"><h2>🪑 <span lang-en>Table plan</span><span lang-ja>席次</span></h2><p><span lang-en>Hikaru&rsquo;s layout: four vertical rows, each two tables joined end-to-end — 3 a side plus one on the end, 7 per table. You two sit at the head table. Drag anyone onto any seat; her suggested seating is already in.</span><span lang-ja>光さんの配置案：縦4列、各列はテーブル2台を縦に連結（片側3名＋端1名の7名掛け）。おふたりは上座に。席へ直接ドラッグできます。光さんの案を配置済みです。</span></p></div>
   <div class="card pad dock" style="margin-bottom:.9rem"><div class="dock-h"><span style="font-family:var(--disp);font-weight:800"><span lang-en>Not seated</span><span lang-ja>未配置</span></span><span class="cap" data-cap-for="spool">—</span><button type="button" class="dock-t" data-dock="p-seat"><span lang-en>hide</span><span lang-ja>隠す</span></button></div><div class="zone" data-zone="spool" id="z-spool"></div></div>
-  <div class="rooms" id="tables"></div>
+  <div id="seatlay"></div>
 </div>
 
 <div class="page" id="p-day">
@@ -910,9 +931,18 @@ var PEOPLE=[
  {id:"shizuku",n:"Shizuku",nj:"雫",c:1,home:"onsen",cir:"Hiroaki&rsquo;s family",grp:"hF",st:"go",arrive:"car",depart:"car",car:1,kid:1},
  {id:"gen",n:"Gen",nj:"元",c:1,home:"onsen",cir:"Hiroaki&rsquo;s family",grp:"hF",st:"go",arrive:"car",depart:"car",car:1,kid:1},
  // Hikaru's friends
- {id:"mob",n:"Mob group",nj:"モブ",c:5,home:"sigra",grp:"hf",st:"go",arrive:"car",depart:"car",car:1,note:"Coming to Hokkaido with families; only they attend the party"},
- {id:"zem",n:"Zemi group",nj:"ゼミ",c:4,home:"sigra",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
- {id:"sep",n:"Sep group",nj:"セップ",c:3,home:"sigra",grp:"hf",st:"go",arrive:"car",depart:"car",car:1}
+ {id:"f_yutaro",n:"Yutaro",nj:"たろ",c:1,home:"sigra",cir:"Club",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_kino",n:"Kino",nj:"きの",c:1,home:"sigra",cir:"Club",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_kaoru",n:"Kaoru",nj:"かおる",c:1,home:"sigra",cir:"Club",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_wataru",n:"Wataru",nj:"わたる",c:1,home:"sigra",cir:"Club",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_sarina",n:"Sarina",nj:"さりな",c:1,home:"sigra",cir:"Club",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_ryota",n:"Ryota",nj:"りょうた",c:1,home:"sigra",cir:"Zemi",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_sogo",n:"Sogo",nj:"そごう",c:1,home:"sigra",cir:"Zemi",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_mika",n:"Mika",nj:"みか",c:1,home:"sigra",cir:"Zemi",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_shiori",n:"Shiori",nj:"しおり",c:1,home:"sigra",cir:"Zemi",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_haruka",n:"Haruka (fr)",nj:"はるか(友)",c:1,home:"sigra",cir:"Company",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_rinka",n:"Rinka",nj:"りんか",c:1,home:"sigra",cir:"Company",grp:"hf",st:"go",arrive:"car",depart:"car",car:1},
+ {id:"f_namiki",n:"Namiki",nj:"なみき",c:1,home:"sigra",cir:"Company",grp:"hf",st:"go",arrive:"car",depart:"car",car:1}
 ];
 var STATUS={go:["Going","参加","--mint"],maybe:["Maybe","未定","--amber"],no:["Not coming","不参加","--coral"]};
 var TRAVEL={flight:["Flight to CTS","新千歳へ空路"],train:["Train / shinkansen","電車・新幹線"],car:["Own car","自家用車"],local:["Already nearby","近隣在住"]};
@@ -1125,10 +1155,12 @@ var SECTIONS=[
   {id:"g3",n:"Dress — rental",nj:"ドレス（レンタル）",d:"¥30–100,000. Hikaru is paying for this herself but wants your help choosing — she has ~10 candidates. bonita rents at ¥19,900",dj:"30,000〜100,000円。光が自費で用意しますが、一緒に選んでほしいとのこと。候補は約10着。bonitaは19,900円",amt:50000,est:true},
   {id:"g4",n:"Tuxedo — rental",nj:"タキシード（レンタル）",d:"Rentable in Japan. bonita has the one from the Hokkaido pre-shoot at ¥19,900 — limited range, worth looking elsewhere too",dj:"日本でレンタル可能。北海道の前撮りで着たものをbonitaが保有、19,900円。種類が少ないため他も検討を",amt:19900,est:true}]},
  {id:"H",n:"Guest support",nj:"ゲスト支援",noContingency:true,rows:[
-  {id:"h1",n:"Hikaru&rsquo;s family — hotels, in full",nj:"光の家族 — 宿泊費全額",d:"Agreed: family accommodation covered entirely, since Japanese guests won&rsquo;t give go-shugi",dj:"合意済み：ご祝儀をいただかない代わりに家族の宿泊費を全額負担",amt:123000,est:true},
-  {id:"h2",n:"Hikaru&rsquo;s family — travel help",nj:"光の家族 — 交通費補助",d:"Set on the Extras tab. About half",dj:"「その他」タブで切替。約半額",toggle:"htravel"},
-  {id:"h3",n:"Jay&rsquo;s friends — Hokkaido nights",nj:"ジェイの友人 — 宿泊費",d:"Set on the Extras tab. Flights are on them; nights are on you. Jay&rsquo;s family is already inside the Lakehouse cost",dj:"「その他」タブで切替。航空券は各自、宿泊はジェイ負担。ジェイの家族はレイクハウス代に含まれます",choice:"jaynights"},
-  {id:"h4",n:"Overflow: Koko/Brandon + Joey/Bryan",nj:"あふれ2組の宿泊",d:"Hotel ~¥30,000 · camping ~¥24,000 · glamping ~¥105,600",dj:"ホテル約30,000円・キャンプ約24,000円・グランピング約105,600円",amt:30000,est:true}]}];
+  {id:"h1",n:"Hikaru&rsquo;s family — hotels, in full",nj:"光の家族 — 宿泊費全額",d:"Live from the Stay tab: only family sleeping in PAID places counts — everyone inside the Lakehouse is already in the venue cost. Both nights, in full.",dj:"「宿泊」タブと連動：有料の宿泊先にいる家族のみ計上。レイクハウス内は会場費に含まれます。2泊・全額。",live:"hfam"},
+  {id:"h2",n:"Hikaru&rsquo;s side — travel, half",nj:"光側 — 交通費の半額",d:"Live: everyone on her side not arriving by car × the return fare on Extras (≈¥25,000 Tokyo⇄New Chitose) ÷ 2. Toggle on Extras.",dj:"連動：車以外で来る光側ゲスト × 往復運賃（「その他」タブ、東京⇄新千歳 約25,000円）÷ 2。切替は「その他」タブ。",toggle:"htravel"},
+  {id:"h3",n:"Jay&rsquo;s friends — Hokkaido nights",nj:"ジェイの友人 — 宿泊費",d:"Live from the Stay tab × your 1-or-2-nights choice on Extras. Flights are on them. Friends inside the Lakehouse cost nothing extra.",dj:"「宿泊」タブ×「その他」タブの泊数選択と連動。航空券は各自。レイクハウス内の友人は追加費用なし。",live:"jfr"},
+  {id:"h5",n:"Hikaru&rsquo;s friends — half their hotels",nj:"光の友人 — 宿泊費の半額",d:"Live from the Stay tab: their total ÷ 2, × her 1-or-2-nights choice on Extras.",dj:"「宿泊」タブと連動：合計 ÷ 2 ×「その他」タブの泊数選択。",live:"hfr"}]}];
+/* the old "Overflow: Koko/Brandon + Joey/Bryan" row died when Ayuko confirmed
+   rooms 7 & 8 — all four sleep inside the Lakehouse now, at no extra cost */
 
 /* ---------- tasks: imported from the "Hikaru Winter Date" sheet, merged with the old
    Top-priorities lists. Every task carries an owner (j/h/b) and a proposed deadline. ---------- */
@@ -1732,6 +1764,55 @@ function toggleMusic(id){var m=getMusic(),i=m.indexOf(id);if(i>-1)m.splice(i,1);
 function musicTotal(){var m=getMusic(),s=0;MUSIC.forEach(function(x){if(m.indexOf(x.id)>-1)s+=x.amt;});return s;}
 function chefById(id){for(var i=0;i<CHEFS.length;i++)if(CHEFS[i].id===id)return CHEFS[i];return null;}
 function photogById(id){for(var i=0;i<PHOTOG.length;i++)if(PHOTOG[i].id===id)return PHOTOG[i];return null;}
+/* ---------- guest-support: live cost of who sleeps where ----------
+   Lakehouse rooms cost nothing extra (inside the venue booking).
+   m:"pp"=per person/night · "flat"=whole place/night · "villa"=per unit of u heads/night · "grp"=base for 2 + extra/head */
+var STAYPRICE={
+ glamp:{m:"pp",r:13200}, campspot:{m:"grp",r:6000,x:3000}, campcar:{m:"grp",r:6000,x:3000},
+ sigra:{m:"villa",r:30000,u:5}, cocoa:{m:"pp",r:7500}, retreat:{m:"flat",r:86000},
+ onsen:{m:"pp",r:12500}, sunpalace:{m:"pp",r:8375}, takarada:{m:"villa",r:20000,u:5},
+ lobs:{m:"pp",r:22000}, hana:{m:"flat",r:100000}, makiba:{m:"villa",r:33000,u:5},
+ lakeview:{m:"flat",r:31000}};
+function nightlyCost(pid,heads){
+  var p=STAYPRICE[pid]; if(!p||!heads) return 0;
+  if(p.m==="pp") return p.r*heads;
+  if(p.m==="flat") return p.r;
+  if(p.m==="villa") return Math.ceil(heads/p.u)*p.r;
+  if(p.m==="grp") return p.r+Math.max(0,heads-2)*p.x;
+  return 0;
+}
+/* heads per paid place for one side: "hF" family, "jf" his friends, "hf" her friends */
+function supportHeads(grp){
+  var out={};
+  PEOPLE.forEach(function(p){
+    if(p.grp!==grp||pVal(p,"st")==="no") return;
+    var pl=stayPlaceOf(p);
+    if(!STAYPRICE[pl]) return;                       /* Lakehouse rooms & unplaced = free */
+    out[pl]=(out[pl]||0)+(parseInt(pVal(p,"c"),10)||0);});
+  return out;
+}
+function supportNightly(grp){
+  var h=supportHeads(grp),tot=0,parts=[];
+  for(var pl in h){ var c=nightlyCost(pl,h[pl]); tot+=c;
+    var nm=pl; HOUSES.concat(GLAMP).forEach(function(x){if(x.id===pl)nm=t(x.n,x.nj);});
+    parts.push({n:nm,heads:h[pl],cost:c}); }
+  return {total:tot,parts:parts};
+}
+function suppNights(key,def){ return load(key,def); }
+function jayFriendsSupport(){ return supportNightly("jf").total*(getChoice("jaynights")==="one"?1:2); }
+function hikFriendsSupport(){ var c=load("hikanights","two");
+  if(c==="none") return 0;
+  return Math.round(supportNightly("hf").total*(c==="one"?1:2)/2); }
+function hikFamilySupport(){ return supportNightly("hF").total*2; }   /* family stays both nights, in full */
+function flyRate(){ return load("flyrate",25000); }
+function travelHeads(){
+  var n=0;
+  PEOPLE.forEach(function(p){
+    if((p.grp==="hF"||p.grp==="hf")&&pVal(p,"st")!=="no"&&pVal(p,"arrive")!=="car")
+      n+=(parseInt(pVal(p,"c"),10)||0);});
+  return n;
+}
+function travelHalf(){ return Math.round(travelHeads()*flyRate()/2); }
 var VEH={
  coach:{n:"Coach",nj:"大型バス",cap:22,def:120000,icon:"bus",quoted:true},
  van:{n:"Van",nj:"バン",cap:8,def:30000,icon:"bus"},
@@ -1896,8 +1977,12 @@ function sectionOf(r){for(var i=0;i<SECTIONS.length;i++)if(SECTIONS[i].id===r.se
 function rowAmount(r){
   var ov=load("edit."+r.id,null);
   if(ov!=null)return ov;
+  if(r.live==="hfam")return hikFamilySupport();
+  if(r.live==="jfr")return jayFriendsSupport();
+  if(r.live==="hfr")return hikFriendsSupport();
   if(r.transport)return transportCalc().total;
   if(r.music)return musicTotal();
+  if(r.toggle==="htravel")return getTog("htravel")?travelHalf():0;
   if(r.toggle)return getTog(r.toggle)?TOGGLES[r.toggle].amt:0;
   if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));return c&&c.budget!=null?c.budget:0;}
   if(r.choice==="photo"){var pg=photogById(getChoice("photo"));return pg?pg.amt:0;}
@@ -2025,8 +2110,50 @@ function renderVideo(){
 }
 function renderSupport(){
   var w=document.getElementById("o-support");w.innerHTML="";
-  var T=TOGGLES.htravel;
-  w.appendChild(optTile({n:T.n,nj:T.nj,amt:T.amt,art:T.art,d:T.d,dj:T.dj},getTog("htravel"),function(){setTog("htravel",!getTog("htravel"));}));
+  var on=getTog("htravel"),n=travelHeads(),total=travelHalf();
+  var c=el("div","card pad"+(on?"":" zoff"));
+  c.innerHTML='<div style="display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap"><h4>'+bi("Her side&rsquo;s travel — half","光側の交通費 — 半額")+'</h4>'+
+    '<span class="lock">'+t("live from Guests","ゲストタブ連動")+'</span>'+
+    '<b style="margin-left:auto;font-family:var(--disp)" class="m" data-yen="'+(on?total:0)+'"></b></div>'+
+    '<div style="font-size:.76rem;color:var(--ink-faint);margin:.3rem 0 .55rem;line-height:1.6">'+
+      bi(n+" people on her side not arriving by car × ","車以外で来る光側 "+n+"名 × ")+
+      '<input type="text" inputmode="numeric" class="fr" value="'+money(flyRate())+'" style="width:5.5rem;font:inherit;font-size:.76rem;padding:.1rem .35rem;border:2px solid var(--line-2);border-radius:8px;background:var(--card);color:var(--ink);text-align:right">'+
+      t(" return each ÷ 2 = ","（往復）÷ 2 ＝ ")+'<b>'+money(total)+'</b><br>'+
+      bi("Tokyo⇄New Chitose runs ¥15–30,000 booked ahead. Tomomi can&rsquo;t fly — her shinkansen fare is higher, so nudge the rate up if you want to cover that properly.","東京⇄新千歳は早期予約で15,000〜30,000円。友美さんは飛行機不可（新幹線は割高）のため、含めるなら単価を上げてください。")+'</div>'+
+    '<div class="nfil" style="margin:0"><button class="nf'+(on?" on":"")+'" data-tg="1">'+t("Helping with travel","交通費を補助する")+'</button>'+
+    '<button class="nf'+(on?"":" on")+'" data-tg="0">'+t("Not helping","補助しない")+'</button></div>';
+  var fr=c.querySelector(".fr");
+  fr.addEventListener("change",function(){var v=parseYen(fr.value);
+    if(root.getAttribute("data-cur")==="usd")v=Math.round(v*RATE);
+    if(v>0){save("flyrate",v);renderAll();}});
+  c.querySelectorAll("[data-tg]").forEach(function(b){
+    b.addEventListener("click",function(){setTog("htravel",b.dataset.tg==="1");});});
+  w.appendChild(c);
+}
+function nightsCard(title,titlej,grp,storeKey,cur,setFn,half,allowNone){
+  var s=supportNightly(grp);
+  var nights=cur==="one"?1:2;
+  var total=cur==="none"?0:(half?Math.round(s.total*nights/2):s.total*nights);
+  var c=el("div","card pad");
+  var brk=s.parts.length
+    ? s.parts.map(function(p){return esc(String(p.n).replace(/<[^>]*>/g,""))+" ("+p.heads+") "+money(p.cost);}).join(" + ")+
+      " = "+money(s.total)+t(" / night","／泊")+(half?" ÷ 2":"")+" × "+nights+t(nights>1?" nights":" night","泊")
+    : t("Nobody in a paid place right now — drag people on the Stay tab and this fills in.","現在有料の宿泊先に誰もいません。「宿泊」タブで配置すると反映されます。");
+  c.innerHTML='<div style="display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap"><h4>'+bi(title,titlej)+'</h4>'+
+    '<span class="lock">'+t("live from Stay","宿泊タブ連動")+'</span>'+
+    '<b style="margin-left:auto;font-family:var(--disp)" class="m" data-yen="'+total+'"></b></div>'+
+    '<div style="font-size:.76rem;color:var(--ink-faint);margin:.3rem 0 .55rem;line-height:1.5">'+(cur==="none"?t("Not helping with her friends&rsquo; stay — their nights are on them.","友人の宿泊は補助しない設定です。"):brk)+'</div>'+
+    '<div class="nfil" style="margin:0">'+(allowNone?'<button class="nf'+(cur==="none"?" on":"")+'" data-nn="none">'+t("Not helping","補助しない")+'</button>':'')+
+    '<button class="nf'+(cur==="one"?" on":"")+'" data-nn="one">'+t("1 night","1泊")+'</button>'+
+    '<button class="nf'+(cur==="two"?" on":"")+'" data-nn="two">'+t("2 nights","2泊")+'</button></div>';
+  c.querySelectorAll("[data-nn]").forEach(function(b){
+    b.addEventListener("click",function(){setFn(b.dataset.nn);});});
+  return c;
+}
+function renderNights(){
+  var w=document.getElementById("o-jaynights"); if(!w) return; w.innerHTML="";
+  w.appendChild(nightsCard("Jay&rsquo;s friends — in full","ジェイの友人 — 全額","jf","jaynights",getChoice("jaynights"),function(v){setChoice("jaynights",v);},false));
+  w.appendChild(nightsCard("Hikaru&rsquo;s friends — half","光の友人 — 半額","hf","hikanights",load("hikanights","two"),function(v){save("hikanights",v);renderAll();},true,true));
 }
 
 function renderCulture(){
@@ -2174,7 +2301,35 @@ function renderMusic(){
   var m=getMusic();
   MUSIC.forEach(function(o){w.appendChild(optTile(o,m.indexOf(o.id)>-1,function(){toggleMusic(o.id);}));});
 }
+function rowBase(r){
+  if(r.live==="hfam")return hikFamilySupport();
+  if(r.live==="jfr")return jayFriendsSupport();
+  if(r.live==="hfr")return hikFriendsSupport();
+  if(r.transport)return transportCalc().total;
+  if(r.music)return musicTotal();
+  if(r.toggle==="htravel")return getTog("htravel")?travelHalf():0;
+  if(r.toggle)return getTog(r.toggle)?TOGGLES[r.toggle].amt:0;
+  if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));return c&&c.budget!=null?c.budget:0;}
+  if(r.choice==="photo"){var pg=photogById(getChoice("photo"));return pg?pg.amt:0;}
+  if(r.choice){var g=CHOICES[r.choice],sel=getChoice(r.choice);
+    for(var i=0;i<g.opts.length;i++)if(g.opts[i].id===sel)return g.opts[i].amt;return 0;}
+  if(r.id==="b2"){var cc=chefById(getChoice("caterer"));if(cc&&cc.drinksIncl)return 0;}
+  return r.amt;
+}
+/* phantom "edited" flags: the old blur handler saved overrides even when nothing
+   changed — drop any override that matches what the row computes anyway */
+var EDITSCRUBBED=false;
+function scrubEdits(){
+  if(EDITSCRUBBED)return; EDITSCRUBBED=true;
+  SECTIONS.forEach(function(s){ s.rows.forEach(function(r){
+    var ov=load("edit."+r.id,null);
+    if(ov!=null&&ov===rowBase(r)){
+      try{localStorage.removeItem("lt4.edit."+r.id);}catch(e){}
+      if(window.__fbWrite)window.__fbWrite("edit."+r.id,null);
+    }});});
+}
 function renderBudget(){
+  scrubEdits();
   var b=document.getElementById("bt");b.innerHTML="";
   var T=totals();
   SECTIONS.forEach(function(s){
@@ -2182,7 +2337,7 @@ function renderBudget(){
     s.rows.forEach(function(r){
       var v=rowAmount(r),edited=load("edit."+r.id,null)!=null;
       var row=el("tr");
-      var flag=(r.choice||r.toggle||r.music||r.transport)?'<span class="lock">'+t("auto","連動")+'</span>':(r.est?'<span class="est">'+t("est","概算")+'</span>':'');
+      var flag=(r.choice||r.toggle||r.music||r.transport||r.live)?'<span class="lock">'+t("auto","連動")+'</span>':(r.est?'<span class="est">'+t("est","概算")+'</span>':'');
       row.innerHTML='<td><b>'+bi(r.n,r.nj)+'</b> '+flag+(edited?' <span class="est" style="color:var(--mint);border-color:var(--mint)">'+t("edited","編集済")+'</span>':'')+'</td>'+
         '<td style="color:var(--ink-faint);font-size:.8rem">'+bi(r.d,r.dj)+'</td>'+
         '<td class="amt"><input type="text" inputmode="numeric" value="'+money(v)+'" data-row="'+r.id+'"></td><td></td>';
@@ -2206,9 +2361,12 @@ function renderBudget(){
   var cn=el("tr");cn.innerHTML='<td><b>'+bi("Contingency, 10%","予備費 10%")+'</b></td><td style="color:var(--ink-faint);font-size:.8rem">'+bi("Everything except guest hotels","ゲスト宿泊費を除く")+'</td><td class="n">'+money(T.cont)+'</td><td></td>';b.appendChild(cn);
   var tt=el("tr","tot");tt.innerHTML='<td colspan="2">'+bi("Total","合計")+'</td><td class="n">'+money(T.grand)+'</td><td></td>';b.appendChild(tt);
   b.querySelectorAll("input[data-row]").forEach(function(inp){
-    inp.addEventListener("focus",function(){inp.select();});
-    inp.addEventListener("blur",function(){var raw=parseYen(inp.value);
+    inp.addEventListener("focus",function(){inp.dataset.orig=inp.value;inp.select();});
+    inp.addEventListener("blur",function(){
+      if(inp.value===inp.dataset.orig){renderBudget();return;}   /* untouched — never marks it edited */
+      var raw=parseYen(inp.value);
       if(root.getAttribute("data-cur")==="usd")raw=Math.round(raw*RATE);
+      if(raw===rowAmountById(inp.dataset.row)){renderBudget();return;}  /* same number retyped */
       save("edit."+inp.dataset.row,raw);renderAll();});
     inp.addEventListener("keydown",function(e){if(e.key==="Enter")inp.blur();});});
   b.querySelectorAll("[data-del]").forEach(function(btn){
@@ -2397,11 +2555,29 @@ function placeCard(o,zone){
   var body=(o.cap?'<div style="font-size:.78rem;color:var(--ink-soft);margin-top:.4rem;'+(o.imgs?'padding:0 .9rem':'')+'">'+bi(o.cap,o.capj)+'</div>':'')+
     (o.detail?'<div style="font-size:.78rem;color:var(--ink-soft);margin-top:.4rem;'+(o.imgs?'padding:0 .9rem':'')+'">'+bi(o.detail,o.detailj)+'</div>':'')+
     (o.link?'<div style="font-size:.75rem;margin-top:.35rem;'+(o.imgs?'padding:0 .9rem':'')+'"><a href="'+o.link+'" target="_blank" rel="noopener">'+t("Website &amp; photos ↗","公式・写真を見る ↗")+'</a></div>':'');
-  c.innerHTML=(o.imgs?gallery(o):'')+head+body;
+  c.innerHTML=(o.imgs?gallery(o):'')+head+body+
+    (STAYPRICE[o.id]?'<div class="ppn" data-ppn="'+o.id+'" style="font-size:.75rem;color:var(--ink-faint);margin:.35rem 0 0'+(o.imgs?';padding:0 .9rem':'')+'"></div>':'');
   var z=el("div","zone");z.dataset.zone=o.id;z.style.margin=o.imgs?".55rem .9rem .9rem":".55rem 0 0";c.appendChild(z);
   document.getElementById(zone).appendChild(c);
 }
+function renderStayTotals(){
+  var w=document.getElementById("staytotals"); if(!w) return;
+  var jf=jayFriendsSupport(), hf=hikFriendsSupport(), fam=hikFamilySupport();
+  var jn=getChoice("jaynights")==="one"?1:2, hn=load("hikanights","two")==="one"?1:2;
+  w.innerHTML='<div class="card stat"><div class="l">'+bi("Jay&rsquo;s friends — you pay","ジェイの友人 — 負担額")+'</div>'+
+    '<div class="v" style="color:var(--sky)"><span class="m" data-yen="'+jf+'"></span></div>'+
+    '<div class="d">'+bi("in full × "+jn+(jn>1?" nights":" night"),"全額 × "+jn+"泊")+'</div></div>'+
+  '<div class="card stat"><div class="l">'+bi("Hikaru&rsquo;s friends — she pays","光の友人 — 負担額")+'</div>'+
+    '<div class="v" style="color:var(--pink)"><span class="m" data-yen="'+hf+'"></span></div>'+
+    '<div class="d">'+bi("half × "+hn+(hn>1?" nights":" night"),"半額 × "+hn+"泊")+'</div></div>'+
+  (function(){var ps=supportNightly("hF").parts;
+    var who=ps.length?ps.map(function(p){return String(p.n).replace(/<[^>]*>/g,"")+" ("+p.heads+")";}).join(" + "):t("everyone is inside the Lakehouse","全員レイクハウス内");
+    return '<div class="card stat"><div class="l">'+bi("Her family off-site","光の家族（館外）")+'</div>'+
+    '<div class="v" style="color:var(--amber)"><span class="m" data-yen="'+fam+'"></span></div>'+
+    '<div class="d">'+esc(who)+(ps.length?' · '+t("in full × 2 nights","全額 × 2泊"):'')+'</div></div>';})();
+}
 function renderStay(){
+  renderStayTotals();
   document.getElementById("z-pool").innerHTML="";
   document.getElementById("glamp").innerHTML="";
   document.getElementById("houses").innerHTML="";
@@ -2413,7 +2589,7 @@ function renderStay(){
     var z=document.querySelector('#p-stay [data-zone="'+(place[p.id]||p.home||"pool")+'"]')||document.getElementById("z-pool");
     var ch=el("span","chip");ch.dataset.pid=p.id;ch.innerHTML=nameOf(p)+'<span class="n">'+(parseInt(pVal(p,"c"),10)||0)+'</span>';z.appendChild(ch);});
   caps("#p-stay");
-  armZone("#p-stay",function(){var o={};document.querySelectorAll("#p-stay .chip").forEach(function(c){o[c.dataset.pid]=c.parentElement.dataset.zone;});save("stay",o);caps("#p-stay");});
+  armZone("#p-stay",function(){var o={};document.querySelectorAll("#p-stay .chip").forEach(function(c){o[c.dataset.pid]=c.parentElement.dataset.zone;});save("stay",o);caps("#p-stay");renderBudget();renderNights();renderStayTotals();var yy=document.getElementById("staytotals");if(yy)yy.querySelectorAll(".m").forEach(function(e){e.textContent=money(parseFloat(e.dataset.yen));});});
   document.querySelectorAll("[data-gn]").forEach(function(b){b.addEventListener("click",function(e){e.stopPropagation();galStep(b.dataset.gn,1);});});
   document.querySelectorAll("[data-gp]").forEach(function(b){b.addEventListener("click",function(e){e.stopPropagation();galStep(b.dataset.gp,-1);});});
   renderMap();
@@ -2425,7 +2601,14 @@ function caps(scope){
     var cap=null,xb=0;ROOMS.forEach(function(r){if(r.id===z.dataset.zone){cap=r.cap;xb=r.xbeds||0;}});
     HOUSES.forEach(function(h){if(h.id===z.dataset.zone&&h.max)cap=h.max;});
     if(cap){var eff=cap+xb;lab.textContent=n+" / "+eff;lab.className="cap"+(n>eff?" over":(n>0?" ok":""));}
-    else{lab.textContent=n+" "+t("people","名");lab.className="cap"+(n>0?" ok":"");}});
+    else{lab.textContent=n+" "+t("people","名");lab.className="cap"+(n>0?" ok":"");}
+    var pel=document.querySelector('[data-ppn="'+z.dataset.zone+'"]');
+    if(pel){
+      if(n>0){var nc=nightlyCost(z.dataset.zone,n);
+        pel.innerHTML='<b style="color:var(--mint)">'+money(Math.round(nc/n))+'</b>'+t(" / person / night","／人／泊")+
+          ' · '+money(nc)+t(" / night for the "+n+" placed here","／泊（現在"+n+"名）");}
+      else pel.textContent=t("Per-person price appears when someone is placed here","人を配置すると1人あたり料金が表示されます");
+    }});
 }
 /* Real geography: equirectangular projection of the Lake Toya area.
    Bounds: lon 140.75–140.93, lat 42.535–42.665 → viewBox 100×98 (≈15 km × 14.4 km). */
@@ -2517,15 +2700,54 @@ function renderMap(){
   w.innerHTML='<img src="'+src+'" alt="'+t("Map of hotels around Lake Toya with drive times to the venue","洞爺湖周辺のホテル地図・会場までの所要時間")+'" style="width:100%;height:auto;display:block;border-radius:14px">';
 }
 function renderSeat(){
+  var wrap=document.getElementById("seatlay"); if(!wrap) return;
   document.getElementById("z-spool").innerHTML="";
-  var tw=document.getElementById("tables");tw.innerHTML="";
+  /* Hikaru's suggested seating from her sheet — bank 1 her friends, bank 2 family.
+     パパ/ママ/おとん were ambiguous on the sheet and are left in the tray. */
+  var SEATDEF={
+    /* bank 1–2 + t5 top: Hikaru's sheet (パパ/ママ = her parents; おとん = Masaharu, beside Tomomi) */
+    f_sogo:"t1a1",f_shiori:"t1b1",f_ryota:"t1a2",f_mika:"t1b2",f_kino:"t1a3",f_kaoru:"t1b3",
+    f_wataru:"t2a1",f_yutaro:"t2a2",f_sarina:"t2b2",f_rinka:"t2a3",f_haruka:"t2b3",f_namiki:"t2e",
+    akitomo:"t3a1",yuuko:"t3b1",nanoha:"t3a2",aoi:"t3b2",masaharu:"t3a3",tomomi:"t3b3",
+    hiroaki:"t4a1",shizuku:"t4a2",sayuri:"t4b2",joichiro:"t4a3",gen:"t4b3",
+    asahi:"t5a1",yuusuke:"t5b1",mami:"t5a2",haruka:"t5b2",jmom:"t5a3",jdad:"t5b3",
+    /* Jay's picks, carried over from his old tables (8-seaters became 7s) */
+    aj:"t6a1",kathy:"t6b1",shawn:"t6a2",yetep:"t6b2",yetepw:"t6a3",ivy:"t6b3",nolan:"t6e",
+    kev:"t7a1",audrey:"t7b1",renee:"t7a2",salonga:"t7b2",joji:"t7a3",erika:"t7b3",eddie:"t7e",
+    unc1:"t8a1",aunt:"t8b1",luca:"t8a2",koko:"t8b2",bran:"t8a3",joey:"t8b3",bryan:"t8e",
+    jay:"h1",hik:"h2"};
+  /* one-time migration: seat data written by the old 8-table layout (tbl1..tbl8) is
+     superseded by the merged plan above — his groupings live on in t6–t8 */
+  var placeChk=load("seat",{}),needsMig=false;
+  for(var pk in placeChk){ if(/^tbl\d/.test(placeChk[pk])){needsMig=true;break;} }
+  if(needsMig){
+    var fresh={};
+    PEOPLE.forEach(function(p){ if(SEATDEF[p.id]) fresh[p.id]=SEATDEF[p.id]; });
+    save("seat",fresh);
+  }
+  function seatHTML(n,joined){
+    var h='<div class="tblh"><span>'+t("Table ","テーブル ")+n+'</span><span class="cap" data-tcap="'+n+'">0 / 7</span></div>';
+    h+='<div class="tbl '+(joined==="top"?"jointop":"joinbot")+'">';
+    if(joined==="top"){} else h+='<div class="seatz zone endseat" data-zone="t'+n+'e"></div>';
+    for(var r2=1;r2<=3;r2++)
+      h+='<div class="seatz zone" data-zone="t'+n+'a'+r2+'"></div><div class="seatz zone" data-zone="t'+n+'b'+r2+'"></div>';
+    if(joined==="top") h+='<div class="seatz zone endseat" data-zone="t'+n+'e"></div>';
+    h+='</div>';
+    return h;
+  }
+  var h='<div class="headtbl"><div style="font-family:var(--disp);font-weight:800;font-size:.85rem">💐 '+bi("Jay &amp; Hikaru","ジェイと光")+'</div>'+
+    '<div class="hseats"><div class="seatz zone" data-zone="h1" style="min-width:6.5rem"></div><div class="seatz zone" data-zone="h2" style="min-width:6.5rem"></div></div></div>';
+  h+='<div class="banks">';
+  for(var b2=0;b2<4;b2++){
+    var up=b2*2+1, dn=up+1;
+    h+='<div class="bank">'+seatHTML(up,"bot")+seatHTML(dn,"top")+'</div>';
+  }
+  h+='</div>';
+  wrap.innerHTML=h;
   var place=load("seat",{});
-  for(var i=1;i<=8;i++){
-    var c=el("div","card pad");
-    c.innerHTML='<div style="display:flex;align-items:center;gap:.5rem"><b style="font-family:var(--disp)">'+t("Table ","テーブル ")+i+'</b><span class="cap" data-cap-for="tbl'+i+'">0 / 8</span></div><div style="display:flex;justify-content:center" data-art-for="tbl'+i+'"></div>';
-    var z=el("div","zone");z.dataset.zone="tbl"+i;c.appendChild(z);tw.appendChild(c);}
   PEOPLE.filter(function(p){return pVal(p,"st")!=="no";}).forEach(function(p){
-    var z=document.querySelector('#p-seat [data-zone="'+(place[p.id]||"spool")+'"]')||document.getElementById("z-spool");
+    var zid=place[p.id]||SEATDEF[p.id]||"spool";
+    var z=document.querySelector('#p-seat [data-zone="'+zid+'"]')||document.getElementById("z-spool");
     var side=(p.id==="hik")?"jp":(USG[p.grp]?"us":"jp"), cnt=parseInt(pVal(p,"c"),10)||0;
     var ch=el("span","chip");ch.dataset.pid=p.id;ch.dataset.side=side;
     ch.innerHTML=nameOf(p)+(cnt>1?'<span class="n">'+cnt+'</span>':'<span class="flb '+side+'" title="'+(side==="us"?"US":"Japan")+'"></span>');
@@ -2534,13 +2756,20 @@ function renderSeat(){
   armZone("#p-seat",function(){var o={};document.querySelectorAll("#p-seat .chip").forEach(function(c){o[c.dataset.pid]=c.parentElement.dataset.zone;});save("seat",o);seatCaps();});
 }
 function seatCaps(){
-  document.querySelectorAll("#p-seat .zone").forEach(function(z){
-    var n=0;z.querySelectorAll(".chip").forEach(function(c){for(var i=0;i<PEOPLE.length;i++)if(PEOPLE[i].id===c.dataset.pid)n+=PEOPLE[i].c;});
-    var lab=document.querySelector('[data-cap-for="'+z.dataset.zone+'"]');
-    var art=document.querySelector('[data-art-for="'+z.dataset.zone+'"]');
-    if(lab&&z.dataset.zone!=="spool"){lab.textContent=n+" / 8";lab.className="cap"+(n>8?" over":(n>0?" ok":""));}
-    else if(lab){lab.textContent=n+" "+t("people","名");}
-    if(art)art.innerHTML=tableArt(n);});
+  document.querySelectorAll("#p-seat .seatz").forEach(function(z){
+    var n=z.querySelectorAll(".chip").length;
+    z.classList.toggle("filled",n>0);
+    z.classList.toggle("overfull",n>1);});
+  for(var n2=1;n2<=8;n2++){
+    var c2=0;
+    document.querySelectorAll('#p-seat [data-zone^="t'+n2+'"]').forEach(function(z){
+      z.querySelectorAll(".chip").forEach(function(ch){var p=personById(ch.dataset.pid);c2+=p?(parseInt(pVal(p,"c"),10)||0):0;});});
+    var lab=document.querySelector('[data-tcap="'+n2+'"]');
+    if(lab){lab.textContent=c2+" / 7";lab.className="cap"+(c2>7?" over":(c2>0?" ok":""));}
+  }
+  var sp=0;document.querySelectorAll('#p-seat [data-zone="spool"] .chip').forEach(function(ch){var p=personById(ch.dataset.pid);sp+=p?(parseInt(pVal(p,"c"),10)||0):0;});
+  var sl=document.querySelector('[data-cap-for="spool"]');
+  if(sl){sl.textContent=sp+" "+t("people","名");sl.className="cap"+(sp>0?" ok":"");}
 }
 var J2H=[
  {q:"How do we make it more American?",qj:"どうすればもっとアメリカっぽくなる？",
@@ -3439,7 +3668,7 @@ function renderAll(){
   fillSecPicker();renderRoster();
   renderChefs();renderOpts("o-drinks","drinks");renderDrinkCount();renderFood2();
   renderPhotog();renderVideo();renderMusic();
-  renderOpts("o-decor","decor");renderOpts("o-jaynights","jaynights");renderSupport();renderUs();renderNotes();
+  renderOpts("o-decor","decor");renderNights();renderSupport();renderUs();renderNotes();
   renderBudget();renderUpdates();
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
   renderDecor2();renderBeauty();
