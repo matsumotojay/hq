@@ -460,7 +460,7 @@ a{color:var(--sky)}
 <div class="page on" id="p-home">
   <div class="hero">
     <h1><span lang-en>Jay &amp; Hikaru</span><span lang-ja>ジェイ &amp; 光</span></h1>
-    <div class="sub"><span lang-en>The Lakehouse at Lake Toya · Saturday 5 June 2027 · 50 guests</span><span lang-ja>洞爺湖レイクハウス ・ 2027年6月5日（土） ・ 50名</span></div>
+    <div class="sub"><span lang-en>The Lakehouse at Lake Toya · Saturday 5 June 2027 · <span id="hdcount">—</span> guests</span><span lang-ja>洞爺湖レイクハウス ・ 2027年6月5日（土） ・ <span id="hdcountj">—</span>名</span></div>
     <div class="cd" style="flex-direction:column;gap:.1rem;padding:.9rem 1.8rem">
       <div style="display:flex;align-items:baseline;gap:.5rem"><b id="days">—</b><span style="font-size:.9rem"><span lang-en>days</span><span lang-ja>日</span></span></div>
       <div id="hms" style="font-size:.8rem;color:var(--ink-faint);font-variant-numeric:tabular-nums">—</div>
@@ -469,7 +469,7 @@ a{color:var(--sky)}
   </div>
   <div class="grid g3" style="margin-bottom:1.2rem">
     <div class="card stat"><div class="l"><span lang-en>Budget now</span><span lang-ja>現在の総額</span></div><div class="v" id="s-total">—</div><div class="d" id="s-cat">—</div></div>
-    <div class="card stat"><div class="l"><span lang-en>Per guest</span><span lang-ja>お一人様</span></div><div class="v" id="s-per">—</div><div class="d"><span lang-en>Total ÷ 50</span><span lang-ja>総額 ÷ 50名</span></div></div>
+    <div class="card stat"><div class="l"><span lang-en>Per guest</span><span lang-ja>お一人様</span></div><div class="v" id="s-per">—</div><div class="d"><span lang-en>Total ÷ <span class="hdc">—</span></span><span lang-ja>総額 ÷ <span class="hdc">—</span>名</span></div></div>
     <div class="card stat"><div class="l"><span lang-en>Paid so far</span><span lang-ja>支払い済み</span></div><div class="v"><span class="m" data-yen="50000"></span></div><div class="d"><span lang-en>Holding deposit</span><span lang-ja>予約金</span></div></div>
   </div>
   <div class="ph"><h2>⏭ <span lang-en>Next up</span><span lang-ja>次にやること</span></h2>
@@ -486,7 +486,7 @@ a{color:var(--sky)}
 </div>
 
 <div class="page" id="p-food">
-  <div class="ph"><h2>🍽 <span lang-en>Food &amp; drink</span><span lang-ja>料理とドリンク</span></h2><p><span lang-en>Tap to choose. The budget follows you. All priced for 50.</span><span lang-ja>タップで選択、予算に即反映。全て50名の金額。</span></p></div>
+  <div class="ph"><h2>🍽 <span lang-en>Food &amp; drink</span><span lang-ja>料理とドリンク</span></h2><p><span lang-en>Tap to choose. The budget follows you. Teranishi recalculates for your live headcount; the others are their quoted totals.</span><span lang-ja>タップで選択、予算に即反映。寺西さんは実人数で自動計算、他社は提示額です。</span></p></div>
   <div class="chefs" id="chefs"></div>
   <h3 style="margin:1.6rem 0 .6rem;font-size:1.05rem">🥂 <span lang-en>Drinks</span><span lang-ja>ドリンク</span></h3>
   <p style="font-size:.84rem;color:var(--ink-soft);margin:0 0 .7rem"><span lang-en>Self-arranged is usually cheaper than buying through the caterer. Beverage staff run about ¥10,000 each per day — three cover 50 guests.</span><span lang-ja>自己手配の方が安くなることが多いです。ドリンク担当は1名1日約10,000円、50名なら3名。</span></p>
@@ -1032,12 +1032,24 @@ function editList(holder,key,defs,fmt,ph){
 function fmtSimple(x){ return '<h4 style="padding-right:1.4rem">'+bi(x.n||x[0]||"",x.nj||x[1]||"")+'</h4>'+
   ((x.d||x[2])?'<div style="font-size:.84rem;color:var(--ink-soft);margin-top:.3rem;line-height:1.65">'+bi(x.d||x[2],x.dj||x[3]||"")+'</div>':''); }
 var CHEFS=[
- {id:"tera",n:"Teranishi",nj:"寺西シェフ",c:"#7C8598",p:P.cloche,lo:1100000,hi:1650000,budget:1375000,drinksIncl:true,rank:1,
-  f:["Jardin Potager · French full course <b>with free drinks included</b>","About ¥13,000 per head","Has catered weddings at the Lakehouse before","¥1.0–1.5m quoted at 45 guests, so ¥1.1–1.65m at 50"],
-  fj:["ジャルダン ポタジエ・フレンチフルコース＋<b>フリードリンク込み</b>","お一人様 約13,000円","レイクハウスでの挙式ケータリング実績あり","45名で100〜150万円のため、50名なら110〜165万円"],
+ {id:"tera",n:"Teranishi",nj:"寺西シェフ",c:"#7C8598",p:P.cloche,lo:1320000,hi:1400000,budget:1399200,drinksIncl:true,rank:1,
+  f:["<b>Written quote received</b> — dated 2 June 2026, ¥1,320,000 priced for 40 adults + 6 children",
+     "Food ¥13,000/adult · drinks ¥5,000/adult (120 min, sparkling, red &amp; white wine, soft) · children ¥5,000",
+     "Staff &amp; travel ¥450,000 flat — kitchen car ¥100,000, chef ¥50,000, 2 cooks ¥60,000, 4 service ¥120,000, sommelier ¥50,000, rental car ¥40,000, tolls ¥30,000",
+     "Glass and plate rental show ¥0 — the Lakehouse&rsquo;s own tableware is used",
+     "<b>Recalculated live for whoever is on the Guests tab</b> — the quote&rsquo;s own 40 adults + 6 children was only a sample headcount",
+     "Style: appetisers buffet, mains served seated · wagyu (Ezo Tajima), lamb, scallops, sweet shrimp, asparagus",
+     "<b>Cocktail hour and after-party are quoted separately</b> — yours starts at 16:00"],
+  fj:["<b>正式見積もり受領</b> — 2026年6月2日付・大人40名＋子ども6名で1,320,000円",
+     "料理 大人13,000円／ドリンク 大人5,000円（120分・スパークリング／赤／白／ソフト）／お子様 5,000円",
+     "諸経費 450,000円 — キッチンカー100,000円、シェフ50,000円、調理スタッフ2名60,000円、サービス4名120,000円、ソムリエ50,000円、レンタカー40,000円、高速代30,000円",
+     "グラス・皿レンタルは0円 — レイクハウス所有の食器を使用",
+     "<b>「ゲスト」タブの実人数で自動再計算</b> — 見積書の大人40名＋子ども6名はあくまで仮の人数です",
+     "スタイル：前菜はビュッフェ、メインは着席・和牛（エゾ但馬）、仔羊、ホタテ、甘エビ、アスパラ",
+     "<b>カクテルパーティ・アフターパーティは別途見積もり</b> — 当日は16時開始"],
   hik:"Hikaru&rsquo;s first choice. She likes that he&rsquo;s worked at the Lakehouse — but it depends on how the food looks and tastes. On the phone he came across as &ldquo;a slightly troublesome older man,&rdquo; so she&rsquo;s unsure how easy he&rsquo;ll be to work with.",
   hikj:"光の第一希望。レイクハウスでの実績を評価。ただし見た目と味次第。電話では「ちょっとめんどくさそうなおじさん」の印象で、やりとりのしやすさが気になるとのこと。",
-  tags:[["Her #1","光の1位","yes"],["Drinks included","ドリンク込み","yes"],["Communication?","やりとり要確認","no"]]},
+  tags:[["Her #1","光の1位","yes"],["Drinks included","ドリンク込み","yes"],["Quote in hand","見積もり受領","yes"],["Cocktail hour extra","カクテル別途","no"]]},
  {id:"ohkawa",n:"Chef Ohkawa",nj:"大川シェフ",c:"#C97B3F",p:P.ramen,lo:1100000,hi:1200000,budget:1150000,drinksIncl:false,rank:2,
   f:["¥18–20,000 per head","Ramen and sushi brought in from other vendors","10 serving staff at ¥10,000 each","Closest to the buffet you sketched"],
   fj:["お一人様18,000〜20,000円","ラーメン・寿司は別業者から手配","サーブ10名（各10,000円）","構想中のビュッフェに一番近い"],
@@ -1146,12 +1158,12 @@ var SECTIONS=[
  {id:"E",n:"Flowers, decor &amp; music",nj:"装花・装飾・音楽",rows:[
   {id:"e1",n:"Decoration — Makiko",nj:"装飾 — まきこさん",d:"Set on the Extras tab. Base ¥30,000 + day-of staff ¥28,000 + materials",dj:"「その他」タブで選択。基本30,000円＋当日スタッフ28,000円＋花材",choice:"decor"},
   {id:"e3",n:"Music",nj:"音楽",d:"Set on the Extras tab — several can be on",dj:"「その他」タブで選択・複数可",music:true},
-  {id:"e4",n:"Planner &amp; MC — Ayuko",nj:"プランナー兼司会 — 鮎子さん",d:"Half rate. Brochure says ¥200,000, your sheet said ¥300,000 — needs confirming",dj:"半額。表記200,000円／シートは300,000円・要確認",amt:150000,est:true}]},
+  {id:"e4",n:"Planner &amp; MC — Ayuko",nj:"プランナー兼司会 — 鮎子さん",d:"Confirmed at ¥150,000, half rate including MC duties",dj:"確定：150,000円（司会込みの半額）",amt:150000}]},
  {id:"F",n:"Transport",nj:"移動",rows:[
   {id:"f1",n:"Buses &amp; taxis",nj:"バス・タクシー",d:"Set on the Driving tab",dj:"「送迎」タブで計算",transport:true}]},
  {id:"G",n:"Paper, gifts &amp; attire",nj:"ペーパー・ギフト・衣装",rows:[
   {id:"g1",n:"Invitations &amp; paper",nj:"招待状・ペーパー",d:"Set on the Extras tab",dj:"「その他」タブで選択",choice:"paper"},
-  {id:"g2",n:"Welcome bags",nj:"ウェルカムギフト",d:"¥1,500 × 50",dj:"50名 × 1,500円",amt:75000,est:true},
+  {id:"g2",n:"Welcome bags",nj:"ウェルカムギフト",d:"¥1,500 a guest",dj:"お一人様 1,500円",live:"bags"},
   {id:"g3",n:"Dress — rental",nj:"ドレス（レンタル）",d:"¥30–100,000. Hikaru is paying for this herself but wants your help choosing — she has ~10 candidates. bonita rents at ¥19,900",dj:"30,000〜100,000円。光が自費で用意しますが、一緒に選んでほしいとのこと。候補は約10着。bonitaは19,900円",amt:50000,est:true},
   {id:"g4",n:"Tuxedo — rental",nj:"タキシード（レンタル）",d:"Rentable in Japan. bonita has the one from the Hokkaido pre-shoot at ¥19,900 — limited range, worth looking elsewhere too",dj:"日本でレンタル可能。北海道の前撮りで着たものをbonitaが保有、19,900円。種類が少ないため他も検討を",amt:19900,est:true}]},
  {id:"H",n:"Guest support",nj:"ゲスト支援",noContingency:true,rows:[
@@ -1206,7 +1218,7 @@ var TASKS=[
  {id:"t208",c:2,o:"j",n:"Guest communications and updates",nj:"ゲスト向け案内連絡",due:"2027-05-01",d:"",dj:""},
 
  /* ③ Food & Beverages */
- {id:"p4",  c:3,o:"h",n:"Chase the Teranishi quote",nj:"寺西シェフの見積もりを取得",due:"2026-09-15",d:"Only all-inclusive option, never arrived",dj:"唯一の全込みプラン・未着"},
+ {id:"p4",  c:3,o:"b",n:"Compare Teranishi&rsquo;s written quote against Santo",nj:"寺西の正式見積もりとSantoを比較",due:"2026-10-01",d:"Quote arrived (2 June 2026): ¥1,399,200 at your headcount, drinks and all staff included. Santo is ¥15,000 a head with drinks, staff and sushi/ramen all still unpriced — the real gap is smaller than it looks.",dj:"見積もり受領（2026年6月2日）：実人数で税込1,399,200円、ドリンク・スタッフ全込み。Santoはお一人様15,000円ですがドリンク・スタッフ・寿司・ラーメンが未計上。実際の差額は見た目より小さいです。"},
  {id:"p2",  c:3,o:"h",n:"Ask every caterer for a child rate",nj:"各社にお子様料金を確認",due:"2026-10-01",d:"6 children among the guests. The venue charges child rates, so caterers likely do too",dj:"ゲストに子ども6名。会場も子ども料金があるため各社も可能性大"},
  {id:"p1",  c:3,o:"h",n:"Choose the caterer",nj:"ケータリングを決める",due:"2026-11-01",d:"Her ranking is Teranishi &gt; Ohkawa &gt; Aroi. Aroi is ~¥556,000 cheaper than Teranishi — the biggest single number in the budget",dj:"光の順位は寺西＞大川＞Aroi。Aroiは寺西より約556,000円安く、予算で最大の変動要因"},
  {id:"t301",c:3,o:"h",n:"Select the menu",nj:"食事メニュー決定",due:"2027-01-31",d:"Her wishlist: scallops, Hokkaido cheese, wagyu slices",dj:"光の希望：ホタテ、道産チーズ、和牛スライス"},
@@ -1273,10 +1285,10 @@ var TASKS=[
  {id:"t904",c:9,o:"b",n:"Airport-to-hotel guide",nj:"空港〜ホテル案内",due:"2027-04-01",d:"CTS→Lakehouse 1h40m, Hakodate→Lakehouse 2h30m",dj:"新千歳→レイクハウス1時間40分、函館→2時間30分"},
 
  /* ⑩ Budget & Contracts */
- {id:"p3",  c:10,o:"j",n:"Confirm Ayuko&rsquo;s planner fee",nj:"鮎子さんのプランナー料金を確認",due:"2026-09-15",d:"Brochure says ¥200,000, your sheet said ¥300,000 — half of which?",dj:"表記200,000円・シート300,000円。どちらの半額か確認"},
  {id:"p8",  c:10,o:"b",n:"Decide who pays for guest hotels",nj:"ゲスト宿泊費の負担を決める",due:"2026-10-15",d:"You and Hikaru budgeted differently. Her column totals ¥4,214,800 split H ¥1,500,000 / J ¥2,390,400",dj:"二人の見積もりに差があります。光の合計は4,214,800円（光1,500,000円／ジェイ2,390,400円）"},
  {id:"t1004",c:10,o:"b",n:"Review the cancellation policies",nj:"キャンセルポリシー確認",due:"2026-11-15",d:"Accommodation is refundable up to 60 days before; inside 2 months it is charged in full",dj:"宿泊は到着60日前まで返金可。2ヶ月以内は全額請求"},
  {id:"t1003",c:10,o:"b",n:"Payment schedule tracking",nj:"支払スケジュール管理",due:"2026-12-01",d:"The four dated payments are on the Budget tab",dj:"支払い4件の日程は「予算」タブ"},
+ {id:"t1006",c:10,o:"b",n:"Pin the final-decision deadline with each vendor when signing",nj:"契約時に各社の最終確定期限を確認",due:"2027-01-31",d:"Ayuko says decisions are generally needed 2–3 months ahead, but it differs by vendor — get the exact date into the contract for each one.",dj:"鮎子さんによると一般に2〜3ヶ月前ですが、業者ごとに異なります。契約時に各社の期限を確認して記録を。"},
  {id:"t1002",c:10,o:"b",n:"Contract management",nj:"契約管理",due:"2027-03-01",d:"¥100,000 security deposit is fully refundable",dj:"保証金100,000円は全額返金"},
  {id:"q9",  c:10,o:"b",n:"Finish the marriage paperwork",nj:"婚姻届の書類を準備",due:"2027-04-01",d:"Affidavit already drafted",dj:"宣誓供述書は作成済み"},
  {id:"t1001",c:10,o:"b",n:"Budget management",nj:"予算管理",due:"2027-05-01",d:"Ongoing — the Budget tab is the live number",dj:"継続タスク。最新の金額は「予算」タブ"},
@@ -1711,6 +1723,7 @@ function renderDecor2(){ renderCatTasks("decortasks",4); renderBoard("decorboard
 function renderBeauty(){ renderCatTasks("beautytasks",8); renderBoard("beautyboard","beauty"); }
 
 var UPDATES=[
+ ["Teranishi&rsquo;s written quote turned up","寺西シェフの正式見積もりが到着","Dated 2 June 2026 and sitting with Hikaru all along: ¥1,320,000 for 40 adults + 6 children — ¥1,399,200 at your real headcount, with drinks, sommelier and all seven staff included. See the Food tab.","2026年6月2日付。光さんが受領済みでした。大人40名＋子ども6名で1,320,000円、実人数では税込1,399,200円。ドリンク・ソムリエ・スタッフ7名込み。詳細は「料理」タブ。"],
  ["Santo finally quoted — ¥800,000 all in","Santoから見積もり到着・約800,000円","¥15,000 a head via Ayuko (11 Aug), the cheapest full quote so far — but no sushi or ramen (order separately) and drinks are separate. Compare on the Food tab.","鮎子さん経由でお一人様15,000円（8月11日）。最安の見積もりですが、寿司・ラーメンは不可（別途手配）、ドリンクも別。「料理」タブで比較を。"],
  ["Glamping prices found","グランピング料金判明","¥13,200 per adult per night. Camping spots are ¥6,000 for two — far cheaper.","大人1名1泊13,200円。キャンプサイトは2名6,000円と割安。"],
  ["Eight bedrooms, not six","寝室は8室","Ayuko confirmed 8 rooms sleeping up to 22 — three take 4 people, five take 2. The booking site only lists six.","鮎子さんより8室・最大22名と回答。4名×3室、2名×5室。予約サイトには6室のみ掲載。"],
@@ -1741,7 +1754,7 @@ var KB=[
  {k:"glamping tent camping グランピング テント キャンプ 料金",q:"How much is glamping?",qj:"グランピングはいくら？",a:"¥13,200 per adult per night. Children under 12 ¥9,900, under 6 ¥5,500, under 3 free. Camping spots are far cheaper at ¥6,000 a night for two. Four adults for two nights: glamping ¥105,600, camping ¥24,000, a nearby hotel about ¥30,000.",aj:"大人1名1泊13,200円。12歳未満9,900円、6歳未満5,500円、3歳未満無料。キャンプサイトは2名6,000円／泊と割安。大人4名2泊でグランピング105,600円、キャンプ24,000円、近隣ホテル約30,000円。"},
  {k:"rooms bedrooms lakehouse sleep 部屋 寝室 何室",q:"How many bedrooms are there?",qj:"寝室は何室？",a:"Eight, sleeping up to 22. Ayuko confirmed: Sakura Suite, Hydrangea and Lavender hold 4 each; the other five hold 2. Their public booking page only lists six, so the last two still need names.",aj:"8室・最大22名。鮎子さんの回答では、さくらスイート・ハイドレンジャー・ラベンダーが各4名、残り5室が各2名。予約サイトには6室のみ掲載のため、2室は名称未確認です。"},
  {k:"who sleeps where allocation 誰 どこ 泊まる 部屋割り",q:"Who is staying in which room?",qj:"部屋割りは？",a:"Jay & Hikaru in the Sakura Suite; Yuusuke, Mami, Asahi and Haruka in the Hydrangea Suite because it has the bunk beds; Tomomi, Masaharu, Aoi and Nanoha in Lily with two extra beds; Akitomo and Yuuko in Lavender; Jay's parents in Tulip; Uncle, Auntie and Luca in Jasmine with one extra bed. That is 17 people. Koko & Brandon and Joey & Bryan need glamping or a hotel.",aj:"ジェイ＆光はさくら、祐介・真美・朝陽・遥はあじさい（2段ベッドのため）、友美・雅治・葵・七海はリリー（追加ベッド2）、章智・裕子はラベンダー、ジェイのご両親はチューリップ、叔父・叔母・ルカはジャスミン（追加ベッド1）。計17名。ここ＆ブランドンとジョーイ＆ブライアンは別手配が必要です。"},
- {k:"planner fee ayuko rate プランナー 料金 鮎子",q:"What is Ayuko's planner fee?",qj:"プランナー料金は？",a:"Unconfirmed. The 2026 brochure lists the in-house planner at ¥200,000, but your spreadsheet recorded ¥300,000. Ayuko offered half price including MC duties without naming the base. Half of ¥200,000 is ¥100,000; half of ¥300,000 is ¥150,000. The budget carries ¥150,000 pending her answer.",aj:"未確定です。2026年のブローシャーでは専属プランナー200,000円ですが、シートには300,000円と記載。鮎子さんは基準額を示さず半額（司会込み）を提示。200,000円の半額なら100,000円、300,000円なら150,000円。予算は150,000円で計上中です。"},
+ {k:"planner fee ayuko rate プランナー 料金 鮎子",q:"What is Ayuko's planner fee?",qj:"プランナー料金は？",a:"¥150,000, confirmed by Ayuko — half rate, including MC duties on the day. Payable 1 March 2027 with the garden package.",aj:"150,000円（鮎子さん確認済み）。当日の司会込みの半額です。2027年3月1日にガーデンパッケージとあわせてお支払い。"},
  {k:"photographer takayo niki package カメラマン 写真",q:"Which photographer, and why the price gap?",qj:"カメラマンの価格差は？",a:"Nom-san is Hikaru&#39;s pick at ¥120,000 (¥130,000 without social posting) — but he cannot confirm 5 June until end of March. Takayo Fujie is ¥56,000 for photography. Ayako Niki is ¥180,000 but that is a package: photography, Makiko's hair and makeup worth ¥38,000, six hours of grounds access, gardens and interiors, an option to shoot at Ukimido, and day use of the Lavender Suite as a prep room. Net of the hair and makeup you would pay anyway, the real gap is about ¥86,000.",aj:"光の希望はのむさんで120,000円（SNS掲載なしなら130,000円）。ただし6/5の可否は3月末まで未確定。藤江貴代さんは撮影のみ56,000円。ニキ彩子さんは180,000円ですがパッケージで、撮影・まきこさんのヘアメイク（38,000円相当）・敷地6時間・庭園や館内・浮見堂での撮影オプション・ラベンダースイートの支度部屋利用を含みます。ヘアメイク分を差し引くと実質差は約86,000円です。"},
  {k:"welcome dinner 前夜 会食 とは",q:"What is the welcome dinner?",qj:"前夜の会食とは？",a:"A casual group meal the evening before the wedding, so guests arriving from three countries meet each other before the ceremony rather than at it. Entirely optional — you can switch it off on the Food tab.",aj:"結婚式前夜の気軽な会食です。三カ国から集まるゲストが、挙式当日ではなく前日に顔合わせできます。任意で、「料理」タブでオフにできます。"},
  {k:"drinks bar open ドリンク バー",q:"How much are drinks?",qj:"ドリンクはいくら？",a:"Four tiers on the Food tab: no bar, beer and wine at ¥3,000 a head (¥150,000), open bar at ¥5,000 (¥250,000), premium at ¥8,000 (¥400,000). Beverage staff are about ¥10,000 each per day and three cover 50 guests. Self-arranging is usually cheaper than buying through the caterer.",aj:"「料理」タブに4段階あります。なし、ビール・ワイン1名3,000円（150,000円）、オープンバー5,000円（250,000円）、プレミアム8,000円（400,000円）。ドリンク担当は1名1日約10,000円で50名なら3名。自己手配が割安です。"},
@@ -1939,7 +1952,7 @@ function recFor(r,k){
   var cap=VEH[k.veh].cap;
   var warn=function(en,ja){return '<div style="font-size:.78rem;font-weight:700;color:var(--coral);margin-top:.4rem">⚠️ '+t(en,ja)+'</div>';};
   var hint=function(en,ja){return '<div style="font-size:.78rem;color:var(--mint);margin-top:.4rem">💡 '+t(en,ja)+'</div>';};
-  if(k.veh==="coach"&&k.pax>cap)return warn("Over the 22-seat coach by "+(k.pax-cap)+" — nobody has confirmed a 45-seater exists at Lake Toya. Ask Ayuko or Jonny.","22席のバスを"+(k.pax-cap)+"名超過。45席クラスの有無は未確認です。鮎子さん／ジョニーさんに要確認。");
+  if(k.veh==="coach"&&k.pax>cap)return warn("Over the 22-seat coach by "+(k.pax-cap)+" — split the group or add a second vehicle.","22席のバスを"+(k.pax-cap)+"名超過。グループを分けるか、2台目の手配を。");
   if(k.count>1&&k.pax<=VEH.coach.cap&&k.count*vRate(k.veh)>vRate("coach"))return hint("One 22-seat coach ("+money(vRate("coach"))+") would be cheaper than "+k.count+"× "+t(VEH[k.veh].n,VEH[k.veh].nj)+".","バン"+k.count+"台より22席バス1台（"+money(vRate("coach"))+"）の方が安くなります。");
   if(k.veh==="van"&&k.count===1&&k.pax<=VEH.taxi.cap&&vRate("taxi")<vRate("van"))return hint("This group fits one taxi ("+money(vRate("taxi"))+").","この人数ならタクシー1台（"+money(vRate("taxi"))+"）で足ります。");
   return '';
@@ -1977,6 +1990,8 @@ function sectionOf(r){for(var i=0;i<SECTIONS.length;i++)if(SECTIONS[i].id===r.se
 function rowAmount(r){
   var ov=load("edit."+r.id,null);
   if(ov!=null)return ov;
+  if(r.live==="bags")return 1500*adultKidSplit().total;
+  if(r.live==="bags")return 1500*adultKidSplit().total;
   if(r.live==="hfam")return hikFamilySupport();
   if(r.live==="jfr")return jayFriendsSupport();
   if(r.live==="hfr")return hikFriendsSupport();
@@ -1984,7 +1999,9 @@ function rowAmount(r){
   if(r.music)return musicTotal();
   if(r.toggle==="htravel")return getTog("htravel")?travelHalf():0;
   if(r.toggle)return getTog(r.toggle)?TOGGLES[r.toggle].amt:0;
-  if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));return c&&c.budget!=null?c.budget:0;}
+  if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));
+    if(c&&c.id==="tera")return teraQuote();          /* live from the real headcount */
+    return c&&c.budget!=null?c.budget:0;}
   if(r.choice==="photo"){var pg=photogById(getChoice("photo"));return pg?pg.amt:0;}
   if(r.choice){var g=CHOICES[r.choice],sel=getChoice(r.choice);
     for(var i=0;i<g.opts.length;i++)if(g.opts[i].id===sel)return g.opts[i].amt;return 0;}
@@ -2309,7 +2326,9 @@ function rowBase(r){
   if(r.music)return musicTotal();
   if(r.toggle==="htravel")return getTog("htravel")?travelHalf():0;
   if(r.toggle)return getTog(r.toggle)?TOGGLES[r.toggle].amt:0;
-  if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));return c&&c.budget!=null?c.budget:0;}
+  if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));
+    if(c&&c.id==="tera")return teraQuote();
+    return c&&c.budget!=null?c.budget:0;}
   if(r.choice==="photo"){var pg=photogById(getChoice("photo"));return pg?pg.amt:0;}
   if(r.choice){var g=CHOICES[r.choice],sel=getChoice(r.choice);
     for(var i=0;i<g.opts.length;i++)if(g.opts[i].id===sel)return g.opts[i].amt;return 0;}
@@ -2374,7 +2393,10 @@ function renderBudget(){
       var id=btn.dataset.del,rows=customRows().filter(function(x){return x.id!==id;});
       save("customrows",rows);try{localStorage.removeItem("lt4.edit."+id);}catch(e){}renderAll();});});
   document.getElementById("s-total").textContent=money(T.grand);
-  document.getElementById("s-per").textContent=money(Math.round(T.grand/guestCount()));
+  document.getElementById("s-per").textContent=money(Math.round(T.grand/planHead()));
+  var sp=adultKidSplit();
+  ["hdcount","hdcountj"].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=sp.total;});
+  document.querySelectorAll(".hdc").forEach(function(e){e.textContent=sp.total;});
   var cc=chefById(getChoice("caterer"));
   document.getElementById("s-cat").textContent=t("50 guests · ","50名・")+(cc?t(cc.n,cc.nj):"");
   renderScen(T);renderCuts();renderWhatIf();
@@ -2871,7 +2893,6 @@ var GUESTNEWS=[
  ["Kino, Kaoru, Wataru, Yuutaro","きの・かおる・わたる・ゆうたろ","Bringing families to Hokkaido but attending the party alone — so they either don&rsquo;t drink, or need taxis and driver service arranged.","家族と北海道に来ますが、パーティーは本人のみ参加。飲まないか、タクシー・運転代行の手配が必要。"],
  ["Three more, undecided","招待を迷っている3名","Miri, Airi and Midori aren&rsquo;t on the list yet.","みり・あいり・みどりはまだリストに入っていません。"]];
 var UNKNOWNS=[
- ["Coach size","バスのサイズ","Only a 22-seat coach has been quoted. If more than 22 fly in, ask Ayuko or Jonny whether a 45-seater exists at Lake Toya — nobody has checked.","見積もりは22席のみ。22名超の場合、45席クラスの手配可否を鮎子さん／ジョニーさんに要確認。"],
  ["Who is actually flying","空路到着者","Hikaru&rsquo;s side may come by train or drive from home. Every number below is a guess until you ask.","光さん側は電車や自家用車の可能性あり。確認するまで下記は全て仮の数字です。"],
  ["Van hire price","バンの料金","No quote exists. I&rsquo;ve estimated ¥30,000 a run — change it in Vehicle rates once you know.","見積もりなし。1回30,000円で仮置き。判明次第「車両料金」で変更を。"],
  ["Saturday taxi availability","土曜のタクシー確保","Eight taxis at 14:00 on a Saturday is a lot for a small town. Book ahead or use vans.","土曜14時に8台は小さな町では困難。事前予約かバン利用を。"],
@@ -2886,6 +2907,25 @@ function pVal(p,k){var v=load("g."+p.id+"."+k,null);return v==null?p[k]:v;}
 function pSet(p,k,v){save("g."+p.id+"."+k,v);renderAll();}
 function useMaybe(){return load("usemaybe",true);}
 function counts(p){var s=pVal(p,"st");return (s==="go"||(s==="maybe"&&useMaybe()))?(parseInt(pVal(p,"c"),10)||0):0;}
+/* The roster holds everyone invited; the budget plans for the number you EXPECT.
+   planhead (default 50) is what every cost calculation uses. */
+function rosterSplit(){
+  var a=0,k=0;
+  PEOPLE.forEach(function(p){ var c=counts(p); if(!c)return; if(p.kid)k+=c; else a+=c; });
+  return {adults:a,kids:k,total:a+k};
+}
+function planHead(){ var v=parseInt(load("planhead",50),10); return (v>0)?v:rosterSplit().total; }
+function adultKidSplit(){
+  var r=rosterSplit(), total=planHead();
+  var kids=Math.min(r.kids,total);
+  return {adults:Math.max(0,total-kids),kids:kids,total:total,roster:r.total};
+}
+/* Teranishi's written quote, recalculated for whoever is actually on the list */
+function teraQuote(){
+  var s=adultKidSplit();
+  var pre=13000*s.adults + 5000*s.adults + 5000*s.kids + 450000;
+  return Math.round(pre*1.1);
+}
 function rosterStats(){
   var st={going:0,maybe:0,no:0,budget:0,flight:0,train:0,car:0,local:0,cars:0,needAirport:0,needDay:0,kids:0};
   PEOPLE.forEach(function(p){
@@ -2907,12 +2947,17 @@ function renderRoster(){
   var st=rosterStats();
   var sw=document.getElementById("rostersum");
   sw.innerHTML=
-   '<div class="card stat"><div class="l">'+bi("Headcount","人数")+'</div><div class="v">'+st.budget+'</div><div class="d">'+
+   '<div class="card stat"><div class="l">'+bi("On the list","招待リスト")+'</div><div class="v">'+st.budget+'</div><div class="d">'+
      '<span style="color:var(--mint);font-weight:800">'+st.going+' '+t("going","参加")+'</span> · <span style="color:var(--amber);font-weight:800">'+st.maybe+' '+t("maybe","未定")+'</span>'+(st.no?' · <span style="color:var(--coral);font-weight:800">'+st.no+' '+t("no","不参加")+'</span>':'')+'</div></div>'+
    '<div class="card stat"><div class="l">'+bi("Need an airport pickup","空港送迎が必要")+'</div><div class="v" style="color:var(--sun)">'+st.needAirport+'</div><div class="d">'+bi("Flying into New Chitose","新千歳着")+'</div></div>'+
    '<div class="card stat"><div class="l">'+bi("Need rides on the day","当日の送迎が必要")+'</div><div class="v" style="color:var(--coral)">'+st.needDay+'</div><div class="d">'+bi("No car of their own","自家用車なし")+'</div></div>'+
+   '<div class="card stat"><div class="l">'+bi("Planning for","計上人数")+'</div>'+
+     '<div class="v"><input id="planhead" type="number" min="1" value="'+planHead()+'" style="width:3.6rem;font:inherit;font-family:var(--disp);font-size:1.5rem;font-weight:800;color:var(--coral);background:transparent;border:0;border-bottom:2px dashed var(--line-2);text-align:center"></div>'+
+     '<div class="d">'+bi("every cost is calculated for this number","すべての費用はこの人数で計算されます")+'</div></div>'+
    (function(){var d=drinkStats();return '<div class="card stat"><div class="l">'+bi("Likely drinking","飲まれる見込み")+'</div><div class="v" style="color:var(--grape)">'+d.yes+'</div><div class="d">'+
      bi(d.no+" not drinking",d.no+"名は飲まない")+(d.unknown?' · '+bi(d.unknown+" not asked",d.unknown+"名は未確認"):'')+'</div></div>';})();
+  var ph=document.getElementById("planhead");
+  if(ph)ph.addEventListener("change",function(){var v=parseInt(ph.value,10);if(v>0){save("planhead",v);renderAll();}});
   var um=document.getElementById("usemaybe");
   if(um){um.checked=useMaybe();
    document.getElementById("maybelbl").textContent=useMaybe()?t("counting "+st.budget,"計上 "+st.budget+"名"):t("counting "+st.budget+" confirmed only","確定 "+st.budget+"名のみ");}
@@ -3565,13 +3610,15 @@ function renderInvNotes(){
 }
 /* ---------- questions for Ayuko: gather, then send as one email ---------- */
 var AYUKOQ=[
- {id:"ay1",q:"The booking site lists six bedrooms — what are the last two rooms called?",qj:"予約サイトには寝室が6室しか載っていません。残り2室の名前を教えてください。"},
- {id:"ay2",q:"Is Takarada a five-minute walk from the Lakehouse, or a drive? On the map they look about 90 m apart.",qj:"タカラダはレイクハウスから徒歩5分ですか、車ですか？地図上では約90mに見えます。"},
- {id:"ay3",q:"Could a van or bus do one pick-up loop of the hotels before the ceremony? Everything is within about 15 minutes — and what would it cost?",qj:"挙式前に各ホテルを1周して全員を送迎するバン／バスの手配は可能ですか？各施設は15分圏内です。料金はいくらでしょうか？"},
- {id:"ay4",q:"How late can a driver run on the wedding night? Could one van do staged runs at 19:30 / 21:00 / 23:00?",qj:"当日夜の送迎は何時まで可能ですか？1台のバンで19:30・21:00・23:00の3便は組めますか？"},
- {id:"ay5",q:"The brochure lists the planner fee as ¥200,000 but our sheet says ¥300,000 — which is the figure being halved?",qj:"プランナー料金がパンフレットでは200,000円、私たちのシートでは300,000円です。半額になるのはどちらの金額ですか？"},
- {id:"ay6",q:"If more than 22 guests fly in, is a bigger coach available at Lake Toya?",qj:"22名を超えた場合、洞爺湖エリアで大型バスの手配は可能ですか？"},
- {id:"ay7",q:"About Santo&rsquo;s quote — roughly what would sushi and ramen for 50 cost ordered separately, and could you coordinate the second vendor on the day?",qj:"Santoの見積もりについて — 寿司とラーメンを50名分別途手配すると概算いくらでしょうか？また当日の2社目の調整はお願いできますか？"}];
+ {id:"ay1",q:"The booking site lists six bedrooms but you confirmed eight — could you tell us about the two that aren&rsquo;t listed? Their names, and how they&rsquo;re laid out (beds and how many each sleeps).",qj:"予約サイトには寝室が6室の掲載ですが、8室あるとご確認いただきました。掲載のない2室について、お部屋の名称とベッド構成・定員を教えていただけますでしょうか。"},
+ {id:"ay3",q:"Wedding-day transport. We&rsquo;re booking the coach for the airport runs (Friday in, Sunday back), but the wedding day itself is still open. Our guests are all staying within about 10–15 minutes of the Lakehouse, so: (1) could a vehicle collect them from their hotels and bring them to the venue before the ceremony? (2) For the journey home, guests will want to leave at different times — some straight after the ceremony, others much later. Could one vehicle run a few scheduled trips through the evening, for example an early one and a last one around 23:00? If that works we&rsquo;d rather do that than book taxis. How late can it run, how many trips are possible, and what would it cost?",qj:"挙式当日の送迎についてご相談です。空港との往復（金曜到着・日曜出発）は貸切バスを手配予定ですが、当日の移動が未定です。ゲストは全員レイクハウスから10〜15分圏内に宿泊しております。<br>①挙式前に各ホテルを回って会場までお送りいただくことは可能でしょうか。<br>②お帰りについては、挙式後すぐに戻られる方から遅くまで残られる方まで、退出時間が分かれる見込みです。1台の車で夜のあいだに数便（早めの便と23時頃の最終便など）を出していただくことは可能でしょうか。それが可能であればタクシーよりそちらを希望しております。何時まで運行可能か、何便まで出せるか、料金もあわせて教えていただけますと幸いです。"},
+ {id:"ay8",q:"Could you share the menu for each catering option? Photos would be wonderful if they have them.",qj:"各ケータリングのメニュー内容をご共有いただけますでしょうか。お写真があれば嬉しいです。"},
+ {id:"ay9",q:"Santo&rsquo;s staff fees — what is charged on top of the ¥15,000 a head? Teranishi&rsquo;s quote lists ¥450,000 for kitchen car, chef, cooks, service staff, sommelier and travel, so we&rsquo;d like to compare on the same terms.",qj:"Santoさんについて、お一人様15,000円に加えてかかる費用（スタッフ・出張費など）を教えてください。寺西さんの見積もりでは諸経費が450,000円（キッチンカー・シェフ・調理／サービススタッフ・ソムリエ・交通費）でしたので、同じ条件で比較したく存じます。"},
+ {id:"ay15",q:"About Teranishi&rsquo;s after-party (we understand this means after 19:30) — rather than a full service, what we have in mind is ordering drinks separately and having some light food put out for whoever stays. Could we get an estimate on that basis, and is it priced per person or as a flat charge?",qj:"寺西さんのアフターパーティ（19:30以降との理解です）について、フルサービスではなく、ドリンクは別途注文し、残られる方向けに軽めのお食事をご用意いただくイメージを考えております。その前提でお見積もりいただけますでしょうか。また、お一人様あたりの料金でしょうか、それとも一式の料金でしょうか。"},
+ {id:"ay16",q:"For the outsourced sushi and ramen — could we have the price per person for sushi and the price per bowl for ramen? We&rsquo;re still settling the quantities, and not everyone will want ramen, so unit prices would help us work it out.",qj:"外部手配の寿司とラーメンについて、寿司はお一人様あたり、ラーメンは1杯あたりの単価を教えていただけますでしょうか。数量を検討中で、ラーメンは全員分ではない見込みのため、単価が分かると助かります。"},
+ {id:"ay10",q:"For the outdoor dining area under the tent — how many tables fit lengthwise and widthwise? We&rsquo;re planning the arrangement in the attached picture: four rows of two tables joined end-to-end, seven seats each. Does that look workable to you, and will it fit under the tent?",qj:"テント下のお食事スペースについて、縦・横それぞれテーブルが何卓入りますでしょうか。添付の図のような配置を考えております（テーブル2台を縦に連結した列を4列、各テーブル7席）。この配置で問題なさそうでしょうか、またテント内に収まりますでしょうか。"},
+ {id:"ay11",q:"We&rsquo;ll use the Lakehouse&rsquo;s own plates and tablecloths — does the house also have napkins, or should we bring our own?",qj:"食器・テーブルクロスはレイクハウスのものを使わせていただく予定です。ナプキンもご用意がありますでしょうか、それとも各自で準備した方がよいでしょうか。"},
+ {id:"ay13",q:"Can we bring our own drinks, and is there a corkage or service charge if we do?",qj:"ドリンクの持ち込みは可能ですか？その場合、持ち込み料やサービス料はかかりますか？"},];
 function ayList(){
   var del=load("ayqdel",{});
   return AYUKOQ.filter(function(x){return !del[x.id];})
