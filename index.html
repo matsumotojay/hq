@@ -1078,7 +1078,7 @@ function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=c
 function bi(e,j){return '<span lang-en>'+e+'</span><span lang-ja>'+j+'</span>';}
 var FBCONFIG=window.FBCONFIG={"apiKey": "AIzaSyAAnT69AtL-m53iQ-DuCF0PRNrdHcmvZaM", "authDomain": "lake-toya-hq.firebaseapp.com", "projectId": "lake-toya-hq", "storageBucket": "lake-toya-hq.firebasestorage.app", "messagingSenderId": "246123481676", "appId": "1:246123481676:web:8017ebd6ac8b8f3530c2e9"};
 /* keys that are personal viewing preferences stay per-device; everything else syncs */
-var SYNCSKIP=window.SYNCSKIP=/^(tab|lang|cur|curbind|imgsplit|l3ids|hseed|jseed|lastedit|moreopen|driveday|nextfilter|tboxopen|fwopen|hpopen|jpopen|hopen|jopen|dock\.)/;
+var SYNCSKIP=window.SYNCSKIP=/^(tab|lang|cur|curbind|imgsplit|l3ids|hseed|jseed|hseed2|lastedit|moreopen|driveday|nextfilter|tboxopen|fwopen|hpopen|jpopen|hopen|jopen|dock\.)/;
 var UNDO=[];
 function save(k,v){try{
   if(k!=="lastedit"&&k!=="tab"&&k!=="moreopen"){
@@ -4573,23 +4573,30 @@ function hydratePeople(){
   add.forEach(function(a){ var has=false;PEOPLE.forEach(function(p){if(p.id===a.id)has=true;}); if(!has) PEOPLE.push(a); });
 }
 hydratePeople();
-(function seedJay(){ if(load("jseed",false))return;
-  var a=load("askedj",[]);
-  J2HER.forEach(function(x,i){ a.push({id:"js"+i,n:x.q,nj:x.qj,src:"en"}); });
-  save("askedj",a); save("jseed",true);
-})();
-/* Her board was the odd one out: his questions were seeded as live records, so
-   they can be edited, answered and counted, while hers were baked in as fixed
-   pairs you could only look at. Same treatment, so both boards behave alike. */
-(function seedHer(){ if(load("hseed",false))return;
-  var a=load("asked",[]);
-  J2H.forEach(function(x,i){
-    var id="hs"+i;
-    a.push({id:id,n:x.q,nj:x.qj,src:"ja"});
-    if(x.a||x.aj) save("hans."+id,{n:x.a||"",nj:x.aj||"",src:"en"});
-  });
-  save("asked",a); save("hseed",true);
-})();
+/* Seeded text is written as HTML, but a live record is plain text that gets
+   escaped on the way out — so the markup has to come off first, or you read
+   "&rsquo;" on the page. */
+function plainSeed(x){ return decodeEnt(String(x||"").replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]*>/g,"")); }
+/* The seeders must run AFTER the first sync, otherwise they write to this device
+   only — window.__fbWrite does not exist yet while the page is still parsing,
+   and the two of you end up with different boards. */
+function seedBoards(){
+  if(!load("jseed",false)){
+    var aj=load("askedj",[]);
+    J2HER.forEach(function(x,i){ if(!aj.some(function(q){return q.id==="js"+i;}))
+      aj.push({id:"js"+i,n:plainSeed(x.q),nj:plainSeed(x.qj),src:"en"}); });
+    save("askedj",aj); save("jseed",true);
+  }
+  if(!load("hseed2",false)){
+    var ah=load("asked",[]).filter(function(q){ return !/^hs\d+$/.test(q.id||""); });
+    J2H.forEach(function(x,i){
+      var id="hs"+i;
+      ah.push({id:id,n:plainSeed(x.q),nj:plainSeed(x.qj),src:"ja"});
+      if(x.a||x.aj) save("hans."+id,{n:plainSeed(x.a),nj:plainSeed(x.aj),src:"en"});
+    });
+    save("asked",ah); save("hseed2",true); save("hseed",true);
+  }
+}
 function dockLabel(b,f){b.innerHTML='<span lang-en>'+(f?"show":"hide")+'</span><span lang-ja>'+(f?"表示":"隠す")+'</span>';}
 function applyDocks(){
   document.querySelectorAll(".dock").forEach(function(d){
@@ -4712,6 +4719,12 @@ function tick(){
 tick(); setInterval(tick,1000);
 splitImgs();
 migrateLeg3();
+if(window.FBCONFIG){
+  /* the sync engine calls this once the cloud copy is in hand; if it never
+     connects, seed anyway rather than leaving the boards empty */
+  window.__seedBoards=function(){ window.__seedBoards=function(){}; seedBoards(); };
+  setTimeout(function(){ if(window.__seedBoards) window.__seedBoards(); },6000);
+} else seedBoards();
 renderAll();
 
 })();
@@ -4744,6 +4757,8 @@ if(window.FBCONFIG){
         if(v==="null"){ if(localStorage.getItem(key)!=null){localStorage.removeItem(key);changed=true;} }
         else if(localStorage.getItem(key)!==v){ localStorage.setItem(key,v); changed=true; }});
       if(first){ first=false;
+        /* the cloud copy is in hand now, so it is safe to seed anything missing */
+        try{ if(window.__seedBoards) window.__seedBoards(); }catch(e){ console.warn("seed",e); }
         /* first device in: seed the cloud with whatever this device already has */
         if(snap.empty){ for(let i=0;i<localStorage.length;i++){ const K=localStorage.key(i);
           if(K&&K.indexOf("lt4.")===0){ const k=K.slice(4);
