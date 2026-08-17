@@ -1541,8 +1541,16 @@ function delDeposit(id){
 const OSTAT={todo:'To contact',emailed:'Emailed',replied:'Replied',booked:'Booked',passed:'Passed'};
 const ONEXT={todo:'emailed',emailed:'replied',replied:'booked',booked:'passed',passed:'todo'};
 const OWARM={worked:'worked together',owes:'owes you money',cold:'new'};
-let outY=2026,outM=7,outSel=null;
-function outNav(d){outM+=d;if(outM<0){outM=11;outY--}if(outM>11){outM=0;outY++}render()}
+let outY=2026,outM=7,outSel=null,outHomed=false;
+function outNav(d){outHomed=true;outM+=d;if(outM<0){outM=11;outY--}if(outM>11){outM=0;outY++}render()}
+/* open on the month holding the next lead, not today's — an empty grid looks broken */
+function outHome(){
+  if(outHomed)return;outHomed=true;
+  const today=todayISO();
+  const next=(state.outreach||[]).filter(o=>o.date&&o.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  if(next){const[y,m,d]=next.date.split('-').map(Number);outY=y;outM=m-1;outSel=next.date}
+  else{const n=new Date();outY=n.getFullYear();outM=n.getMonth();outSel=today}
+}
 function leadsOn(iso){return (state.outreach||[]).filter(o=>o.date===iso)}
 function leadDetail(o){
   return '<div class="leaddet"><div class="top"><span class="nm">'+esc(o.name)+'</span>'
@@ -1557,6 +1565,7 @@ function leadDetail(o){
 }
 function renderOutreachCal(){
   const today=todayISO();
+  outHome();
   if(!outSel)outSel=today;
   $('outCalTitle').textContent=new Date(outY,outM,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
   $('outDow').innerHTML=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>'<div class="dow">'+d+'</div>').join('');
