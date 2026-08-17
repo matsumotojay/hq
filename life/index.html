@@ -1699,31 +1699,31 @@ function deleteOutreach(){
    NOTHING from `notes` is ever used here. Notes are private strategy (what someone owes,
    how they behave, what leverage there is) and must never reach the recipient. Only the
    explicit `pitch` field — written by Jay, for their eyes — goes in the body. */
+/* This mirrors the email Jay actually sent that won the HERSHE booking (Mar 2026) —
+   same opening, same service list, same closing, same signature and link block.
+   Do not "improve" the voice; it is his. Only `pitch` is variable. */
 function mailFor(o){
-  const ev=o.event||'the show', when=o.date?' on '+fmtDate(o.date):'';
+  const ev=o.event||'their upcoming show', when=o.date?' on '+fmtDate(o.date):'';
   const personal = (o.pitch||'').trim() ||
     (o.warm==='cold'
-      ? '[one line, in your words: why them specifically]'
-      : '[one line: remind them where you worked together]');
-  /* Short on purpose — managers skim. Credibility comes from naming real rooms,
-     not from adjectives. Links go straight to the nightlife work, never the homepage. */
+      ? '[optional: a line connecting you to them — a mutual artist, a room you both work]'
+      : '[one line: where you worked together before]');
   const body=
-`Hey${o.name?' '+o.name:''} —
+`Hello,
 
-Jay here, photo/video out of LA. I shoot a lot of nightlife — Academy, Exchange, Nova SD, Lost in Dreams.
-
-Saw ${o.name} is on ${ev}${when}. I'll be there — any interest in coverage? Photos, a quick recap edit, or vertical cuts for socials.
+I'm Jay Matsu, a photographer/ videographer based in LA and I wanted to offer any media services to ${o.name} for ${ev}${when}.
 
 ${personal}
 
-Recent work: jaymatsu.com/music
-IG: @jay_matsu
+I offer full multi-cam, photo, video, clips, vlog-style clips, full recap, etc. Please let me know if you're interested and I'll be happy to discuss pricing based on what your team is looking for!
 
-Happy to build something around whatever you actually need. Let me know either way.
+I look forward to hearing from you!
+Jay Matsu
 
-Jay Matsumoto
-(310) 951-2318`;
-  return {subject:o.name+(o.event?' — '+o.event:'')+(o.date?', '+fmtDate(o.date):'')+' · coverage?', body};
+PORTFOLIO: https://www.jaymatsu.com/music
+IG: @jay_matsu`;
+  const evUp=(o.event||'').toUpperCase();
+  return {subject:(o.name+' '+evUp).trim().toUpperCase()+' MEDIA INQUIRY', body};
 }
 let mailingId=null;
 function draftMail(id){
