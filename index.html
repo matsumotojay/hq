@@ -3756,18 +3756,21 @@ function renderMap(){
   w.innerHTML='<img src="'+src+'" alt="'+t("Map of hotels around Lake Toya with drive times to the venue","洞爺湖周辺のホテル地図・会場までの所要時間")+'" style="width:100%;height:auto;display:block;border-radius:14px">';
 }
 /* ---------- the tent, drawn to scale ----------
-   Ayuko confirmed 10m x 15m on 17 Aug 2026. Everything here is metres, so the
-   drawing and the clearance labels can never drift apart — the labels are
-   computed from the same numbers that place the rectangles. */
-var TENT={W:10,L:15};
+   Ayuko confirmed 10m x 15m on 17 Aug 2026. Every number below is metres, and
+   the clearance labels are measured off the same rectangles the drawing places,
+   so the picture and the figures can never disagree. */
 var TBL={W:1.8,D:1.2};      /* one guest table, from Makiko's file */
 var BANKL=TBL.W*2;          /* two joined end-to-end = one of the dashboard's rows */
-var CH=0.75;                /* a seated person, measured from the table edge */
+var CH=0.75;                /* a seated person, measured out from the table edge */
 var WALK=0.6;               /* room to get past the back of a chair */
 var PITCH=TBL.D+CH*2+WALK;  /* 3.3m from one row to the next */
-var SPAN=TBL.D+CH*2;        /* 2.7m — a row plus its chairs, nothing spare */
 var SEATD=0.45,SEATW=0.5,SEATP=0.6;
 
+function bankBox(b){                    /* the row plus everyone sitting at it */
+  var w=b.h?BANKL:TBL.D,h=b.h?TBL.D:BANKL;
+  return {x:b.x-(b.h?SEATD:CH),y:b.y-(b.h?CH:SEATD),
+          w:w+(b.h?SEATD:CH)*2,h:h+(b.h?CH:SEATD)*2};
+}
 function bankSeats(b){
   var s=[],k;
   if(b.h){
@@ -3788,116 +3791,116 @@ function bankSeats(b){
   return s;
 }
 function tentLayouts(){
-  var L={};
-  /* A — exactly what the Tables tab draws: four rows side by side. */
-  var aStart=(TENT.W-(3*PITCH+SPAN))/2, aBanks=[],i;
-  for(i=0;i<4;i++) aBanks.push({x:aStart+i*PITCH+CH,y:5.4,h:false});
-  L.side={n:"Four rows side by side",nj:"4列を横並び",what:"Four rows",whatj:"4列を",
-    sub:"What the Tables tab draws today",subj:"現在の「席次」タブの配置",
-    banks:aBanks,head:{x:(TENT.W-TBL.W)/2,y:1.6},buffet:null,dance:null,
-    need:3*PITCH+SPAN,have:TENT.W,axis:"across the 10m width",axisj:"幅10m方向"};
-  /* B — the same four rows, turned to run down the long side instead. */
-  var bBanks=[];
-  for(i=0;i<4;i++) bBanks.push({x:(TENT.W-BANKL)/2,y:3.6+i*PITCH,h:true});
-  L.rows={n:"Four rows down the length",nj:"4列を長辺方向に",what:"Four rows",whatj:"4列を",
-    sub:"Same rows, rotated a quarter turn",subj:"同じ配置を90度回転",
-    banks:bBanks,head:{x:(TENT.W-TBL.W)/2,y:1.0},
-    buffet:{x:0.5,y:6.0,w:0.75,h:3.6},dance:null,
-    need:3*PITCH+SPAN,have:TENT.L,axis:"along the 15m length",axisj:"長さ15m方向"};
-  /* C — two rows by two, which is the only version that frees a square. */
-  var cx=[(TENT.W-(PITCH+SPAN))/2+CH,(TENT.W-(PITCH+SPAN))/2+CH+PITCH],cBanks=[];
-  for(i=0;i<2;i++) for(var j=0;j<2;j++) cBanks.push({x:cx[j],y:3.2+i*(BANKL+1.2),h:false});
-  L.grid={n:"Two by two",nj:"2列×2段",what:"Two columns",whatj:"2列を",
-    sub:"Four rows, stacked two deep",subj:"4列を2列×2段に",
-    banks:cBanks,head:{x:(TENT.W-TBL.W)/2,y:0.6},
-    buffet:{x:0.4,y:4.0,w:0.75,h:3.6},dance:{x:3.0,y:12.5,w:4.0,h:2.3},
-    need:PITCH+SPAN,have:TENT.W,axis:"across the 10m width",axisj:"幅10m方向"};
+  var L={},i,j;
+  /* A — what the Tables tab has always drawn: four rows abreast. */
+  var aB=[],aStart=(10-(3*PITCH+TBL.D+CH*2))/2;
+  for(i=0;i<4;i++) aB.push({x:aStart+i*PITCH+CH,y:5.4,h:false});
+  L.side={n:"Four rows abreast",nj:"4列を横並び",
+    sub:"The original arrangement — the couple on the 10m end",
+    subj:"当初の配置 — おふたりは10mの短辺側",
+    tw:10,tl:15,banks:aB,head:{x:4.1,y:1.6},stage:null,buffet:null};
+  /* B — same idea folded in half, couple still on the short end. */
+  var bx=[(10-(PITCH+TBL.D+CH*2))/2+CH],bB=[];
+  bx.push(bx[0]+PITCH);
+  for(i=0;i<2;i++) for(j=0;j<2;j++) bB.push({x:bx[j],y:3.2+i*(BANKL+1.2),h:false});
+  L.grid={n:"Two by two",nj:"2列×2段",
+    sub:"Folded in half, the couple still on the 10m end",
+    subj:"2列×2段。おふたりは引き続き10mの短辺側",
+    tw:10,tl:15,banks:bB,head:{x:4.1,y:0.6},
+    stage:{x:0.4,y:12.4,w:3.0,h:1.8},buffet:{x:0.4,y:4.0,w:0.75,h:3.6}};
+  /* C — turned a quarter: the couple sit along the 15m wall, so the room reads
+     wide instead of deep and nobody is looking past two rows of heads. */
+  var cB=[];
+  for(i=0;i<2;i++) for(j=0;j<2;j++) cB.push({x:2.2+j*5.2,y:3.9+i*PITCH,h:true});
+  L.long={n:"Couple on the long wall",nj:"おふたりは長辺側",
+    sub:"Turned a quarter — everyone faces the 15m wall, two rows deep",
+    subj:"90度回転 — 全員が15mの壁側を向き、奥行きは2列",
+    tw:15,tl:10,banks:cB,head:{x:5.4,y:0.8},
+    stage:{x:9.6,y:0.7,w:3.0,h:1.8},buffet:{x:12.6,y:3.6,w:0.75,h:3.6}};
   return L;
 }
+function tentFit(lay){
+  var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  lay.banks.forEach(function(b){var r=bankBox(b);
+    x0=Math.min(x0,r.x);y0=Math.min(y0,r.y);x1=Math.max(x1,r.x+r.w);y1=Math.max(y1,r.y+r.h);});
+  return {w:x1-x0,h:y1-y0,x0:x0,y0:y0,x1:x1,y1:y1,
+          okX:x1<=lay.tw+1e-9&&x0>=-1e-9, okY:y1<=lay.tl+1e-9&&y0>=-1e-9};
+}
 function tentPlan(key){
-  var L=tentLayouts(),lay=L[key]||L.grid,P=1.9,sc=1;
-  var vb=(-P)+" "+(-P)+" "+(TENT.W+P*2)+" "+(TENT.L+P*2);
-  var o='<svg viewBox="'+vb+'" style="width:100%;height:auto;max-height:78vh;display:block" '+
+  var L=tentLayouts(),lay=L[key]||L.long,f=tentFit(lay),P=1.9;
+  var vb=(-P)+" "+(-P)+" "+(lay.tw+P*2)+" "+(lay.tl+P*2.4);
+  var o='<svg viewBox="'+vb+'" style="width:100%;height:auto;max-height:76vh;display:block" '+
         'xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">';
-  o+='<defs><pattern id="tg" width="1" height="1" patternUnits="userSpaceOnUse">'+
+  o+='<defs><pattern id="tg'+key+'" width="1" height="1" patternUnits="userSpaceOnUse">'+
      '<path d="M1 0V1H0" fill="none" stroke="var(--line)" stroke-width=".02"/></pattern></defs>';
-  var over=lay.need>lay.have+1e-9;
-  /* the floor */
-  o+='<rect x="0" y="0" width="'+TENT.W+'" height="'+TENT.L+'" fill="url(#tg)"/>';
-  o+='<rect x="0" y="0" width="'+TENT.W+'" height="'+TENT.L+'" fill="none" stroke="var(--ink)" stroke-width=".09"/>';
-  /* the rows */
+  o+='<rect x="0" y="0" width="'+lay.tw+'" height="'+lay.tl+'" fill="url(#tg'+key+')"/>';
+  o+='<rect x="0" y="0" width="'+lay.tw+'" height="'+lay.tl+'" fill="none" stroke="var(--ink)" stroke-width=".09"/>';
   lay.banks.forEach(function(b,n){
-    var w=b.h?BANKL:TBL.D,h=b.h?TBL.D:BANKL;
-    var bad=over&&(b.x-CH<-0.001||b.x+w+CH>TENT.W+0.001||b.y-CH<-0.001||b.y+h+CH>TENT.L+0.001);
+    var w=b.h?BANKL:TBL.D,h=b.h?TBL.D:BANKL,r=bankBox(b);
+    var bad=r.x<-0.001||r.y<-0.001||r.x+r.w>lay.tw+0.001||r.y+r.h>lay.tl+0.001;
     bankSeats(b).forEach(function(s){
-      o+='<rect x="'+s.x.toFixed(2)+'" y="'+s.y.toFixed(2)+'" width="'+s.w+'" height="'+s.h+'" rx=".12" '+
-         'fill="'+(bad?"var(--coral)":"var(--grape)")+'" opacity=".55"/>';});
-    o+='<rect x="'+b.x.toFixed(2)+'" y="'+b.y.toFixed(2)+'" width="'+w+'" height="'+h+'" rx=".08" '+
-       'fill="var(--card)" stroke="'+(bad?"var(--coral)":"var(--ink-soft)")+'" stroke-width=".07"/>';
-    o+='<text x="'+(b.x+w/2).toFixed(2)+'" y="'+(b.y+h/2+0.22).toFixed(2)+'" text-anchor="middle" '+
-       'font-size=".62" font-weight="700" fill="var(--ink-soft)">'+(n*2+1)+'·'+(n*2+2)+'</text>';
-  });
-  /* head table */
+      o+='<rect x="'+s.x.toFixed(2)+'" y="'+s.y.toFixed(2)+'" width="'+s.w+'" height="'+s.h+'" rx=".12" fill="'+
+         (bad?"var(--coral)":"var(--grape)")+'" opacity=".55"/>';});
+    o+='<rect x="'+b.x.toFixed(2)+'" y="'+b.y.toFixed(2)+'" width="'+w+'" height="'+h+'" rx=".08" fill="var(--card)" stroke="'+
+       (bad?"var(--coral)":"var(--ink-soft)")+'" stroke-width=".07"/>';
+    o+='<text x="'+(b.x+w/2).toFixed(2)+'" y="'+(b.y+h/2+0.22).toFixed(2)+'" text-anchor="middle" font-size=".62" '+
+       'font-weight="700" fill="var(--ink-soft)">'+(n*2+1)+'·'+(n*2+2)+'</text>';});
   var hd=lay.head;
-  o+='<rect x="'+hd.x+'" y="'+hd.y+'" width="'+TBL.W+'" height="'+TBL.D+'" rx=".08" fill="var(--pink)" opacity=".35"/>';
-  o+='<rect x="'+hd.x+'" y="'+hd.y+'" width="'+TBL.W+'" height="'+TBL.D+'" rx=".08" fill="none" stroke="var(--pink)" stroke-width=".07"/>';
+  o+='<rect x="'+hd.x+'" y="'+hd.y+'" width="'+TBL.W+'" height="'+TBL.D+'" rx=".08" fill="var(--pink)" opacity=".35" stroke="var(--pink)" stroke-width=".07"/>';
   o+='<text x="'+(hd.x+TBL.W/2)+'" y="'+(hd.y+TBL.D/2+0.2)+'" text-anchor="middle" font-size=".55" font-weight="700" fill="var(--ink)">'+t("You two","おふたり")+'</text>';
-  /* buffet + dance floor */
-  if(lay.buffet){var bf=lay.buffet;
+  if(lay.stage){var st=lay.stage;
+    o+='<rect x="'+st.x+'" y="'+st.y+'" width="'+st.w+'" height="'+st.h+'" rx=".1" fill="var(--sky)" opacity=".3" stroke="var(--sky)" stroke-width=".07"/>';
+    o+='<text x="'+(st.x+st.w/2)+'" y="'+(st.y+st.h/2+0.2)+'" text-anchor="middle" font-size=".58" font-weight="700" fill="var(--ink)">'+t("MC / SPEECHES","司会・スピーチ")+'</text>';}
+  if(lay.buffet){var bf=lay.buffet,cx=bf.x+bf.w/2,cy=bf.y+bf.h/2;
     o+='<rect x="'+bf.x+'" y="'+bf.y+'" width="'+bf.w+'" height="'+bf.h+'" rx=".08" fill="var(--amber)" opacity=".45" stroke="var(--amber)" stroke-width=".06"/>';
-    o+='<text x="'+(bf.x+bf.w/2)+'" y="'+(bf.y+bf.h/2)+'" text-anchor="middle" font-size=".5" font-weight="700" fill="var(--ink)" transform="rotate(90 '+(bf.x+bf.w/2)+' '+(bf.y+bf.h/2)+')">'+t("BUFFET","ビュッフェ")+'</text>';}
-  if(lay.dance){var df=lay.dance;
-    o+='<rect x="'+df.x+'" y="'+df.y+'" width="'+df.w+'" height="'+df.h+'" rx=".12" fill="var(--teal)" opacity=".3" stroke="var(--teal)" stroke-width=".07" stroke-dasharray=".3 .2"/>';
-    o+='<text x="'+(df.x+df.w/2)+'" y="'+(df.y+df.h/2+0.2)+'" text-anchor="middle" font-size=".62" font-weight="700" fill="var(--ink)">'+t("DANCE FLOOR","ダンスフロア")+'</text>';}
-  /* the tent's own dimensions */
-  o+='<text x="'+(TENT.W/2)+'" y="-0.75" text-anchor="middle" font-size=".78" font-weight="800" fill="var(--ink)">'+TENT.W+' m</text>';
-  o+='<text x="-0.8" y="'+(TENT.L/2)+'" text-anchor="middle" font-size=".78" font-weight="800" fill="var(--ink)" transform="rotate(-90 -0.8 '+(TENT.L/2)+')">'+TENT.L+' m</text>';
-  /* the one measurement that decides it */
-  var y0=TENT.L+0.95;
-  o+='<line x1="0" y1="'+y0+'" x2="'+lay.need.toFixed(2)+'" y2="'+y0+'" stroke="'+(over?"var(--coral)":"var(--leaf)")+'" stroke-width=".07"/>';
-  o+='<line x1="0" y1="'+(y0-.22)+'" x2="0" y2="'+(y0+.22)+'" stroke="'+(over?"var(--coral)":"var(--leaf)")+'" stroke-width=".07"/>';
-  o+='<line x1="'+lay.need.toFixed(2)+'" y1="'+(y0-.22)+'" x2="'+lay.need.toFixed(2)+'" y2="'+(y0+.22)+'" stroke="'+(over?"var(--coral)":"var(--leaf)")+'" stroke-width=".07"/>';
-  o+='<text x="'+(lay.need/2).toFixed(2)+'" y="'+(y0+.85)+'" text-anchor="middle" font-size=".62" font-weight="800" '+
-     'fill="'+(over?"var(--coral)":"var(--leaf)")+'">'+lay.need.toFixed(1)+' m '+t("needed ","必要 ")+(over?"▶ "+lay.have+" m "+t("available","有効"):"✓")+'</text>';
+    o+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" font-size=".5" font-weight="700" fill="var(--ink)" transform="rotate(90 '+cx+' '+cy+')">'+t("BUFFET","ビュッフェ")+'</text>';}
+  o+='<text x="'+(lay.tw/2)+'" y="-0.75" text-anchor="middle" font-size=".78" font-weight="800" fill="var(--ink)">'+lay.tw+' m</text>';
+  o+='<text x="-0.8" y="'+(lay.tl/2)+'" text-anchor="middle" font-size=".78" font-weight="800" fill="var(--ink)" transform="rotate(-90 -0.8 '+(lay.tl/2)+')">'+lay.tl+' m</text>';
+  function span(x1,x2,y,ok){
+    return '<line x1="'+x1.toFixed(2)+'" y1="'+y+'" x2="'+x2.toFixed(2)+'" y2="'+y+'" stroke="'+(ok?"var(--leaf)":"var(--coral)")+'" stroke-width=".07"/>'+
+      '<line x1="'+x1.toFixed(2)+'" y1="'+(y-.22)+'" x2="'+x1.toFixed(2)+'" y2="'+(y+.22)+'" stroke="'+(ok?"var(--leaf)":"var(--coral)")+'" stroke-width=".07"/>'+
+      '<line x1="'+x2.toFixed(2)+'" y1="'+(y-.22)+'" x2="'+x2.toFixed(2)+'" y2="'+(y+.22)+'" stroke="'+(ok?"var(--leaf)":"var(--coral)")+'" stroke-width=".07"/>'+
+      '<text x="'+((x1+x2)/2).toFixed(2)+'" y="'+(y+.85)+'" text-anchor="middle" font-size=".62" font-weight="800" fill="'+
+      (ok?"var(--leaf)":"var(--coral)")+'">'+(x2-x1).toFixed(1)+' m</text>';
+  }
+  o+=span(f.x0,f.x1,lay.tl+0.95,f.okX);
   o+='</svg>';
   return o;
 }
 function renderTent(){
   var w=document.getElementById("tentplan"); if(!w) return;
-  var L=tentLayouts(),key=load("tentv","grid"); if(!L[key])key="grid";
-  var lay=L[key],over=lay.need>lay.have+1e-9;
+  var L=tentLayouts(),key=load("tentv","long"); if(!L[key])key="long";
+  var lay=L[key],f=tentFit(lay),ok=f.okX&&f.okY;
   var h='<div class="seg" style="margin-bottom:.7rem;max-width:100%;overflow:auto">';
-  ["side","rows","grid"].forEach(function(k){
+  ["side","grid","long"].forEach(function(k){
     h+='<button type="button" data-tv="'+k+'" style="flex:1;font:inherit;font-family:var(--disp);font-weight:800;'+
-       'font-size:.72rem;border:0;padding:.5rem .5rem;cursor:pointer;white-space:nowrap;'+
+       'font-size:.72rem;border:0;padding:.5rem;cursor:pointer;white-space:nowrap;'+
        (k===key?'background:var(--accent);color:#fff':'background:transparent;color:var(--ink-faint)')+'">'+
        bi(L[k].n,L[k].nj)+'</button>';});
-  h+='</div>';
-  h+='<div style="font-size:.82rem;color:var(--ink-soft);margin-bottom:.5rem">'+bi(lay.sub,lay.subj)+'</div>';
+  h+='</div><div style="font-size:.82rem;color:var(--ink-soft);margin-bottom:.5rem">'+bi(lay.sub,lay.subj)+'</div>';
   h+=tentPlan(key);
-  var need=lay.need,have=lay.have,gap=have-need;
-  h+='<div class="card pad" style="margin-top:.8rem;border-color:'+(over?"var(--coral)":"var(--leaf)")+
-     ';background:color-mix(in srgb,'+(over?"var(--coral)":"var(--leaf)")+' 8%,var(--card))">'+
-     '<div style="font-family:var(--disp);font-weight:800;font-size:.9rem;margin-bottom:.3rem">'+
-     (over?bi("Does not fit","収まりません"):bi("Fits","収まります"))+'</div>'+
-     '<div style="font-size:.84rem;line-height:1.7">'+
-     bi(lay.what+" "+lay.axis+" need <b>"+need.toFixed(1)+"m</b>. You have <b>"+have+"m</b>"+
-        (over?", so it is over by <b>"+Math.abs(gap).toFixed(1)+"m</b>."
-             :", leaving <b>"+gap.toFixed(1)+"m</b> spare."),
-        lay.axisj+"に"+lay.whatj+"並べると<b>"+need.toFixed(1)+"m</b>必要です。有効寸法は<b>"+have+"m</b>で、"+
-        (over?"<b>"+Math.abs(gap).toFixed(1)+"m</b>不足します。":"<b>"+gap.toFixed(1)+"m</b>の余裕があります。"))+
+  var col=ok?"var(--leaf)":"var(--coral)";
+  h+='<div class="card pad" style="margin-top:.8rem;border-color:'+col+';background:color-mix(in srgb,'+col+' 8%,var(--card))">'+
+     '<div style="font-family:var(--disp);font-weight:800;font-size:.9rem;margin-bottom:.35rem">'+
+     (ok?bi("Fits","収まります"):bi("Does not fit","収まりません"))+'</div>'+
+     '<div style="font-size:.84rem;line-height:1.8">'+
+     bi("Seated guests take <b>"+f.w.toFixed(1)+"m</b> across a <b>"+lay.tw+"m</b> wall"+
+        (f.okX?" — <b>"+(lay.tw-f.w).toFixed(1)+"m</b> spare.":" — <b>"+(f.w-lay.tw).toFixed(1)+"m</b> too much.")+"<br>"+
+        "And <b>"+f.h.toFixed(1)+"m</b> deep into <b>"+lay.tl+"m</b>"+
+        (f.okY?" — <b>"+(lay.tl-f.h).toFixed(1)+"m</b> spare.":" — <b>"+(f.h-lay.tl).toFixed(1)+"m</b> too much."),
+        "着席したゲストの占有幅は<b>"+f.w.toFixed(1)+"m</b>（壁の長さ<b>"+lay.tw+"m</b>）"+
+        (f.okX?"、余裕<b>"+(lay.tw-f.w).toFixed(1)+"m</b>。":"、<b>"+(f.w-lay.tw).toFixed(1)+"m</b>超過。")+"<br>"+
+        "奥行きは<b>"+f.h.toFixed(1)+"m</b>（有効<b>"+lay.tl+"m</b>）"+
+        (f.okY?"、余裕<b>"+(lay.tl-f.h).toFixed(1)+"m</b>。":"、<b>"+(f.h-lay.tl).toFixed(1)+"m</b>超過。"))+
      '</div></div>';
   h+='<div style="display:flex;flex-wrap:wrap;gap:.5rem 1.1rem;margin-top:.7rem;font-size:.76rem;color:var(--ink-faint)">'+
-     '<span>'+bi("Table 1800×1200","テーブル 1800×1200")+'</span>'+
-     '<span>'+bi("Seat 60cm","1席 60cm")+'</span>'+
-     '<span>'+bi("Chair 75cm","椅子 75cm")+'</span>'+
-     '<span>'+bi("Walkway 60cm","通路 60cm")+'</span>'+
+     '<span>'+bi("Table 1800×1200","テーブル 1800×1200")+'</span><span>'+bi("Seat 60cm","1席 60cm")+'</span>'+
+     '<span>'+bi("Chair 75cm","椅子 75cm")+'</span><span>'+bi("Walkway 60cm","通路 60cm")+'</span>'+
      '<span>'+bi("Row to row "+PITCH.toFixed(1)+"m","列間 "+PITCH.toFixed(1)+"m")+'</span></div>';
   w.innerHTML=h;
   w.querySelectorAll("[data-tv]").forEach(function(b){
     b.addEventListener("click",function(){save("tentv",b.dataset.tv);renderTent();});});
 }
-
 function renderSeat(){
   var wrap=document.getElementById("seatlay"); if(!wrap) return;
   document.getElementById("z-spool").innerHTML="";
