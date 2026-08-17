@@ -1703,7 +1703,11 @@ function deleteOutreach(){
    same opening, same service list, same closing, same signature and link block.
    Do not "improve" the voice; it is his. Only `pitch` is variable. */
 function mailFor(o){
-  const ev=o.event||'their upcoming show', when=o.date?' on '+fmtDate(o.date):'';
+  /* Only a REAL event (venue/festival + date) goes in the email. Leads whose "event"
+     is an internal reminder have event:'' — then the email says "upcoming shows"
+     and the date (a reach-out-by reminder, not a show date) stays out entirely. */
+  const ev=(o.event||'').trim();
+  const forPhrase=ev ? ev+(o.date?' on '+fmtDate(o.date):'') : 'any upcoming shows';
   const personal = (o.pitch||'').trim() ||
     (o.warm==='cold'
       ? '[optional: a line connecting you to them — a mutual artist, a room you both work]'
@@ -1711,7 +1715,7 @@ function mailFor(o){
   const body=
 `Hello,
 
-I'm Jay Matsu, a photographer/ videographer based in LA and I wanted to offer any media services to ${o.name} for ${ev}${when}.
+I'm Jay Matsu, a photographer/ videographer based in LA and I wanted to offer any media services to ${o.name} for ${forPhrase}.
 
 ${personal}
 
@@ -1722,8 +1726,7 @@ Jay Matsu
 
 PORTFOLIO: https://www.jaymatsu.com/music
 IG: @jay_matsu`;
-  const evUp=(o.event||'').toUpperCase();
-  return {subject:(o.name+' '+evUp).trim().toUpperCase()+' MEDIA INQUIRY', body};
+  return {subject:((o.name+' '+ev).trim()+' MEDIA INQUIRY').toUpperCase(), body};
 }
 let mailingId=null;
 function draftMail(id){
