@@ -244,6 +244,16 @@
   .leaddet .nm{font-weight:700;font-size:14.5px}
   .leaddet .sub{font-size:12.5px;color:var(--ink2);margin-top:3px}
   .leaddet .acts{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+  /* conflicts against the real calendar */
+  .day.clashhard{background:var(--urgent-soft)}
+  .day.clashsoft{background:var(--surface2)}
+  .clashchip{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--chip);color:var(--ink3)}
+  .clashchip.hard{background:var(--urgent-soft);color:var(--urgent)}
+  .clashline{font-size:12px;color:var(--ink3);margin-top:4px}
+  .clashline.hard{color:var(--urgent);font-weight:600}
+  .clashbanner{font-size:13px;padding:8px 11px;border-radius:8px;background:var(--surface2);color:var(--ink2);margin-bottom:10px}
+  .clashbanner.hard{background:var(--urgent-soft);color:var(--urgent);font-weight:700}
+  .privnote{font-size:12px;color:var(--ink3);margin-top:3px;padding-left:8px;border-left:2px solid var(--line)}
 
   /* ── INVOICES ────────────────────────── */
   .nudge{display:flex;gap:12px;align-items:center;padding:12px 15px;margin-bottom:10px;border-left:3px solid var(--owed)}
@@ -585,7 +595,8 @@
         <select id="oStatus"><option value="todo">To contact</option><option value="emailed">Emailed</option><option value="replied">Replied</option><option value="booked">Booked</option><option value="passed">Passed</option></select>
       </div>
     </div>
-    <div class="field"><label>Notes / the personal line for their email</label><textarea id="oNotes" rows="2" placeholder="e.g. shot his set at Lost in Dreams in July"></textarea></div>
+    <div class="field"><label>✉ Line to put IN the email <span style="font-weight:400;color:var(--ink3)">— they will read this</span></label><textarea id="oPitch" rows="2" placeholder="e.g. I shot your Lost in Dreams set in July and would love to link up again"></textarea></div>
+    <div class="field"><label>🔒 Private notes <span style="font-weight:400;color:var(--urgent)">— never sent, your eyes only</span></label><textarea id="oNotes" rows="3" placeholder="what they owe you, how they negotiate, who to cc…"></textarea></div>
     <div class="modalfoot">
       <button class="btn danger" id="oDelete" style="display:none" onclick="deleteOutreach()">Delete</button>
       <span class="spacer"></span>
@@ -1552,14 +1563,32 @@ function outHome(){
   else{const n=new Date();outY=n.getFullYear();outM=n.getMonth();outSel=today}
 }
 function leadsOn(iso){return (state.outreach||[]).filter(o=>o.date===iso)}
+/* what's already on Jay's real calendar that day — birthdays don't block anything */
+function busyOn(iso){
+  return (state.events||[]).filter(e=>{
+    if(!e.date)return false;
+    if(e.title.indexOf('🎂')===0)return false;
+    return e.endDate?(e.date<=iso&&iso<=e.endDate):e.date===iso;
+  });
+}
+/* hard = a paid gig, a trip you're inside of, or something with a clock on it */
+function clash(iso){
+  const b=busyOn(iso);if(!b.length)return null;
+  const hard=b.filter(e=>e.gig||e.endDate||e.start);
+  return {hard:hard.length>0, items:b, label:b.map(e=>e.title).join(' · ')};
+}
 function leadDetail(o){
+  const c=o.date?clash(o.date):null;
   return '<div class="leaddet"><div class="top"><span class="nm">'+esc(o.name)+'</span>'
     +'<span class="st '+o.status+'" onclick="cycleOutreach(\''+o.id+'\')" title="Tap to advance">'+OSTAT[o.status]+'</span>'
-    +'<span class="warm '+o.warm+'">'+OWARM[o.warm]+'</span></div>'
+    +'<span class="warm '+o.warm+'">'+OWARM[o.warm]+'</span>'
+    +(c?'<span class="clashchip'+(c.hard?' hard':'')+'">'+(c.hard?'⚠️ you’re booked':'heads-up')+'</span>':'')+'</div>'
+    +(c?'<div class="clashline'+(c.hard?' hard':'')+'">'+(c.hard?'Already on your calendar: ':'Also that day: ')+esc(c.label)+'</div>':'')
     +'<div class="sub">'+esc(o.event||'—')+'</div>'
     +'<div class="sub'+(o.email?'':' ')+'" style="'+(o.email?'':'color:var(--owed);font-weight:600')+'">'
       +esc(o.email||'no email yet — find their booking contact')+'</div>'
-    +(o.notes?'<div class="sub" style="color:var(--ink3)">'+escLink(o.notes)+'</div>':'')
+    +(o.pitch?'<div class="sub">✉ <i>'+esc(o.pitch)+'</i></div>':'')
+    +(o.notes?'<div class="privnote">🔒 '+escLink(o.notes)+'</div>':'')
     +'<div class="acts"><button class="btn small" onclick="draftMail(\''+o.id+'\')">✉ Draft email</button>'
     +'<button class="btn small" onclick="openOutModal(\''+o.id+'\')">✎ Edit</button></div></div>';
 }
@@ -1578,10 +1607,11 @@ function renderOutreachCal(){
     const cell=document.createElement('div');
     cell.className='day'+(d.getMonth()!==outM?' out':'')+(iso===today?' today':'')+(iso===outSel?' sel':'');
     cell.innerHTML='<div class="dnum">'+d.getDate()+'</div>';
-    const ls=leadsOn(iso);
+    const ls=leadsOn(iso), c=clash(iso);
+    if(c&&ls.length)cell.classList.add(c.hard?'clashhard':'clashsoft');
     ls.slice(0,2).forEach(o=>{
       const cls=o.status==='booked'?'booked':(o.warm==='owes'?'owes':(o.warm==='worked'?'worked':''));
-      cell.innerHTML+='<div class="leadchip '+cls+'">'+esc(o.name)+'</div>';
+      cell.innerHTML+='<div class="leadchip '+cls+'">'+(c&&c.hard?'⚠️ ':'')+esc(o.name)+'</div>';
     });
     if(ls.length>2)cell.innerHTML+='<div class="evmore">+'+(ls.length-2)+' more</div>';
     cell.onclick=()=>{outSel=iso;render()};
@@ -1590,6 +1620,8 @@ function renderOutreachCal(){
   const panel=$('outDayPanel'), ls=leadsOn(outSel);
   panel.style.display='';
   let h='<h3>'+new Date(outSel+'T12:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+'</h3>';
+  const dc=clash(outSel);
+  if(dc)h+='<div class="clashbanner'+(dc.hard?' hard':'')+'">'+(dc.hard?'⚠️ You’re already booked: ':'On your calendar: ')+esc(dc.label)+'</div>';
   h+=ls.length?ls.map(leadDetail).join('')
      :'<p style="color:var(--ink3);font-size:13.5px">No leads this day.</p>';
   h+='<div style="margin-top:10px"><button class="btn small" onclick="openOutModal(null,\''+outSel+'\')">＋ Add a lead on this day</button></div>';
@@ -1644,14 +1676,15 @@ function openOutModal(id,presetDate){
   $('oName').value=o?o.name:'';$('oEmail').value=o?o.email:'';
   $('oEvent').value=o?o.event:'';$('oDate').value=o?o.date:(presetDate||outSel||'');
   $('oWarm').value=o?o.warm:'cold';$('oStatus').value=o?o.status:'todo';
-  $('oNotes').value=o?o.notes:'';
+  $('oNotes').value=o?(o.notes||''):'';$('oPitch').value=o?(o.pitch||''):'';
   $('oDelete').style.display=o?'':'none';
   $('outOverlay').classList.add('open');$('oName').focus();
 }
 function saveOutreach(){
   const name=$('oName').value.trim();if(!name)return;
   const d={name,email:$('oEmail').value.trim(),event:$('oEvent').value.trim(),date:$('oDate').value,
-           warm:$('oWarm').value,status:$('oStatus').value,notes:$('oNotes').value.trim()};
+           warm:$('oWarm').value,status:$('oStatus').value,
+           notes:$('oNotes').value.trim(),pitch:$('oPitch').value.trim()};
   state.outreach=state.outreach||[];
   if(editingOutId)Object.assign(state.outreach.find(x=>x.id===editingOutId),d);
   else state.outreach.push(Object.assign({id:uid(),lastTouch:''},d));
@@ -1662,29 +1695,35 @@ function deleteOutreach(){
   state.outreach=(state.outreach||[]).filter(x=>x.id!==editingOutId);
   save();closeOverlays();render();
 }
-/* ---- the email ---- */
+/* ---- the email ----
+   NOTHING from `notes` is ever used here. Notes are private strategy (what someone owes,
+   how they behave, what leverage there is) and must never reach the recipient. Only the
+   explicit `pitch` field — written by Jay, for their eyes — goes in the body. */
 function mailFor(o){
-  const ev=o.event||'your upcoming show', when=o.date?' on '+fmtDate(o.date):'';
-  const personal = o.warm==='cold'
-    ? '[one line: why them specifically — a set you caught, a venue you both work, a mutual artist]'
-    : (o.notes||'We\'ve worked together before and I\'d love to link up again.');
+  const ev=o.event||'the show', when=o.date?' on '+fmtDate(o.date):'';
+  const personal = (o.pitch||'').trim() ||
+    (o.warm==='cold'
+      ? '[one line, in your words: why them specifically]'
+      : '[one line: remind them where you worked together]');
+  /* Short on purpose — managers skim. Credibility comes from naming real rooms,
+     not from adjectives. Links go straight to the nightlife work, never the homepage. */
   const body=
-`Hi${o.name?' — '+o.name+' team':''},
+`Hey${o.name?' '+o.name:''} —
 
-I'm Jay Matsumoto, a photographer and videographer in LA. I shoot a lot in the SoCal dance scene — recent nights include Lost in Dreams, Academy LA, Exchange LA and Nova SD, plus festival work.
+Jay here, photo/video out of LA. I shoot a lot of nightlife — Academy, Exchange, Nova SD, Lost in Dreams.
 
-I saw ${o.name} is playing ${ev}${when}. I'll be on site that day and wanted to ask whether you need coverage — stills, a short recap edit, or vertical content cut for socials.
+Saw ${o.name} is on ${ev}${when}. I'll be there — any interest in coverage? Photos, a quick recap edit, or vertical cuts for socials.
 
 ${personal}
 
-Recent work: jaymatsu.com
-Happy to put together a package that fits what you actually need — same-night turnarounds are doable if you want something up fast.
+Recent work: jaymatsu.com/music
+IG: @jay_matsu
 
-Thanks for the time,
+Happy to build something around whatever you actually need. Let me know either way.
 
 Jay Matsumoto
-matsumotojay@gmail.com · (310) 951-2318 · jaymatsu.com`;
-  return {subject:'Coverage for '+o.name+(o.event?' — '+o.event:'')+(o.date?', '+fmtDate(o.date):''), body};
+(310) 951-2318`;
+  return {subject:o.name+(o.event?' — '+o.event:'')+(o.date?', '+fmtDate(o.date):'')+' · coverage?', body};
 }
 let mailingId=null;
 function draftMail(id){
