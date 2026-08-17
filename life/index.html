@@ -671,6 +671,18 @@ function migrate(){
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
   }
+  // patch 20 (2026-08-17): Lost Lands flights booked — United G7ERLJ
+  if(!state.patch20){
+    state.patch20=true;
+    state.events.push(
+      {id:uid(),title:'✈️ Fly LAX → Columbus (UA 729 → UA 451)',details:'Conf G7ERLJ · LAX 12:10 AM → ORD 6:20 AM · UA 451 ORD 6:59 AM → CMH 9:29 AM (39-min connection — tight!)\nBe at LAX ~10:30 PM Tue the 15th.\nBasic Economy: NO full-size carry-on · checked bag $50 each way · $358.40 RT on Amex',date:'2026-09-16',endDate:'',start:'00:10',end:'',gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''},
+      {id:uid(),title:'✈️ Fly Columbus → LAX (UA 622 → UA 374)',details:'Conf G7ERLJ · CMH 10:32 AM → ORD 11:06 AM · UA 374 ORD 1:58 PM → LAX 4:30 PM',date:'2026-09-22',endDate:'',start:'10:32',end:'',gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''}
+    );
+    const trip=state.events.find(e=>e.title==='Lost Lands — Ohio');
+    if(trip){trip.endDate='2026-09-22';trip.details='Festival trip · flights booked (G7ERLJ) · still need: a stay through the 21st night'}
+    const ft=state.tasks.find(t=>t.title.indexOf('Ohio for Lost Lands')>-1&&t.status==='open');
+    if(ft){ft.status='done'}
+  }
   // patch 19 (2026-08-13): lineup outreach — stack more gigs at festivals he's already booked for
   if(!state.patch19){
     state.patch19=true;
