@@ -1637,18 +1637,21 @@ function renderOutreach(){
     +'<div class="card stat made"><div class="lbl">Booked</div><div class="val num">'+n('booked')+'</div><div class="sub">from outreach</div></div>';
   const b=$('outBadge');
   if(b){const c=n('todo');b.style.display=c?'flex':'none';b.textContent=c}
-  /* grouped by the event that gives you a reason to write */
+  /* Two kinds of leads, kept visually separate:
+     — dated = a real show on a real day (these are what the calendar plots)
+     — undated = people Jay has a relationship with; reach out anytime, no show attached */
+  const dated=list.filter(o=>o.date), undated=list.filter(o=>!o.date);
   const groups={};
-  list.forEach(o=>{const k=(o.date||'9999')+'|'+(o.event||'No event');(groups[k]=groups[k]||[]).push(o)});
+  dated.forEach(o=>{const k=o.date+'|'+(o.event||'(show TBC)');(groups[k]=groups[k]||[]).push(o)});
   const keys=Object.keys(groups).sort();
   const w=$('outList');
-  if(!keys.length){w.innerHTML='<div class="card"><div class="tasklist-empty">Nothing in the pipeline yet — add a contact, or ask me to scan the clubs.</div></div>';return}
+  if(!keys.length&&!undated.length){w.innerHTML='<div class="card"><div class="tasklist-empty">Nothing in the pipeline yet — add a contact, or ask me to scan the clubs.</div></div>';return}
   w.innerHTML=keys.map(k=>{
     const [date,ev]=k.split('|'), rows=groups[k];
-    const days=date==='9999'?null:Math.round((new Date(date)-new Date(today))/864e5);
-    const when=days==null?'no date':(days<0?'passed':(days===0?'today':days+' days away'));
+    const days=Math.round((new Date(date)-new Date(today))/864e5);
+    const when=days<0?'passed':(days===0?'today':days+' days away');
     return '<div class="outgroup"><h3>'+esc(ev)+'</h3>'
-      +'<div class="when'+(days!=null&&days>=0&&days<=21?' soon':'')+'">'+(date==='9999'?'':fmtDate(date)+' · ')+when
+      +'<div class="when'+(days>=0&&days<=21?' soon':'')+'">'+fmtDate(date)+' · '+when
       +' · '+rows.length+' artist'+(rows.length===1?'':'s')+'</div><div class="card">'
       +rows.map(o=>'<div class="outrow"><div class="body">'
         +'<div class="nm">'+esc(o.name)+'</div>'
@@ -1660,7 +1663,20 @@ function renderOutreach(){
         +'<button class="iconbtn" title="Draft email" onclick="draftMail(\''+o.id+'\')">✉</button>'
         +'<button class="iconbtn" title="Edit" onclick="openOutModal(\''+o.id+'\')">✎</button></div>').join('')
       +'</div></div>';
-  }).join('');
+  }).join('')
+  +(undated.length?'<div class="outgroup"><h3>People you know — no show attached</h3>'
+    +'<div class="when">reach out anytime · the email says “any upcoming shows”</div><div class="card">'
+    +undated.map(o=>'<div class="outrow"><div class="body">'
+      +'<div class="nm">'+esc(o.name)+'</div>'
+      +'<div class="meta"><span class="st '+o.status+'" onclick="cycleOutreach(\''+o.id+'\')" title="Tap to advance">'+OSTAT[o.status]+'</span>'
+      +'<span class="warm '+o.warm+'">'+OWARM[o.warm]+'</span></div>'
+      +'<div class="em'+(o.email?'':' missing')+'">'+esc(o.email||'no email yet — find their booking contact')+'</div>'
+      +(o.pitch?'<div class="em">✉ <i>'+esc(o.pitch)+'</i></div>':'')
+      +(o.notes?'<div class="privnote">🔒 '+escLink(o.notes)+'</div>':'')
+      +'</div>'
+      +'<button class="iconbtn" title="Draft email" onclick="draftMail(\''+o.id+'\')">✉</button>'
+      +'<button class="iconbtn" title="Edit" onclick="openOutModal(\''+o.id+'\')">✎</button></div>').join('')
+    +'</div></div>':'');
 }
 function cycleOutreach(id){
   const o=(state.outreach||[]).find(x=>x.id===id);if(!o)return;
