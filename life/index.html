@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jay's Life Tracker</title>
+<style>
+  :root{
+    --bg:#F5F5F2; --surface:#FFFFFF; --surface2:#EDEDE9; --line:#DDDDD6;
+    --ink:#1B1E20; --ink2:#5C6165; --ink3:#8A9095;
+    --accent:#0E6B5C; --accent-soft:#E3F0ED; --accent-ink:#0A5648;
+    --good:#187A45; --good-soft:#E2F2E8;
+    --owed:#A96A10; --owed-soft:#F7EEDD;
+    --urgent:#BE3A2F; --urgent-soft:#F9E8E5;
+    --pers:#5163C4; --pers-soft:#E9EBF8;
+    --chip:#EFEFEA;
+    --shadow:0 1px 3px rgba(20,24,26,.08),0 4px 14px rgba(20,24,26,.06);
+    --radius:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141719; --surface:#1D2124; --surface2:#23282B; --line:#33393D;
+      --ink:#EBEDEE; --ink2:#A6ACB1; --ink3:#767D82;
+      --accent:#3AA98F; --accent-soft:#1C3630; --accent-ink:#5CC4AB;
+      --good:#4CB878; --good-soft:#1C3527;
+      --owed:#D69A45; --owed-soft:#3A3020;
+      --urgent:#E06457; --urgent-soft:#3D2523;
+      --pers:#93A2ED; --pers-soft:#262B44;
+      --chip:#2A2F33;
+      --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+    }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink);
+    font-size:15px; line-height:1.45;
+    padding-bottom:76px;
+  }
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  input,textarea,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:7px 10px;width:100%}
+  input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* ── header ─────────────────────────── */
+  header{padding:26px 22px 14px;max-width:1080px;margin:0 auto}
+  header h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .headmeta{display:flex;gap:14px;flex-wrap:wrap;margin-top:5px;color:var(--ink2);font-size:13px}
+  .headmeta b{color:var(--ink)}
+
+  main{max-width:1080px;margin:0 auto;padding:0 22px}
+  .view{display:none}
+  .view.active{display:block}
+  h2{font-size:15px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);margin:20px 0 10px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+
+  /* ── chips & buttons ─────────────────── */
+  .chip{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.03em;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--ink2);white-space:nowrap}
+  .chip.urgent{background:var(--urgent-soft);color:var(--urgent)}
+  .chip.money{background:var(--owed-soft);color:var(--owed)}
+  .chip.good{background:var(--good-soft);color:var(--good)}
+  .chip.accent{background:var(--accent-soft);color:var(--accent-ink)}
+  .btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:7px 13px;border-radius:8px;border:1px solid var(--line);background:var(--surface)}
+  .btn:hover{border-color:var(--ink3)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.small{font-size:12px;padding:4px 9px}
+  .btn.danger{color:var(--urgent)}
+  .iconbtn{padding:4px 6px;border-radius:6px;color:var(--ink3);line-height:1}
+  .iconbtn:hover{background:var(--surface2);color:var(--ink)}
+
+  /* ── TODAY: top3 + tasks ─────────────── */
+  .today-grid{display:grid;grid-template-columns:minmax(280px,5fr) 7fr;gap:18px;align-items:start}
+  @media (max-width:760px){.today-grid{grid-template-columns:1fr}}
+  .slot{border:2px dashed var(--line);border-radius:var(--radius);min-height:64px;margin-bottom:10px;display:flex;align-items:stretch;transition:border-color .15s, background .15s}
+  .slot.dragover{border-color:var(--accent);background:var(--accent-soft)}
+  .slot .slotnum{flex:0 0 40px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:var(--ink3)}
+  .slot .slothint{flex:1;display:flex;align-items:center;color:var(--ink3);font-size:13px}
+  .slot.filled{border-style:solid;background:var(--surface);box-shadow:var(--shadow)}
+  .slot.filled .slotnum{color:var(--accent)}
+  .taskrow{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-bottom:1px solid var(--line)}
+  .taskrow:last-child{border-bottom:none}
+  .taskrow.dragging{opacity:.4}
+  .taskrow .grip{cursor:grab;color:var(--ink3);font-size:14px;padding:2px 2px 0;user-select:none;touch-action:none}
+  .taskrow input[type=checkbox]{width:17px;height:17px;margin-top:2px;accent-color:var(--accent);flex:none;cursor:pointer}
+  .taskbody{flex:1;min-width:0}
+  .tasktitle{font-weight:600;font-size:14px}
+  .taskrow.done .tasktitle{text-decoration:line-through;color:var(--ink3)}
+  .taskmeta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:3px}
+  .tasknotes{font-size:12.5px;color:var(--ink2);margin-top:2px}
+  .duetag{font-size:11.5px;color:var(--ink3)}
+  .duetag.overdue{color:var(--urgent);font-weight:600}
+  .sendcomp{margin-top:6px}
+  .slot .taskrow{border-bottom:none;flex:1}
+  .tasklist-empty{padding:18px;color:var(--ink3);font-size:13px;text-align:center}
+  .listhead{display:flex;justify-content:space-between;align-items:center;margin:20px 0 10px}
+  .listhead h2{margin:0}
+  details.completed{margin-top:22px}
+  details.completed summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--ink2);padding:6px 0;list-style:none}
+  details.completed summary::before{content:"▸ ";color:var(--ink3)}
+  details.completed[open] summary::before{content:"▾ "}
+  .compgroup{margin:10px 0 4px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3)}
+  .comprow{display:flex;gap:8px;align-items:baseline;padding:5px 2px;font-size:13.5px;color:var(--ink2)}
+  .comprow .t{text-decoration:line-through}
+
+  /* ── CALENDAR ────────────────────────── */
+  .calhead{display:flex;align-items:center;gap:10px;margin:18px 0 12px;flex-wrap:wrap}
+  .calhead h2{margin:0;font-size:18px;text-transform:none;letter-spacing:-.01em;color:var(--ink)}
+  .monthstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  @media (max-width:560px){.monthstrip{grid-template-columns:1fr 1fr 1fr;gap:6px}}
+  .stat{padding:12px 14px}
+  .stat .lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+  .stat .val{font-size:21px;font-weight:800;letter-spacing:-.01em;margin-top:2px}
+  .stat .sub{font-size:11.5px;color:var(--ink3);margin-top:1px}
+  .stat.made .val{color:var(--good)}
+  .stat.upc .val{color:var(--owed)}
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .dow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);text-align:center;padding:4px 0}
+  .day{min-height:74px;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:4px 5px;cursor:pointer;position:relative;overflow:hidden}
+  .day:hover{border-color:var(--ink3)}
+  .day.out{opacity:.38}
+  .day.today{border-color:var(--accent);border-width:2px}
+  .day.sel{background:var(--accent-soft);border-color:var(--accent)}
+  .day .dnum{font-size:12px;font-weight:700;color:var(--ink2)}
+  .day.today .dnum{color:var(--accent)}
+  .evchip{font-size:10.5px;font-weight:600;line-height:1.25;padding:1px 4px;border-radius:4px;background:var(--pers-soft);color:var(--pers);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .evchip.gig{background:var(--good-soft);color:var(--good)}
+  .calwrap{display:grid;grid-template-columns:1fr 264px;gap:14px;align-items:start}
+  @media (max-width:840px){.calwrap{grid-template-columns:1fr}}
+  .ledger{padding:12px 14px}
+  .ledger h3{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+  .ledgerrow{display:flex;align-items:baseline;gap:8px;font-size:12.5px;padding:4px 0;border-bottom:1px solid var(--line)}
+  .ledgerrow .g{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}
+  .ledgerrow .amt{font-weight:700}
+  .ledgerrow.up .amt{color:var(--owed)}
+  .ledgerrow.pd .amt{color:var(--good)}
+  .ledgerrow.pd .g::before{content:"✓ ";color:var(--good)}
+  .ledgertot{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0 0;color:var(--ink2)}
+  .ledgertot.grand{font-weight:800;font-size:14px;color:var(--ink);border-top:2px solid var(--line);margin-top:5px;padding-top:7px}
+  .ledgerempty{color:var(--ink3);font-size:12.5px;padding:6px 0}
+  .seg{display:flex;gap:6px}
+  .seg button{flex:1;border:1px solid var(--line);border-radius:7px;padding:7px;font-weight:600;font-size:13px;color:var(--ink2)}
+  .seg button.on.pers{background:var(--pers-soft);border-color:var(--pers);color:var(--pers)}
+  .seg button.on.work{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+  tr.crossed td,tr.crossed td b{text-decoration:line-through;color:var(--ink3)}
+  td input[type=checkbox]{width:16px;height:16px;accent-color:var(--good);cursor:pointer}
+  .evmore{font-size:10px;color:var(--ink3);margin-top:1px}
+  .daypanel{margin-top:14px;padding:14px 16px}
+  .daypanel h3{font-size:15px;font-weight:700;margin-bottom:8px}
+  .evrow{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+  .evrow:last-child{border-bottom:none}
+  .evtime{flex:0 0 74px;font-size:12.5px;color:var(--ink2);font-weight:600;padding-top:1px}
+  .evbody{flex:1;min-width:0}
+  .evtitle{font-weight:600;font-size:14px}
+  .evdetails{font-size:12.5px;color:var(--ink2);margin-top:1px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .evdetails a{color:var(--accent);text-decoration:underline}
+  .conflict{color:var(--urgent);font-size:12px;font-weight:700;margin-top:4px}
+
+  /* ── MONEY ───────────────────────────── */
+  .goalcard{padding:16px 18px;margin-top:18px}
+  .goalrow{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px}
+  .goalrow .big{font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .goalbar{height:8px;background:var(--surface2);border-radius:99px;margin:10px 0 8px;overflow:hidden}
+  .goalbar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+  .goalfacts{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)}
+  .goalfacts b{color:var(--ink)}
+  .monthcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:8px}
+  .mcard{padding:13px 15px}
+  .mcard h3{font-size:13px;font-weight:700;margin-bottom:6px}
+  .mline{display:flex;justify-content:space-between;font-size:13px;padding:2px 0;color:var(--ink2)}
+  .mline b{color:var(--ink)}
+  .mline.total{border-top:1px solid var(--line);margin-top:5px;padding-top:6px;font-weight:700;color:var(--ink)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.r,th.r{text-align:right}
+  .tablewrap{overflow-x:auto}
+  .nonbiz{font-size:12.5px;color:var(--ink3);margin:14px 0 30px}
+
+  /* ── INVOICES ────────────────────────── */
+  .nudge{display:flex;gap:12px;align-items:center;padding:12px 15px;margin-bottom:10px;border-left:3px solid var(--owed)}
+  .nudge .msg{flex:1;font-size:13.5px}
+  .nudge .msg b{font-weight:700}
+  .status{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:5px}
+  .status.draft{background:var(--owed-soft);color:var(--owed)}
+  .status.sent{background:var(--accent-soft);color:var(--accent-ink)}
+  .status.paid{background:var(--good-soft);color:var(--good)}
+
+  /* ── modal ───────────────────────────── */
+  .overlay{position:fixed;inset:0;background:rgba(15,18,20,.45);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;z-index:50;overflow-y:auto}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface);border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.3);width:100%;max-width:560px;padding:20px 22px}
+  .modal.wide{max-width:960px}
+  .modal h3{font-size:17px;font-weight:800;margin-bottom:14px}
+  .field{margin-bottom:11px}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:4px}
+  .fieldrow{display:flex;gap:10px}
+  .fieldrow .field{flex:1}
+  .modalfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+  .modalfoot .spacer{flex:1}
+
+  /* invoice sheet */
+  .invlayout{display:grid;grid-template-columns:340px 1fr;gap:20px}
+  @media (max-width:860px){.invlayout{grid-template-columns:1fr}}
+  /* invoice sheet — MATSU dark letterhead */
+  .invsheet{background:#1A1A1A;color:#F2F2F0;border-radius:8px;padding:36px 38px 0;font-size:13.5px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
+  .invsheet .top{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .invsheet .brand{font-weight:800;font-size:36px;letter-spacing:.03em;color:#fff;line-height:1}
+  .invsheet .brandsub{color:#E5484D;font-size:15px;margin-top:4px}
+  .invsheet .invnum{text-align:right;font-weight:800;font-size:15px;color:#fff}
+  .invsheet .invdate{text-align:right;margin-top:8px}
+  .invsheet .invdate .l{font-weight:800;color:#fff}
+  .invsheet .invdate .v{color:#D6D6D2;font-size:12.5px}
+  .invsheet .parties{display:flex;justify-content:space-between;gap:30px;margin:30px 0 22px;flex-wrap:wrap}
+  .invsheet .party .lbl{color:#C8C8C4;font-size:13.5px;margin-bottom:5px}
+  .invsheet .party .nm{font-weight:800;font-size:16.5px;color:#fff}
+  .invsheet .party .ln{color:#E2E2DE;font-size:13px;white-space:pre-line}
+  .invsheet table{font-size:13px;margin-top:4px}
+  .invsheet th{background:#fff;color:#161616;font-weight:800;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:11px 12px;text-align:left;border:none}
+  .invsheet th:nth-child(2),.invsheet td:nth-child(2){text-align:center}
+  .invsheet th:nth-child(3),.invsheet td:nth-child(3),.invsheet th:nth-child(4),.invsheet td:nth-child(4){text-align:right}
+  .invsheet td{border-bottom:1px solid rgba(255,255,255,.35);padding:12px;color:#EDEDEB}
+  .invsheet .totbox{display:flex;justify-content:flex-end;margin-top:0}
+  .invsheet .totbox i{font-style:normal;background:#fff;color:#161616;font-weight:800;font-size:16px;padding:11px 18px;display:flex;gap:36px}
+  .invsheet .terms{margin-top:16px;color:#9A9A96;font-size:11.5px;white-space:pre-line}
+  .invsheet .bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-top:34px;flex-wrap:wrap}
+  .invsheet .pay .h{font-weight:800;font-size:15px;color:#fff;margin-bottom:4px}
+  .invsheet .pay .v{color:#D6D6D2;font-size:13px;white-space:pre-line}
+  .invsheet .sig{text-align:center}
+  .invsheet .sig img{height:72px;display:block;margin:0 auto 2px}
+  .invsheet .sig .nm{font-weight:800;font-size:16px;color:#fff}
+  .invsheet .sig .rl{color:#C8C8C4;font-size:12.5px}
+  .invsheet .footbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#0E0E0E;margin:28px -38px 0;padding:15px 38px;font-weight:700;font-size:12.5px;color:#fff}
+  .missing{outline:2px solid var(--owed);outline-offset:1px;border-radius:4px}
+
+  /* ── bottom tabs (spreadsheet style) ── */
+  nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface2);border-top:1px solid var(--line);z-index:40;padding:0 10px env(safe-area-inset-bottom)}
+  .tabs{display:flex;max-width:1080px;margin:0 auto;gap:2px}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px 9px;font-size:11px;font-weight:700;letter-spacing:.03em;color:var(--ink3);border:1px solid transparent;border-bottom:none;border-radius:0 0 9px 9px;margin-top:-1px;position:relative}
+  .tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tab.active{background:var(--bg);color:var(--accent);border-color:var(--line);border-top:2px solid var(--bg);margin-top:-2px}
+  .tab .badge{position:absolute;top:4px;right:calc(50% - 22px);background:var(--urgent);color:#fff;font-size:9.5px;font-weight:800;min-width:15px;height:15px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+  @media print{
+    body>*{display:none !important}
+    body{padding:0;background:#fff}
+    #printhost{display:block !important}
+    #printhost .invsheet{border:none;border-radius:0;padding:10mm 6mm}
+  }
+  #printhost{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Jay's Life Tracker</h1>
+  <div class="headmeta">
+    <span id="hdrDate"></span>
+    <span>YTD net <b class="num" id="hdrYtd"></b></span>
+    <span>Goal pace <b class="num" id="hdrPace"></b>/wk</span>
+    <span id="syncdot" style="display:none;color:var(--good)">● live</span>
+  </div>
+</header>
+
+<main>
+
+  <div id="rulesBanner" class="card nudge" style="display:none;margin-top:14px">
+    <div class="msg">🔒 <b>Sync is blocked</b> — the Firestore rules for the tracker haven’t been published yet. Ask Claude for the paste.</div>
+  </div>
+
+  <!-- ═══════════ TODAY ═══════════ -->
+  <section class="view active" id="view-today">
+    <div class="today-grid">
+      <div>
+        <div class="listhead">
+          <h2>Top 3 Today</h2>
+        </div>
+        <div id="slots"></div>
+        <details class="completed" id="completedBox">
+          <summary>Completed <span id="compCount" class="chip"></span></summary>
+          <div id="completedList"></div>
+        </details>
+        <div id="xfer" style="margin-top:18px"></div>
+      </div>
+      <div>
+        <div class="listhead">
+          <h2>All Tasks</h2>
+          <button class="btn small" onclick="openTaskModal()">＋ New task</button>
+        </div>
+        <div class="card" id="tasklist"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ CALENDAR ═══════════ -->
+  <section class="view" id="view-calendar">
+    <div class="calhead">
+      <button class="btn small" onclick="calNav(-1)">‹</button>
+      <h2 id="calTitle"></h2>
+      <button class="btn small" onclick="calNav(1)">›</button>
+      <span style="flex:1"></span>
+      <button class="btn primary small" onclick="openEventModal()">＋ Add event</button>
+    </div>
+    <div class="monthstrip" id="calMoney"></div>
+    <div class="calwrap">
+      <div>
+        <div class="calgrid" id="calDow"></div>
+        <div class="calgrid" id="calGrid"></div>
+        <div class="card daypanel" id="dayPanel" style="display:none"></div>
+      </div>
+      <aside class="card ledger" id="calLedger"></aside>
+    </div>
+  </section>
+
+  <!-- ═══════════ MONEY ═══════════ -->
+  <section class="view" id="view-money">
+    <div class="card goalcard">
+      <div class="goalrow">
+        <span class="big num" id="goalYtd"></span>
+        <span style="color:var(--ink2);font-size:13.5px">of <b class="num">$100,000</b> goal</span>
+      </div>
+      <div class="goalbar"><i id="goalBar"></i></div>
+      <div class="goalfacts">
+        <span>Awaiting payment <b class="num" id="goalOwed"></b></span>
+        <span>Weeks left in 2026 <b class="num" id="goalWeeks"></b></span>
+        <span>Pace needed <b class="num" id="goalPace"></b>/wk</span>
+      </div>
+    </div>
+    <h2>By month</h2>
+    <div class="monthcards" id="monthCards"></div>
+    <div class="listhead">
+      <h2>Awaiting payment</h2>
+      <button class="btn small" id="clearPaidBtn" style="display:none" onclick="clearPaid()">Clear paid ▸</button>
+    </div>
+    <div class="card tablewrap"><table id="owedTable"></table></div>
+    <h2>Collected</h2>
+    <div class="card tablewrap"><table id="paidTable"></table></div>
+    <p class="nonbiz">Non-business (not counted toward goal): lawyer fees refund $7,559.91 · IRS federal refund $4,459.99</p>
+  </section>
+
+  <!-- ═══════════ INVOICES ═══════════ -->
+  <section class="view" id="view-invoices">
+    <div id="invNudges" style="margin-top:18px"></div>
+    <h2>All invoices</h2>
+    <div class="card tablewrap"><table id="invTable"></table></div>
+    <p class="nonbiz">Invoices are numbered sequentially, itemized, dated, and default to Net 15 — standard freelance practice. Check the payment-methods line before first send.</p>
+  </section>
+
+</main>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav>
+  <div class="tabs">
+    <button class="tab active" id="tab-today" onclick="showTab('today')">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9"/></svg>
+      Today
+    </button>
+    <button class="tab" id="tab-calendar" onclick="showTab('calendar')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+      Calendar
+    </button>
+    <button class="tab" id="tab-money" onclick="showTab('money')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.5 0-2.7.8-2.7 2s1.2 1.7 2.7 2 2.8.8 2.8 2-1.3 2-2.8 2c-1.1 0-2-.4-2.5-1.2M12 6.5V8m0 8v1.5"/></svg>
+      Money
+    </button>
+    <button class="tab" id="tab-invoices" onclick="showTab('invoices')">
+      <svg viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+      Invoices
+      <span class="badge" id="invBadge" style="display:none"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════ TASK MODAL ═══════════ -->
+<div class="overlay" id="taskOverlay">
+  <div class="modal">
+    <h3 id="taskModalTitle">New task</h3>
+    <div class="field"><label>Task</label><input id="tTitle" placeholder="What needs doing?"></div>
+    <div class="fieldrow">
+      <div class="field"><label>Tag</label>
+        <select id="tTag">
+          <option>Urgent</option><option>Money</option><option>Upcoming</option>
+          <option>Errand</option><option>Delivery</option><option>Waiting</option>
+          <option>Wedding</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Due date (optional)</label><input id="tDue" type="date"></div>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="tNotes" rows="2"></textarea></div>
+    <div class="modalfoot">
+      <button class="btn danger" id="tDelete" style="display:none" onclick="deleteTask()">Delete</button>
+      <span class="spacer"></span>
+      <button class="btn" onclick="closeOverlays()">Cancel</button>
+      <button class="btn primary" onclick="saveTask()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EVENT MODAL ═══════════ -->
+<div class="overlay" id="eventOverlay">
+  <div class="modal">
+    <h3 id="eventModalTitle">New event</h3>
+    <div class="field"><label>Title</label><input id="eTitle" placeholder="What's happening?"></div>
+    <div class="field"><label>Details</label><textarea id="eDetails" rows="2" placeholder="Location, who, anything to remember"></textarea></div>
+    <div class="fieldrow">
+      <div class="field"><label>Date</label><input id="eDate" type="date"></div>
+      <div class="field"><label>Start (optional)</label><input id="eStart" type="time"></div>
+      <div class="field"><label>End (optional)</label><input id="eEnd" type="time"></div>
+    </div>
+    <div class="field"><label>Type</label>
+      <div class="seg">
+        <button type="button" id="segPers" class="pers" onclick="setEvType(false)">Personal</button>
+        <button type="button" id="segWork" class="work" onclick="setEvType(true)">Work — paid gig</button>
+      </div>
+    </div>
+    <div class="fieldrow" id="gigFields" style="display:none">
+      <div class="field"><label>Client</label><input id="eClient"></div>
+      <div class="field"><label>Rate $</label><input id="eGross" type="number" min="0" step="0.01" placeholder="how much you get paid"></div>
+      <div class="field"><label>Expenses $</label><input id="eExp" type="number" min="0" step="0.01" value="0"></div>
+    </div>
+    <div class="modalfoot">
+      <button class="btn danger" id="eDelete" style="display:none" onclick="deleteEvent()">Delete</button>
+      <span class="spacer"></span>
+      <button class="btn" onclick="closeOverlays()">Cancel</button>
+      <button class="btn primary" onclick="saveEvent()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ INVOICE MODAL ═══════════ -->
+<div class="overlay" id="invOverlay">
+  <div class="modal wide">
+    <h3 id="invModalTitle">Invoice</h3>
+    <div class="invlayout">
+      <div>
+        <div class="field"><label>Bill to — client / company</label><input id="iClient"></div>
+        <div class="field"><label>Client email <span style="font-weight:400;color:var(--ink3)">(needed to send)</span></label><input id="iEmail" type="email" placeholder="client@email.com"></div>
+        <div class="field"><label>Client address (optional)</label><textarea id="iAddr" rows="2"></textarea></div>
+        <div class="field"><label>Service description</label><input id="iDesc"></div>
+        <div class="fieldrow">
+          <div class="field"><label>Service date</label><input id="iDate" type="date"></div>
+          <div class="field" style="flex:0 0 64px"><label>Qty</label><input id="iQty" type="number" min="1" step="1" value="1"></div>
+          <div class="field"><label>Unit price $</label><input id="iPrice" type="number" min="0" step="0.01"></div>
+        </div>
+        <div class="fieldrow">
+          <div class="field"><label>Terms</label>
+            <select id="iTerms" onchange="invFormChanged()">
+              <option>Due on receipt</option><option selected>Net 15</option><option>Net 30</option>
+            </select>
+          </div>
+          <div class="field"><label>Issue date</label><input id="iIssue" type="date"></div>
+        </div>
+        <div class="field"><label>Payment methods</label><textarea id="iPay" rows="3"></textarea></div>
+        <div class="field"><label>Note on invoice</label><textarea id="iNote" rows="2"></textarea></div>
+        <div class="modalfoot" style="justify-content:flex-start">
+          <button class="btn primary" onclick="saveInvoice()">Save</button>
+          <button class="btn" onclick="copyInvoice()">Copy text</button>
+          <button class="btn" onclick="emailInvoice()">Email…</button>
+          <button class="btn" onclick="printInvoice()">Print / PDF</button>
+        </div>
+        <div class="modalfoot" style="justify-content:flex-start;margin-top:6px">
+          <button class="btn" id="iMarkSent" onclick="markInvoice('sent')">Mark sent</button>
+          <button class="btn" id="iMarkPaid" onclick="markInvoice('paid')">Mark paid 💰</button>
+          <span class="spacer"></span>
+          <button class="btn" onclick="closeOverlays()">Close</button>
+        </div>
+      </div>
+      <div id="invPreview"></div>
+    </div>
+  </div>
+</div>
+
+<div id="printhost"></div>
+
+<script>
+'use strict';
+/* ─────────────────────────── state ─────────────────────────── */
+var FBCONFIG=window.FBCONFIG={"apiKey": "AIzaSyAAnT69AtL-m53iQ-DuCF0PRNrdHcmvZaM", "authDomain": "lake-toya-hq.firebaseapp.com", "projectId": "lake-toya-hq", "storageBucket": "lake-toya-hq.firebasestorage.app", "messagingSenderId": "246123481676", "appId": "1:246123481676:web:8017ebd6ac8b8f3530c2e9"};   /* null = static build (no sync); object = live build */
+const LS_KEY='jlt-v2';
+const BIZ={
+  brand:'MATSU',
+  brandSub:'Photography / Videography',
+  name:'Jay Matsumoto',
+  role:'Photographer/ Videographer',
+  sub:'4718 Vanderhill Road\nTorrance, CA 90505',
+  email:'matsumotojay@gmail.com',
+  site:'jaymatsu.com',
+  phone:'(310) 951-2318',
+  pay:'Venmo: Jay-Matsumoto\nZelle: 310-951-2318\nChecks also accepted',
+  note:'Thank you! Payment is appreciated within the terms above.'
+};
+let state=null;
+
+function uid(){return Math.random().toString(36).slice(2,10)}
+function todayISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function seed(){
+  const T=(title,tag,notes,due)=>({id:uid(),title,tag,notes:notes||'',due:due||'',status:'open',completedAt:null});
+  const E=(o)=>Object.assign({id:uid(),title:'',details:'',date:'',endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,paid:false,invoiceId:null,month:''},o);
+  return {
+    top3:[null,null,null],
+    invSeq:0,
+    tasks:[
+      T('Make Partiful for birthday party','Urgent','Party is Aug 14 — tomorrow','2026-08-13'),
+      T('Drop off camera at Dean’s Camera Repair','Urgent','Get it in before Vietnam (leave Aug 20)','2026-08-14'),
+      T('Resolve Sep 12 double-booking','Urgent','Eri & Dom’s wedding (Vista, 4–10 PM) vs Manila Killa shoot (DTLA). Can’t do both.','2026-08-20'),
+      T('Ask Yetep for $900 owed','Money','$400 July photoshoot + $500 Beyond. Also owes SF shoot + SF promo (amt TBD)'),
+      T('Follow up with Wafu Bento','Money','$1,200 uncollected · confirm next shoot date'),
+      T('Confirm Chelsea (HERSHE) shoot details','Upcoming','Shoot is Aug 29 — rate still TBD','2026-08-25'),
+      T('Return Brandon (DNZ)’s VHS lens attachment','Errand',''),
+      T('Deliver Nana’s wedding video','Delivery','Pending delivery'),
+      T('Send docs to Japan for Osaka house sale','Waiting','Waiting on Daniel’s power of attorney'),
+      T('Build wedding website','Wedding','June 5 2027 · Lake Toya, Hokkaido'),
+      Object.assign(T('Figure out AJ’s wedding gift','Urgent','Wedding was Aug 8'),{status:'archived',completedAt:'2026-08-08'})
+    ],
+    events:[
+      // ── personal ──
+      E({title:'Jay’s Birthday — Party in Torrance',details:'Make Partiful! Possible Wafu Bento shoot same day (TBC)',date:'2026-08-14'}),
+      E({title:'Fly LAX → Da Nang',details:'CX 881 LAX→HKG 1:25 AM, then CX 5552 HKG→DAD',date:'2026-08-20',start:'01:25'}),
+      E({title:'Vietnam with Hikaru',details:'Da Nang ✈︎ trip through Aug 27',date:'2026-08-20',endDate:'2026-08-27'}),
+      E({title:'Fly home — lands LAX 10:35 PM',details:'CX 5559 DAD→HKG, CX 880 HKG→LAX',date:'2026-08-27'}),
+      E({title:'Eri & Dom’s Wedding',details:'River Garden Weddings & Events, 390 Memosa Ave, Vista CA · attending',date:'2026-09-12',start:'16:00',end:'22:00'}),
+      E({title:'Brandon’s Wedding',details:'Umeda, Osaka, Japan · attending',date:'2026-11-14'}),
+      E({title:'Jay & Hikaru’s Wedding 🍂',details:'Lakehouse at Lake Toya, Hokkaido',date:'2027-06-05'}),
+      // ── gigs: July collected ──
+      E({title:'Cardi B — edit',gig:true,client:'Cardi B',gross:700,paid:true,month:'2026-07'}),
+      E({title:'Yetep — tour content (old work)',gig:true,client:'Yetep',gross:2800,paid:true,month:'2026-07'}),
+      E({title:'IZNYRS — Lost in Dreams Festival',gig:true,client:'IZNYRS',gross:250,paid:true,date:'2026-07-15'}),
+      E({title:'Yetep — Lost in Dreams Festival',gig:true,client:'Yetep',gross:750,paid:true,date:'2026-07-15'}),
+      E({title:'Manila Killa — Lost in Dreams',gig:true,client:'Manila Killa',gross:100,paid:true,date:'2026-07-15'}),
+      E({title:'Raiden — Lost in Dreams (hired help)',gig:true,client:'Raiden',gross:1200,exp:350,paid:true,date:'2026-07-15'}),
+      E({title:'iFound — photoshoot',gig:true,client:'iFound',gross:550,exp:100,paid:true,month:'2026-07'}),
+      E({title:'Adventure Club — shoot',gig:true,client:'Adventure Club',gross:400,paid:true,date:'2026-07-31'}),
+      E({title:'Bedpop — 3x videos',gig:true,client:'Bedpop',gross:450,paid:true,month:'2026-07'}),
+      // ── gigs: uncollected ──
+      E({title:'Electrik Seoul — LA show',gig:true,client:'Electrik Seoul',gross:800,date:'2026-07-10'}),
+      E({title:'Dabin — Lost in Dreams',gig:true,client:'Dabin',gross:350,date:'2026-07-15'}),
+      E({title:'Alvyn — Lost in Dreams',gig:true,client:'Alvyn',gross:100,date:'2026-07-15'}),
+      E({title:'Electrik Seoul — SD show',gig:true,client:'Electrik Seoul',gross:900,date:'2026-07-17'}),
+      E({title:'Wafu Bento — shoot',gig:true,client:'Wafu Bento',gross:1200,date:'2026-07-21'}),
+      E({title:'Yetep — July photoshoot',gig:true,client:'Yetep',gross:400,date:'2026-07-30'}),
+      E({title:'Yetep — Beyond event',gig:true,client:'Yetep',gross:500,month:'2026-07'}),
+      E({title:'Bedpop — 4x videos',gig:true,client:'Bedpop',gross:600,month:'2026-07'}),
+      // ── gigs: August + upcoming ──
+      E({title:'Hostshare — account profit',gig:true,client:'Hostshare',gross:500,exp:221.25,paid:true,month:'2026-08'}),
+      E({title:'Chelsea (HERSHE) — shoot',gig:true,client:'Chelsea (HERSHE)',gross:null,date:'2026-08-29',details:'Rate TBD — confirm details'}),
+      E({title:'📸 Manila Killa — Maeto Warehouse',gig:true,client:'Manila Killa',gross:null,date:'2026-09-12',details:'Arts District, DTLA. Email Brett to confirm details. ⚠︎ Same day as Eri & Dom’s wedding in Vista'})
+    ],
+    invoices:[]
+  };
+}
+function load(){
+  try{const raw=localStorage.getItem(LS_KEY); if(raw){state=JSON.parse(raw);migrate();return}}catch(e){}
+  state=seed();
+  migrate();
+  save();
+}
+function migrate(){
+  // fields added after first release
+  state.events.forEach(e=>{
+    if(e.cleared===undefined)e.cleared=!!e.paid;   // old paid gigs start already cleared
+    if(e.invoiceDismissed===undefined)e.invoiceDismissed=false;
+  });
+  // patch 1 (2026-08-13): two Aug 7 gigs Jay never logged
+  if(!state.patch1){
+    state.patch1=true;
+    state.events.push(
+      {id:uid(),title:'Koya — Academy LA',details:'DJ Koya gig at Academy LA',date:'2026-08-07',endDate:'',start:'22:00',end:'23:15',gig:true,client:'Koya',gross:400,exp:0,paid:true,cleared:true,invoiceId:null,invoiceDismissed:false,month:''},
+      {id:uid(),title:'Hoang — USC photoshoot',details:'Photoshoot at USC for Hoang & Nat',date:'2026-08-07',endDate:'',start:'19:00',end:'20:00',gig:true,client:'Hoang',gross:100,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''}
+    );
+  }
+  // patch 2 (2026-08-13): Hoang shoot was 7–8 PM
+  if(!state.patch2){
+    state.patch2=true;
+    const h=state.events.find(e=>e.client==='Hoang'&&e.date==='2026-08-07');
+    if(h){h.start='19:00';h.end='20:00'}
+  }
+  // patch 3 (2026-08-13): Connie quote, Chelsea reply, Lost Lands
+  if(!state.patch3){
+    state.patch3=true;
+    state.tasks.unshift(
+      {id:uid(),title:'Send wedding quote to Connie',tag:'Money',notes:'t.connie.le@gmail.com · sister’s wedding Aug 28 2027, Oregon, no venue yet · budget $7K · loves the 35mm film look — quote the film package',due:'2026-08-13',status:'open',completedAt:null},
+      {id:uid(),title:'Reply to Chelsea (HERSHE)’s email',tag:'Urgent',notes:'Content she wants done + her questions about booking you for Escape (October)',due:'2026-08-13',status:'open',completedAt:null},
+      {id:uid(),title:'Book stay for Lost Lands — Sep 16–21, Ohio',tag:'Upcoming',notes:'Chelsea plays the 16th, Yetep the 20th · need lodging the 16th through the 21st',due:'',status:'open',completedAt:null}
+    );
+    state.events.push(
+      {id:uid(),title:'HERSHE — song release',details:'Chelsea’s single drops — the Aug 29 content shoot promotes this',date:'2026-09-04',endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''},
+      {id:uid(),title:'Lost Lands — Ohio',details:'Festival trip · book a stay for Sep 16–21',date:'2026-09-16',endDate:'2026-09-21',start:'',end:'',gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''},
+      {id:uid(),title:'Chelsea (HERSHE) — Lost Lands',details:'Her show at Lost Lands · rate TBD',date:'2026-09-16',endDate:'',start:'',end:'',gig:true,client:'Chelsea (HERSHE)',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''},
+      {id:uid(),title:'Yetep — Lost Lands',details:'His show at Lost Lands · rate TBD',date:'2026-09-20',endDate:'',start:'',end:'',gig:true,client:'Yetep',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''}
+    );
+  }
+  // patch 4 (2026-08-13): Dean's quote follow-up + Brandon & Coco
+  if(!state.patch4){
+    state.patch4=true;
+    state.tasks.unshift(
+      {id:uid(),title:'Follow up with Dean’s — camera repair quote',tag:'Waiting',notes:'Dean will have the damage assessment / repair cost Tuesday. You fly out the 20th.',due:'2026-08-18',status:'open',completedAt:null}
+    );
+    const bw=state.events.find(e=>e.date==='2026-11-14'&&e.title.indexOf('Brandon')>-1);
+    if(bw){bw.title='Brandon & Coco’s Wedding'}
+  }
+  // patch 5 (2026-08-13): June backfill
+  if(!state.patch5){
+    state.patch5=true;
+    const G=(o)=>Object.assign({id:uid(),title:'',details:'',date:'',endDate:'',start:'',end:'',gig:true,client:'',gross:null,exp:0,paid:true,cleared:true,invoiceId:null,invoiceDismissed:false,month:''},o);
+    state.events.push(
+      {id:uid(),title:'AJ’s bachelor party',details:'Whole weekend',date:'2026-06-05',endDate:'2026-06-08',start:'',end:'',gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''},
+      G({title:'Vivek — 40th birthday shoot',details:'Ollie’s friend · LA Historic Museum · paid in two parts: $1,750 + $1,010',date:'2026-06-13',client:'Vivek',gross:2760}),
+      G({title:'HERSHE — Apocalypse',details:'Chelsea’s set at Apocalypse',date:'2026-06-19',client:'Chelsea (HERSHE)',gross:300}),
+      G({title:'Avello — shoot (free)',details:'No charge',date:'2026-06-19',client:'Avello',gross:0}),
+      G({title:'The Get Down',details:'Dance performance / club event',date:'2026-06-20',client:'The Get Down',gross:400}),
+      {id:uid(),title:'Yetep’s surprise party',details:'Just a party — no shoot',date:'2026-06-25',endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''},
+      G({title:'Electrik Seoul — ATEEZ album release',details:'K-pop group ATEEZ · release event',date:'2026-06-25',client:'Electrik Seoul',gross:400}),
+      G({title:'Laya — shoot',date:'2026-06-26',client:'Laya',gross:1050}),
+      G({title:'VidCon',date:'2026-06-27',client:'VidCon',gross:1200}),
+      G({title:'Yetep — Academy LA (no pay)',details:'No-pay show',date:'2026-06-27',client:'Yetep',gross:0}),
+      G({title:'Bedpop — 3 ads',details:'3 ads × $150 · paid in June',client:'Bedpop',gross:450,month:'2026-06'})
+    );
+  }
+  // patch 6 (2026-08-13): the July "Bedpop — 3x videos $450" was a duplicate of the June 3-ads job
+  if(!state.patch6){
+    state.patch6=true;
+    state.events=state.events.filter(e=>!(e.client==='Bedpop'&&e.paid&&e.gross===450&&monthKey(e)==='2026-07'));
+  }
+  // patch 7 (2026-08-13): August monthly shoots — Laya active, Wafu Bento on hold
+  if(!state.patch7){
+    state.patch7=true;
+    state.tasks.unshift(
+      {id:uid(),title:'Set August shoot date with Laya',tag:'Upcoming',notes:'Monthly shoot — lock a date before you leave for Vietnam on the 20th',due:'2026-08-19',status:'open',completedAt:null}
+    );
+    const w=state.tasks.find(t=>t.title.indexOf('Wafu Bento')>-1&&t.status==='open');
+    if(w){
+      w.tag='Waiting';
+      w.notes='ON HOLD — the owner’s mother just passed away. Give it time before coordinating the August shoot. ($1,200 from July still uncollected; be thoughtful about invoice timing too.)';
+      w.due='';
+    }
+  }
+  // patch 9 (2026-08-13): Aug 29 content shoot — full brief
+  if(!state.patch9){
+    state.patch9=true;
+    const s=state.events.find(e=>e.client==='Chelsea (HERSHE)'&&e.date==='2026-08-29');
+    if(s){
+      s.title='Chelsea (HERSHE) — content shoot · 7 reels';
+      s.gross=1050;
+      s.details='Saturday evening, time TBD · ~3–4 hrs · 7 reels × $150 = $1,050\nPromoting “Maximum Shela” feat. Base Ventura — Base Ventura will be there\nContent ideas: https://docs.google.com/document/d/1e8LViafW5qCYlzCr1B-uQzjQLok3X3x2Imkg0s5LaY8/edit\nSong: https://on.soundcloud.com/oftDKzNoyjuQ8z9DLi';
+    }
+  }
+  // patch 14 (2026-08-13): birthdays — next occurrence of each (Google Calendar carries the yearly repeat)
+  if(!state.patch14){
+    state.patch14=true;
+    const B=(t,d)=>({id:uid(),title:'🎂 '+t,details:'Birthday',date:d,endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    state.events.push(
+      B('Erica Goto','2026-09-15'),
+      B('Kevin Wong','2026-11-27'),
+      B('Brandon','2026-12-23'),
+      B('Eddie','2027-01-18'),
+      B('Joey (sister)','2027-01-20'),
+      B('Ricardo','2027-01-24'),
+      B('Kevin Quan','2027-03-16'),
+      B('Mom','2027-05-09'),
+      B('Salonga','2027-05-10'),
+      B('Renee','2027-05-21'),
+      B('Joji','2027-05-26'),
+      B('Andres','2027-06-05')
+    );
+  }
+  // patch 17 (2026-08-13): correction — iFound (Carson) was Jul 27 after all; Wafu stays Tue Jul 21
+  if(!state.patch17){
+    state.patch17=true;
+    const f=state.events.find(e=>e.client==='iFound');
+    if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
+  }
+  // patch 19 (2026-08-13): lineup outreach — stack more gigs at festivals he's already booked for
+  if(!state.patch19){
+    state.patch19=true;
+    state.tasks.unshift(
+      {id:uid(),title:'Message the Lost Lands lineup for more gigs',tag:'Money',notes:'Already booked: Chelsea (16th) + Yetep (20th), on site Sep 16–21 — travel is covered, every extra artist is pure margin',due:'2026-09-01',status:'open',completedAt:null},
+      {id:uid(),title:'Message the Escape Halloween lineup for more gigs',tag:'Money',notes:'Already booked: HERSHE Oct 30 ($400) at NOS Events Center — pitch other artists on the bill',due:'2026-10-01',status:'open',completedAt:null}
+    );
+  }
+  // patch 18 (2026-08-13): Hannah & Javlin wedding inquiry — from the Gmail thread
+  if(!state.patch18){
+    state.patch18=true;
+    state.tasks.unshift(
+      {id:uid(),title:'Talk with Javlin — wedding booking updates',tag:'Money',notes:'Hannah & Javlin Baloca, Jul 17 2027, Fullerton (~150 guests, likely Coyote Hills). Their budget ~$3K vs your $3K video-only / $4K w/ photographer. They wanted a call, weekdays after 6 PM — thread quiet since YOUR last msg Jul 2. javlinbaloca@gmail.com · 702-465-0967 (text OK)',due:'2026-08-19',status:'open',completedAt:null}
+    );
+    state.events.push(
+      {id:uid(),title:'📸 Hannah & Javlin’s Wedding (potential)',details:'NOT CONFIRMED — inquiry stage.\n~150 guests · Fullerton, CA · likely venue Coyote Hills (outdoor/golf course)\nBudget ~$3K for photo+video. Quoted: $3K = solo video (8 hr, 3–4 min film + raw speeches/dances); $4K+ = with your usual photographer (500+ photos). Options floated: shorter coverage, cheaper separate photog, 2nd shooter raws.\nStyle they loved: posed snapshots, guest soundbites, drone venue shots, dancefloor group shots. Turnaround ~2 months.\nContact: javlinbaloca@gmail.com · 702-465-0967 · weekdays after 6 PM',date:'2027-07-17',endDate:'',start:'',end:'',gig:true,client:'Javlin & Hannah',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''}
+    );
+  }
+  // patch 16 (2026-08-13): iFound shoot was actually Jul 21 (not 27) — same day as the Wafu shoot
+  if(!state.patch16){
+    state.patch16=true;
+    const f=state.events.find(e=>e.client==='iFound');
+    if(f){f.date='2026-07-21';f.month=''}
+  }
+  // patch 15 (2026-08-13): three more birthdays
+  if(!state.patch15){
+    state.patch15=true;
+    const B2=(t,d)=>({id:uid(),title:'🎂 '+t,details:'Birthday',date:d,endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    state.events.push(B2('Shawn','2027-05-20'),B2('Yetep','2027-06-28'),B2('Auntie','2027-06-30'));
+  }
+  // patch 13 (2026-08-13): MATSU invoice template — renumber to CLIENT-MMDD, qty/price, real payment methods
+  if(!state.patch13){
+    state.patch13=true;
+    const oldPay='Zelle: matsumotojay@gmail.com';
+    state.invoices.forEach(inv=>{
+      const ev=eventById(inv.eventId);
+      const svc=inv.svcDate||(ev?(ev.date||((ev.month||'2026-07')+'-31')):'');
+      if(/^INV-2026-/.test(inv.number))inv.number=invNumberFor(inv.client,svc);
+      if(inv.qty===undefined)inv.qty=1;
+      if(inv.price===undefined)inv.price=inv.amount;
+      if(!inv.pay||inv.pay===oldPay)inv.pay=BIZ.pay;
+    });
+  }
+  // patch 12 (2026-08-13): iFound was a studio shoot on Jul 27
+  if(!state.patch12){
+    state.patch12=true;
+    const f=state.events.find(e=>e.client==='iFound'&&monthKey(e)==='2026-07');
+    if(f){f.date='2026-07-27';f.month='';f.details='Studio shoot'}
+  }
+  // patch 11 (2026-08-13): flights to book
+  if(!state.patch11){
+    state.patch11=true;
+    state.tasks.unshift(
+      {id:uid(),title:'Book flight LAX → Ohio for Lost Lands',tag:'Upcoming',notes:'Festival is Sep 16–21 · book before Vietnam (leave Aug 20) — prices climb',due:'2026-08-19',status:'open',completedAt:null},
+      {id:uid(),title:'Book flight LAX → Japan for Brandon & Coco’s wedding',tag:'Upcoming',notes:'Wedding is Nov 14 in Umeda, Osaka',due:'',status:'open',completedAt:null}
+    );
+  }
+  // patch 10 (2026-08-13): Electrik Seoul SD — Yetep headline, same night as the Chelsea shoot
+  if(!state.patch10){
+    state.patch10=true;
+    state.events.push(
+      {id:uid(),title:'Electrik Seoul — SD (Yetep headline)',details:'Yetep’s headline show · San Diego · rate TBD\n⚠︎ Same evening as Chelsea’s 7-reel content shoot — sort the timing',date:'2026-08-29',endDate:'',start:'',end:'',gig:true,client:'Electrik Seoul',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''}
+    );
+  }
+  // patch 8 (2026-08-13): HERSHE confirmed for Escape Halloween
+  if(!state.patch8){
+    state.patch8=true;
+    state.events.push(
+      {id:uid(),title:'Chelsea (HERSHE) — Escape Halloween',details:'CONFIRMED · NOS Events Center, San Bernardino',date:'2026-10-30',endDate:'',start:'',end:'',gig:true,client:'Chelsea (HERSHE)',gross:400,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''}
+    );
+    const c=state.tasks.find(t=>t.title.indexOf('Reply to Chelsea')>-1&&t.status==='open');
+    if(c){c.notes='Content she wants done. (Her Escape question is settled — booked Oct 30, $400.)'}
+  }
+  save();
+}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state))}catch(e){} pushDiff();}
+
+/* ───────────── live sync (Firestore, wedding-HQ pattern) ─────────────
+   State is mirrored as one small doc per entity in the `jlt` collection:
+   t.<id> tasks · e.<id> events · i.<id> invoices · meta (top3, order, patches).
+   Per-entity docs mean a tick on the phone and an edit on the Mac never
+   clobber each other unless they touch the same item. */
+function snapshotDocs(){
+  const m={};
+  state.tasks.forEach(t=>{m['t.'+t.id]=JSON.stringify(t)});
+  state.events.forEach(e=>{m['e.'+e.id]=JSON.stringify(e)});
+  state.invoices.forEach(i=>{m['i.'+i.id]=JSON.stringify(i)});
+  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq};
+  Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch')meta[k]=state[k]});
+  m['meta']=JSON.stringify(meta);
+  return m;
+}
+let lastPush={};
+function pushDiff(){
+  if(!window.__fbWrite)return;
+  const cur=snapshotDocs();
+  for(const k in cur)if(lastPush[k]!==cur[k])window.__fbWrite(k,cur[k]);
+  for(const k in lastPush)if(!(k in cur))window.__fbWrite(k,null);
+  lastPush=cur;
+}
+window.__pushAll=function(){lastPush={};pushDiff()};
+window.__adoptCloud=function(cloud){
+  try{
+    const tasks=[],events=[],invoices=[];let meta=null;
+    for(const k in cloud){
+      let v;try{v=JSON.parse(cloud[k])}catch(e){continue}
+      if(k==='meta')meta=v;
+      else if(k.slice(0,2)==='t.')tasks.push(v);
+      else if(k.slice(0,2)==='e.')events.push(v);
+      else if(k.slice(0,2)==='i.')invoices.push(v);
+    }
+    if(!meta)return;
+    const order=meta.taskOrder||[];
+    tasks.sort((a,b)=>{let ia=order.indexOf(a.id),ib=order.indexOf(b.id);
+      if(ia<0)ia=9999;if(ib<0)ib=9999;return ia-ib});
+    state.tasks=tasks;state.events=events;
+    state.invoices=invoices.sort((a,b)=>String(a.number).localeCompare(String(b.number)));
+    state.top3=meta.top3||[null,null,null];
+    state.invSeq=meta.invSeq||0;
+    Object.keys(meta).forEach(k=>{if(k.slice(0,5)==='patch')state[k]=meta[k]});
+    lastPush=snapshotDocs();          // suppress echo of what we just received
+    migrate();                        // patches this build knows that the cloud doesn't yet
+    ensureInvoices();                 // both end in save() → pushDiff of anything new
+    scheduleRender();
+  }catch(e){console.warn('adopt',e)}
+};
+let _rpend=false;
+function scheduleRender(){
+  if(_rpend)return;_rpend=true;
+  setTimeout(function(){_rpend=false;
+    if(document.querySelector('.overlay.open')){scheduleRender();return}
+    render()},600);
+}
+function toast(msg){
+  let t=$('toastbox');
+  if(!t){t=document.createElement('div');t.id='toastbox';
+    t.style.cssText='position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;padding:9px 16px;border-radius:9px;z-index:99;box-shadow:var(--shadow);transition:opacity .3s';
+    document.body.appendChild(t)}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._h);t._h=setTimeout(()=>{t.style.opacity='0'},2800);
+}
+window.__syncOn=function(){const d=$('syncdot');if(d)d.style.display=''};
+window.__syncDenied=function(){
+  const d=$('syncdot');if(d){d.style.display='';d.style.color='var(--urgent)';d.textContent='● sync blocked'}
+  const b=$('rulesBanner');if(b)b.style.display='';
+};
+function initXfer(){
+  const w=$('xfer');if(!w)return;
+  if(!FBCONFIG){
+    const b=document.createElement('button');b.className='btn small';b.textContent='📤 Copy my data for the live tracker';
+    b.onclick=()=>{const s=localStorage.getItem(LS_KEY)||JSON.stringify(state);
+      navigator.clipboard.writeText(s).then(()=>toast('Copied ✓ — paste it into the live tracker’s Import box'),
+        ()=>toast('Couldn’t copy — try again'))};
+    w.appendChild(b);
+  }else{
+    const b=document.createElement('button');b.className='btn small';b.textContent='📥 Import data from the old file';
+    const box=document.createElement('textarea');box.rows=3;box.placeholder='Paste the copied data here, then press Import again';
+    box.style.cssText='display:none;width:100%;margin-top:8px;font-size:12px';
+    b.onclick=()=>{
+      if(box.style.display==='none'){box.style.display='block';box.focus();return}
+      const v=box.value.trim();if(!v){toast('Paste the data first');return}
+      try{const o=JSON.parse(v);if(!o.tasks||!o.events)throw 0;
+        state=o;migrate();ensureInvoices();save();window.__pushAll();
+        box.style.display='none';box.value='';render();
+        toast('Imported — now syncing everywhere');
+      }catch(e){toast('That didn’t look like tracker data')}};
+    w.appendChild(b);w.appendChild(box);
+  }
+}
+
+/* ─────────────────────────── helpers ─────────────────────────── */
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function escLink(s){return esc(s).replace(/https?:\/\/[^\s<]+/g,u=>'<a href="'+u+'" target="_blank" rel="noopener">'+u+'</a>')}
+function fmt$(n){if(n==null||isNaN(n))return'TBD';const neg=n<0;const a=Math.abs(n);const s=a%1?a.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):a.toLocaleString('en-US');return(neg?'-$':'$')+s}
+function fmtDate(iso){if(!iso)return'';const[y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:y===new Date().getFullYear()?undefined:'numeric'})}
+function fmtTime(t){if(!t)return'';let[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';h=h%12||12;return h+(m?':'+String(m).padStart(2,'0'):'')+' '+ap}
+function monthKey(e){return e.date?e.date.slice(0,7):(e.month||'')}
+function monthLabel(k){const[y,m]=k.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'})}
+function net(e){return (e.gross??0)-(e.exp||0)}
+function addDays(iso,n){const[y,m,d]=iso.split('-').map(Number);const dt=new Date(y,m-1,d+n);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0')}
+function taskById(id){return state.tasks.find(t=>t.id===id)}
+function eventById(id){return state.events.find(e=>e.id===id)}
+function invById(id){return state.invoices.find(i=>i.id===id)}
+function tagClass(tag){return tag==='Urgent'?'urgent':(tag==='Money'?'money':(tag==='Wedding'?'accent':''))}
+
+/* ─────────────────────── auto-invoicing ─────────────────────── */
+function invNumberFor(client,svcDate){
+  // CLIENT-MMDD of the shoot: unique per invoice, tells Jay which gig it is
+  const words=String(client||'').replace(/\(.*?\)/g,' ').trim().split(/\s+/).filter(Boolean);
+  let code=(words.length>1?words.map(w=>w[0]).join(''):(words[0]||'INV'));
+  code=code.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8)||'INV';
+  const mmdd=svcDate?svcDate.slice(5,7)+svcDate.slice(8,10):'0000';
+  let n=code+'-'+mmdd,i=2;
+  while(state.invoices.some(x=>x.number===n))n=code+'-'+mmdd+'-'+(i++);
+  return n;
+}
+function ensureInvoices(){
+  const today=todayISO();
+  state.events.forEach(e=>{
+    if(e.gig&&!e.paid&&!e.invoiceId&&!e.invoiceDismissed&&e.gross>0){
+      const svcDate=e.date||((e.month||'2026-07')+'-31');
+      if(svcDate<=today){
+        const inv={
+          id:uid(),
+          number:invNumberFor(e.client,svcDate),
+          eventId:e.id,
+          client:e.client||'',
+          email:'',addr:'',
+          desc:e.title.replace(/^[^—]*—\s*/,'').trim()||e.title,
+          svcDate:e.date||'',
+          qty:1,price:e.gross,amount:e.gross,
+          issue:today,
+          terms:'Net 15',
+          pay:BIZ.pay,
+          note:BIZ.note,
+          status:'draft',
+          fresh:true
+        };
+        state.invoices.push(inv);
+        e.invoiceId=inv.id;
+      }
+    }
+  });
+  save();
+}
+function dueDate(inv){const days=inv.terms==='Net 30'?30:(inv.terms==='Net 15'?15:0);return addDays(inv.issue,days)}
+
+/* ─────────────────────── money math ─────────────────────── */
+function moneyByMonth(){
+  const map={};
+  state.events.forEach(e=>{
+    if(!e.gig)return;
+    const k=monthKey(e);if(!k)return;
+    map[k]=map[k]||{made:0,upcoming:0,tbd:0};
+    if(e.paid)map[k].made+=net(e);
+    else if(e.gross>0)map[k].upcoming+=e.gross;
+    else map[k].tbd++;
+  });
+  return map;
+}
+function ytdNet(){let s=0;state.events.forEach(e=>{if(e.gig&&e.paid&&monthKey(e).startsWith('2026'))s+=net(e)});return s}
+function totalOwed(){let s=0;state.events.forEach(e=>{if(e.gig&&!e.paid&&e.gross>0)s+=e.gross});return s}
+function weeksLeft(){const now=new Date();const end=new Date(2026,11,31);return Math.max(1,Math.round((end-now)/6048e5*10)/10)}
+
+/* ─────────────────────── tabs ─────────────────────── */
+function showTab(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  $('view-'+name).classList.add('active');
+  $('tab-'+name).classList.add('active');
+  render();
+}
+
+/* ─────────────────────── TODAY render ─────────────────────── */
+function renderToday(){
+  // top-3 slots
+  const slots=$('slots');slots.innerHTML='';
+  state.top3.forEach((tid,i)=>{
+    const t=tid?taskById(tid):null;
+    if(t&&t.status==='archived'){state.top3[i]=null;save()}
+    const div=document.createElement('div');
+    div.className='slot'+(t&&t.status!=='archived'?' filled':'');
+    div.dataset.slot=i;
+    div.innerHTML='<div class="slotnum">'+(i+1)+'</div>';
+    if(t&&t.status!=='archived'){
+      div.appendChild(taskRowEl(t,{inSlot:i}));
+    }else{
+      div.innerHTML+='<div class="slothint">Drag a task here</div>';
+    }
+    div.addEventListener('dragover',ev=>{ev.preventDefault();div.classList.add('dragover')});
+    div.addEventListener('dragleave',()=>div.classList.remove('dragover'));
+    div.addEventListener('drop',ev=>{
+      ev.preventDefault();div.classList.remove('dragover');
+      const id=ev.dataTransfer.getData('text/plain');if(!id)return;
+      assignTop3(id,i);
+    });
+    slots.appendChild(div);
+  });
+
+  // main list (open + done, not in top3, not archived)
+  const list=$('tasklist');list.innerHTML='';
+  const inTop=new Set(state.top3.filter(Boolean));
+  const rows=state.tasks.filter(t=>t.status!=='archived'&&!inTop.has(t.id));
+  if(!rows.length){list.innerHTML='<div class="tasklist-empty">Nothing here — drag tasks back from Top 3 or add a new one.</div>'}
+  rows.forEach(t=>list.appendChild(taskRowEl(t,{})));
+  // allow dropping a top-3 task back onto the list
+  list.addEventListener('dragover',ev=>ev.preventDefault());
+  list.addEventListener('drop',ev=>{
+    ev.preventDefault();
+    const id=ev.dataTransfer.getData('text/plain');if(!id)return;
+    const idx=state.top3.indexOf(id);
+    if(idx>-1){state.top3[idx]=null;save();render()}
+  });
+
+  // completed
+  const comp=state.tasks.filter(t=>t.status==='archived').sort((a,b)=>(b.completedAt||'').localeCompare(a.completedAt||''));
+  $('compCount').textContent=comp.length;
+  const cl=$('completedList');cl.innerHTML='';
+  let lastDate=null;
+  comp.forEach(t=>{
+    const d=t.completedAt||'earlier';
+    if(d!==lastDate){lastDate=d;const g=document.createElement('div');g.className='compgroup';g.textContent=d==='earlier'?'Earlier':fmtDate(d);cl.appendChild(g)}
+    const row=document.createElement('div');row.className='comprow';
+    row.innerHTML='<span class="t">'+esc(t.title)+'</span> <span class="chip '+tagClass(t.tag)+'">'+esc(t.tag)+'</span>';
+    const un=document.createElement('button');un.className='btn small';un.textContent='Restore';un.style.marginLeft='auto';
+    un.onclick=()=>{t.status='open';t.completedAt=null;save();render()};
+    row.appendChild(un);
+    cl.appendChild(row);
+  });
+}
+
+function taskRowEl(t,{inSlot}){
+  const row=document.createElement('div');
+  row.className='taskrow'+(t.status==='done'?' done':'');
+  row.draggable=true;
+  row.addEventListener('dragstart',ev=>{ev.dataTransfer.setData('text/plain',t.id);row.classList.add('dragging')});
+  row.addEventListener('dragend',()=>row.classList.remove('dragging'));
+
+  const grip=document.createElement('span');grip.className='grip';grip.textContent='⋮⋮';grip.title='Drag';
+  const cb=document.createElement('input');cb.type='checkbox';cb.checked=t.status==='done';
+  cb.onchange=()=>{t.status=cb.checked?'done':'open';t.completedAt=null;save();render()};
+  const body=document.createElement('div');body.className='taskbody';
+  const overdue=t.due&&t.due<todayISO()&&t.status==='open';
+  body.innerHTML='<div class="tasktitle">'+esc(t.title)+'</div>'
+    +'<div class="taskmeta"><span class="chip '+tagClass(t.tag)+'">'+esc(t.tag)+'</span>'
+    +(t.due?'<span class="duetag'+(overdue?' overdue':'')+'">'+(overdue?'overdue · ':'due ')+fmtDate(t.due)+'</span>':'')
+    +'</div>'
+    +(t.notes?'<div class="tasknotes">'+esc(t.notes)+'</div>':'');
+  if(t.status==='done'){
+    const send=document.createElement('button');send.className='btn small sendcomp';send.textContent='Send to Completed ▸';
+    send.onclick=()=>{t.status='archived';t.completedAt=todayISO();const i=state.top3.indexOf(t.id);if(i>-1)state.top3[i]=null;save();render()};
+    body.appendChild(send);
+  }
+  const edit=document.createElement('button');edit.className='iconbtn';edit.innerHTML='✎';edit.title='Edit';
+  edit.onclick=()=>openTaskModal(t.id);
+  row.append(grip,cb,body,edit);
+  if(inSlot==null){
+    const pin=document.createElement('button');pin.className='iconbtn';pin.innerHTML='☆';pin.title='Add to Top 3';
+    pin.onclick=()=>{const free=state.top3.findIndex(x=>!x);assignTop3(t.id,free>-1?free:0)};
+    row.appendChild(pin);
+  }
+  return row;
+}
+
+function assignTop3(id,slot){
+  const cur=state.top3.indexOf(id);
+  const displaced=state.top3[slot];
+  if(cur>-1){state.top3[cur]=displaced||null}   // swap if moving between slots
+  else if(displaced){/* displaced returns to list */}
+  state.top3[slot]=id;
+  save();render();
+}
+
+/* ─────────────────────── task modal ─────────────────────── */
+let editingTaskId=null;
+function openTaskModal(id){
+  editingTaskId=id||null;
+  const t=id?taskById(id):null;
+  $('taskModalTitle').textContent=t?'Edit task':'New task';
+  $('tTitle').value=t?t.title:'';
+  $('tTag').value=t?t.tag:'Other';
+  $('tDue').value=t?t.due:'';
+  $('tNotes').value=t?t.notes:'';
+  $('tDelete').style.display=t?'':'none';
+  $('taskOverlay').classList.add('open');
+  $('tTitle').focus();
+}
+function saveTask(){
+  const title=$('tTitle').value.trim();if(!title)return;
+  if(editingTaskId){
+    const t=taskById(editingTaskId);
+    Object.assign(t,{title,tag:$('tTag').value,due:$('tDue').value,notes:$('tNotes').value.trim()});
+  }else{
+    state.tasks.unshift({id:uid(),title,tag:$('tTag').value,due:$('tDue').value,notes:$('tNotes').value.trim(),status:'open',completedAt:null});
+  }
+  save();closeOverlays();render();
+}
+function deleteTask(){
+  if(!editingTaskId)return;
+  if(!confirm('Delete this task for good? (“Send to Completed” keeps it in the archive instead.)'))return;
+  state.tasks=state.tasks.filter(t=>t.id!==editingTaskId);
+  const i=state.top3.indexOf(editingTaskId);if(i>-1)state.top3[i]=null;
+  save();closeOverlays();render();
+}
+
+/* ─────────────────────── CALENDAR ─────────────────────── */
+let calY=2026,calM=7; // month index 0-based (7 = August)
+let selDate=todayISO();
+function calNav(d){calM+=d;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}render()}
+function eventsOn(iso){
+  return state.events.filter(e=>e.date&&(e.date===iso||(e.endDate&&e.date<=iso&&iso<=e.endDate)));
+}
+function renderCalendar(){
+  const mk=calY+'-'+String(calM+1).padStart(2,'0');
+  $('calTitle').textContent=new Date(calY,calM,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  // money strip for viewed month
+  const mm=moneyByMonth()[mk]||{made:0,upcoming:0,tbd:0};
+  $('calMoney').innerHTML=
+    '<div class="card stat made"><div class="lbl">Made · '+esc(monthLabel(mk).split(' ')[0])+'</div><div class="val num">'+fmt$(mm.made)+'</div><div class="sub">net, collected</div></div>'
+   +'<div class="card stat upc"><div class="lbl">Upcoming</div><div class="val num">'+fmt$(mm.upcoming)+(mm.tbd?' <span style="font-size:12px">+'+mm.tbd+' TBD</span>':'')+'</div><div class="sub">billed / owed</div></div>'
+   +'<div class="card stat"><div class="lbl">Projected</div><div class="val num">'+fmt$(mm.made+mm.upcoming)+'</div><div class="sub">if all collected</div></div>';
+  // dow header
+  $('calDow').innerHTML=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>'<div class="dow">'+d+'</div>').join('');
+  // grid
+  const first=new Date(calY,calM,1);
+  const start=new Date(calY,calM,1-first.getDay());
+  const grid=$('calGrid');grid.innerHTML='';
+  const today=todayISO();
+  for(let i=0;i<42;i++){
+    const d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);
+    const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(i===35&&d.getMonth()!==calM)break;
+    const cell=document.createElement('div');
+    cell.className='day'+(d.getMonth()!==calM?' out':'')+(iso===today?' today':'')+(iso===selDate?' sel':'');
+    cell.innerHTML='<div class="dnum">'+d.getDate()+'</div>';
+    const evs=eventsOn(iso);
+    evs.slice(0,2).forEach(e=>{
+      const isTrip=e.endDate&&e.date!==iso;
+      cell.innerHTML+='<div class="evchip'+(e.gig?' gig':'')+'">'+esc(isTrip?'· '+e.title:e.title)+'</div>';
+    });
+    if(evs.length>2)cell.innerHTML+='<div class="evmore">+'+(evs.length-2)+' more</div>';
+    cell.onclick=()=>{selDate=iso;render()};
+    grid.appendChild(cell);
+  }
+  // day panel
+  const panel=$('dayPanel');
+  const evs=eventsOn(selDate);
+  panel.style.display='';
+  let html='<h3>'+new Date(selDate+'T12:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+'</h3>';
+  if(!evs.length)html+='<p style="color:var(--ink3);font-size:13.5px">Nothing scheduled.</p>';
+  evs.forEach(e=>{
+    html+='<div class="evrow"><div class="evtime">'+(e.start?fmtTime(e.start)+(e.end?'–'+fmtTime(e.end):''):(e.endDate?'multi-day':'all day'))+'</div>'
+      +'<div class="evbody"><div class="evtitle">'+esc(e.title)+(e.gig?' <span class="chip good">gig'+(e.gross!=null?' · '+fmt$(e.gross):'')+'</span>':'')+'</div>'
+      +(e.details?'<div class="evdetails">'+escLink(e.details)+'</div>':'')
+      +'</div><button class="iconbtn" title="Edit" onclick="openEventModal(\''+e.id+'\')">✎</button></div>';
+  });
+  if(evs.length>1&&evs.some(e=>e.gig)&&evs.some(e=>!e.gig&&!e.endDate)){
+    html+='<div class="conflict">⚠️ Possible conflict — a gig and a personal event share this day.</div>';
+  }
+  html+='<div style="margin-top:10px"><button class="btn small" onclick="openEventModal(null,\''+selDate+'\')">＋ Add event on this day</button></div>';
+  panel.innerHTML=html;
+  // gig ledger for the viewed month
+  const gigs=state.events.filter(e=>e.gig&&monthKey(e)===mk)
+    .sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
+  let led='<h3>'+esc(monthLabel(mk))+' — gigs</h3>';
+  if(!gigs.length)led+='<div class="ledgerempty">No gigs this month yet.</div>';
+  let billed=0,made=0;
+  gigs.forEach(e=>{
+    if(e.gross>0)billed+=e.gross;
+    if(e.paid)made+=net(e);
+    led+='<div class="ledgerrow '+(e.paid?'pd':'up')+'"><span class="g">'+(e.date?e.date.slice(8,10).replace(/^0/,'')+' · ':'')+esc(e.client||e.title)+'</span><span class="amt num">'+fmt$(e.gross)+'</span></div>';
+  });
+  led+='<div class="ledgertot"><span>Billed</span><span class="num">'+fmt$(billed)+'</span></div>'
+     +'<div class="ledgertot grand"><span>Made (net)</span><span class="num">'+fmt$(made)+'</span></div>';
+  $('calLedger').innerHTML=led;
+}
+
+/* ─────────────────────── event modal ─────────────────────── */
+let editingEventId=null,evIsGig=false;
+function setEvType(g){
+  evIsGig=g;
+  $('segPers').classList.toggle('on',!g);
+  $('segWork').classList.toggle('on',g);
+  $('gigFields').style.display=g?'flex':'none';
+}
+function openEventModal(id,presetDate){
+  editingEventId=id||null;
+  const e=id?eventById(id):null;
+  $('eventModalTitle').textContent=e?'Edit event':'New event';
+  $('eTitle').value=e?e.title:'';
+  $('eDetails').value=e?e.details:'';
+  $('eDate').value=e?(e.date||''):(presetDate||selDate||todayISO());
+  $('eStart').value=e?e.start:'';
+  $('eEnd').value=e?e.end:'';
+  setEvType(e?!!e.gig:false);
+  $('eClient').value=e?e.client:'';
+  $('eGross').value=e&&e.gross!=null?e.gross:'';
+  $('eExp').value=e?(e.exp||0):0;
+  $('eDelete').style.display=e?'':'none';
+  $('eventOverlay').classList.add('open');
+  $('eTitle').focus();
+}
+function saveEvent(){
+  const title=$('eTitle').value.trim();if(!title)return;
+  const data={
+    title,details:$('eDetails').value.trim(),date:$('eDate').value,
+    start:$('eStart').value,end:$('eEnd').value,
+    gig:evIsGig,
+    client:evIsGig?$('eClient').value.trim():'',
+    gross:evIsGig&&$('eGross').value!==''?parseFloat($('eGross').value):null,
+    exp:evIsGig?(parseFloat($('eExp').value)||0):0
+  };
+  if(editingEventId){Object.assign(eventById(editingEventId),data)}
+  else{state.events.push(Object.assign({id:uid(),endDate:'',paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''},data))}
+  save();ensureInvoices();closeOverlays();render();
+}
+function deleteEvent(){
+  if(!editingEventId)return;
+  if(!confirm('Delete this event?'))return;
+  state.events=state.events.filter(e=>e.id!==editingEventId);
+  save();closeOverlays();render();
+}
+
+/* ─────────────────────── MONEY render ─────────────────────── */
+function renderMoney(){
+  const ytd=ytdNet(),owed=totalOwed(),wl=weeksLeft();
+  const pace=(100000-ytd)/wl;
+  $('goalYtd').textContent=fmt$(ytd);
+  $('goalBar').style.width=Math.min(100,ytd/1000)+'%';
+  $('goalOwed').textContent=fmt$(owed);
+  $('goalWeeks').textContent=wl;
+  $('goalPace').textContent=fmt$(Math.round(pace));
+  $('hdrYtd').textContent=fmt$(ytd);
+  $('hdrPace').textContent=fmt$(Math.round(pace));
+  // month cards
+  const mm=moneyByMonth();
+  const keys=Object.keys(mm).sort();
+  $('monthCards').innerHTML=keys.map(k=>{
+    const m=mm[k];
+    return '<div class="card mcard"><h3>'+monthLabel(k)+'</h3>'
+      +'<div class="mline">Made (net)<b class="num" style="color:var(--good)">'+fmt$(m.made)+'</b></div>'
+      +'<div class="mline">Upcoming / owed<b class="num" style="color:var(--owed)">'+fmt$(m.upcoming)+(m.tbd?' +'+m.tbd+' TBD':'')+'</b></div>'
+      +'<div class="mline total">Projected<b class="num">'+fmt$(m.made+m.upcoming)+'</b></div></div>';
+  }).join('');
+  // owed table — unpaid, plus freshly-paid rows that haven't been cleared yet
+  const owedRows=state.events.filter(e=>e.gig&&(!e.paid||!e.cleared)).sort((a,b)=>(a.date||a.month||'').localeCompare(b.date||b.month||''));
+  $('clearPaidBtn').style.display=owedRows.some(e=>e.paid)?'':'none';
+  $('owedTable').innerHTML='<tr><th></th><th>Client</th><th>Gig</th><th>Date</th><th class="r">Amount</th></tr>'
+    +(owedRows.length?owedRows.map(e=>
+      '<tr'+(e.paid?' class="crossed"':'')+'><td><input type="checkbox" '+(e.paid?'checked':'')+' title="Paid?" onchange="togglePaid(\''+e.id+'\',this.checked)"></td>'
+      +'<td><b>'+esc(e.client)+'</b></td><td>'+esc(e.title)+(e.gross>0?'':' <span class="chip money">needs rate</span>')+'</td><td>'+(e.date?fmtDate(e.date):monthLabel(monthKey(e)||'2026-07').split(' ')[0])+'</td>'
+      +'<td class="r num">'+fmt$(e.gross)+'</td></tr>').join('')
+      :'<tr><td colspan="5" style="color:var(--ink3)">All caught up — nothing owed.</td></tr>');
+  // paid table
+  const paidRows=state.events.filter(e=>e.gig&&e.paid).sort((a,b)=>(b.date||b.month||'').localeCompare(a.date||a.month||''));
+  $('paidTable').innerHTML='<tr><th>Client</th><th>Gig</th><th>Month</th><th class="r">Gross</th><th class="r">Expenses</th><th class="r">Net</th></tr>'
+    +paidRows.map(e=>'<tr><td><b>'+esc(e.client)+'</b></td><td>'+esc(e.title)+'</td><td>'+monthLabel(monthKey(e)).split(' ')[0]+'</td>'
+      +'<td class="r num">'+fmt$(e.gross)+'</td><td class="r num">'+(e.exp?fmt$(e.exp):'—')+'</td><td class="r num"><b>'+fmt$(net(e))+'</b></td></tr>').join('');
+}
+
+function togglePaid(id,checked){
+  const e=eventById(id);if(!e)return;
+  e.paid=checked;
+  if(checked){e.cleared=false;if(e.invoiceId){const inv=invById(e.invoiceId);if(inv)inv.status='paid'}}
+  else{if(e.invoiceId){const inv=invById(e.invoiceId);if(inv&&inv.status==='paid')inv.status='draft'}}
+  save();render();
+}
+function clearPaid(){
+  state.events.forEach(e=>{if(e.gig&&e.paid&&!e.cleared)e.cleared=true});
+  save();render();
+}
+
+/* ─────────────────────── INVOICES render ─────────────────────── */
+function renderInvoices(){
+  const drafts=state.invoices.filter(i=>i.status==='draft');
+  const badge=$('invBadge');
+  badge.style.display=drafts.length?'flex':'none';
+  badge.textContent=drafts.length;
+  // nudges
+  const nudges=$('invNudges');
+  let html='';
+  drafts.forEach(inv=>{
+    html+='<div class="card nudge"><div class="msg">🎬 <b>Gig wrapped — invoice ready:</b> '+esc(inv.client)+' · '+esc(inv.desc)+' · <b class="num">'+fmt$(inv.amount)+'</b></div>'
+      +'<button class="btn small" onclick="invQuickPaid(\''+inv.id+'\')" title="Already got paid — no invoice needed">Paid ✓</button>'
+      +'<button class="btn primary small" onclick="openInvoice(\''+inv.id+'\')">Review & send</button></div>';
+  });
+  // TBD gigs that already passed
+  state.events.filter(e=>e.gig&&!e.paid&&!(e.gross>0)&&e.date&&e.date<=todayISO()).forEach(e=>{
+    html+='<div class="card nudge"><div class="msg">💬 <b>'+esc(e.client)+'</b> gig passed but has no rate yet — add the amount and I’ll draft the invoice.</div>'
+      +'<button class="btn small" onclick="openEventModal(\''+e.id+'\')">Add amount</button></div>';
+  });
+  nudges.innerHTML=html||'<p style="color:var(--ink3);font-size:13.5px;margin-top:4px">No invoices waiting. New drafts appear here automatically the moment a paid gig’s date passes.</p>';
+  // table
+  const rows=[...state.invoices].sort((a,b)=>b.number.localeCompare(a.number));
+  $('invTable').innerHTML='<tr><th>Invoice</th><th>Client</th><th>Service</th><th class="r">Amount</th><th>Due</th><th>Status</th><th></th></tr>'
+    +(rows.length?rows.map(i=>'<tr><td><button class="btn small" onclick="openInvoice(\''+i.id+'\')">'+i.number+'</button></td>'
+      +'<td><b>'+esc(i.client)+'</b></td><td>'+esc(i.desc)+'</td><td class="r num">'+fmt$(i.amount)+'</td>'
+      +'<td>'+fmtDate(dueDate(i))+'</td><td><span class="status '+i.status+'">'+i.status+'</span></td>'
+      +'<td style="white-space:nowrap">'+(i.status!=='paid'?'<button class="btn small" onclick="invQuickPaid(\''+i.id+'\')">Paid ✓</button> ':'')
+      +'<button class="iconbtn" title="Delete invoice" onclick="deleteInvoiceById(\''+i.id+'\')">🗑</button></td></tr>').join('')
+      :'<tr><td colspan="7" style="color:var(--ink3)">None yet.</td></tr>');
+}
+
+function invQuickPaid(id){
+  const inv=invById(id);if(!inv)return;
+  inv.status='paid';inv.fresh=false;
+  const e=eventById(inv.eventId);
+  if(e){e.paid=true;e.cleared=false}
+  save();render();
+}
+function deleteInvoiceById(id){
+  const inv=invById(id);if(!inv)return;
+  if(!confirm('Delete '+inv.number+'? The gig stays in Money, and no new invoice will be auto-created for it. (If they simply paid you, use “Paid ✓” instead.)'))return;
+  const e=eventById(inv.eventId);
+  if(e){e.invoiceId=null;e.invoiceDismissed=true}
+  state.invoices=state.invoices.filter(i=>i.id!==id);
+  save();render();
+}
+
+/* ─────────────────────── invoice modal ─────────────────────── */
+let editingInvId=null;
+function openInvoice(id){
+  editingInvId=id;
+  const inv=invById(id);if(!inv)return;
+  inv.fresh=false;
+  $('invModalTitle').textContent=inv.number+' — '+inv.client;
+  $('iClient').value=inv.client;$('iEmail').value=inv.email;$('iAddr').value=inv.addr;
+  $('iDesc').value=inv.desc;$('iDate').value=inv.svcDate;
+  $('iQty').value=inv.qty||1;$('iPrice').value=(inv.price??inv.amount)??'';
+  $('iTerms').value=inv.terms;$('iIssue').value=inv.issue;
+  $('iPay').value=inv.pay;$('iNote').value=inv.note;
+  ['iClient','iEmail','iAddr','iDesc','iDate','iQty','iPrice','iIssue','iPay','iNote'].forEach(fid=>{$(fid).oninput=invFormChanged});
+  $('invOverlay').classList.add('open');
+  invFormChanged();
+}
+function invFromForm(){
+  const qty=Math.max(1,parseInt($('iQty').value)||1);
+  const price=$('iPrice').value!==''?parseFloat($('iPrice').value):null;
+  return {
+    client:$('iClient').value.trim(),email:$('iEmail').value.trim(),addr:$('iAddr').value.trim(),
+    desc:$('iDesc').value.trim(),svcDate:$('iDate').value,
+    qty,price,amount:price!=null?qty*price:null,
+    terms:$('iTerms').value,issue:$('iIssue').value,
+    pay:$('iPay').value.trim(),note:$('iNote').value.trim()
+  };
+}
+function invFormChanged(){
+  const inv=invById(editingInvId);if(!inv)return;
+  const d=Object.assign({},inv,invFromForm());
+  $('invPreview').innerHTML=invoiceSheetHTML(d);
+  $('iEmail').classList.toggle('missing',!d.email);
+}
+function fmtDateLong(iso){if(!iso)return'—';const[y,m,d]=iso.split('-').map(Number);const dt=new Date(y,m-1,d);return d+' '+dt.toLocaleDateString('en-US',{month:'long'})+' '+y}
+function invoiceSheetHTML(inv){
+  const due=dueDate(inv);
+  const qty=inv.qty||1, price=inv.price??inv.amount, total=(qty*(price||0))||inv.amount;
+  const desc=(inv.desc||'—')+(inv.svcDate?' — '+fmtDate(inv.svcDate):'');
+  return '<div class="invsheet">'
+    +'<div class="top"><div><div class="brand">'+esc(BIZ.brand)+'</div><div class="brandsub">'+esc(BIZ.brandSub)+'</div></div>'
+    +'<div><div class="invnum">Invoice Number: '+esc(inv.number)+'</div>'
+    +'<div class="invdate"><div class="l">Date</div><div class="v">'+fmtDateLong(inv.issue)+'</div></div></div></div>'
+    +'<div class="parties">'
+    +'<div class="party"><div class="lbl">Billed To</div><div class="ln">'+esc(inv.client||'—')+(inv.addr?'\n'+esc(inv.addr):'')+(inv.email?'\n'+esc(inv.email):'')+'</div></div>'
+    +'<div class="party"><div class="lbl">Billed From</div><div class="nm">'+esc(BIZ.name)+'</div><div class="ln">'+esc(BIZ.sub)+'</div></div>'
+    +'</div>'
+    +'<table><tr><th>Description</th><th>Qty</th><th>Price</th><th>Total</th></tr>'
+    +'<tr><td>'+esc(desc)+'</td><td class="num">'+qty+'</td><td class="num">'+fmt$(price)+'</td><td class="num">'+fmt$(total)+'</td></tr></table>'
+    +'<div class="totbox"><i><span>TOTAL</span><span class="num">'+fmt$(total)+'</span></i></div>'
+    +'<div class="terms">Due '+fmtDate(due)+' · '+esc(inv.terms)+(inv.note?'\n'+esc(inv.note):'')+'</div>'
+    +'<div class="bottom">'
+    +'<div class="pay"><div class="h">Payment Methods:</div><div class="v">'+esc(inv.pay||BIZ.pay)+'</div></div>'
+    +'<div class="sig"><img src="data:image/png;base64,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" alt="signature"><div class="nm">'+esc(BIZ.name)+'</div><div class="rl">'+esc(BIZ.role)+'</div></div>'
+    +'</div>'
+    +'<div class="footbar"><span>'+esc(BIZ.email)+'</span><span>'+esc(BIZ.site)+'</span><span>'+esc(BIZ.phone)+'</span></div>'
+    +'</div>';
+}
+function saveInvoice(){
+  const inv=invById(editingInvId);if(!inv)return;
+  Object.assign(inv,invFromForm());
+  const e=eventById(inv.eventId);
+  if(e&&inv.amount!=null){e.gross=inv.amount}
+  save();render();invFormChanged();
+}
+function invoiceText(inv){
+  const due=dueDate(inv);
+  const qty=inv.qty||1, price=inv.price??inv.amount, total=(qty*(price||0))||inv.amount;
+  return [BIZ.brand+' — '+BIZ.brandSub,'INVOICE '+inv.number,'Date: '+fmtDateLong(inv.issue),'',
+    'Billed To: '+inv.client+(inv.email?' <'+inv.email+'>':'')+(inv.addr?', '+inv.addr.replace(/\n/g,', '):''),
+    'Billed From: '+BIZ.name+', '+BIZ.sub.replace(/\n/g,', '),'',
+    'Description: '+inv.desc+(inv.svcDate?' — '+fmtDate(inv.svcDate):''),
+    'Qty: '+qty+' × '+fmt$(price),
+    'TOTAL: '+fmt$(total),
+    'Due: '+fmtDate(due)+' ('+inv.terms+')','',
+    'Payment Methods:',inv.pay||BIZ.pay,'',
+    inv.note||'',BIZ.email+' · '+BIZ.site+' · '+BIZ.phone].join('\n');
+}
+function copyInvoice(){
+  saveInvoice();
+  const inv=invById(editingInvId);
+  navigator.clipboard.writeText(invoiceText(inv)).then(()=>alert('Invoice copied as text.'));
+}
+function emailInvoice(){
+  saveInvoice();
+  const inv=invById(editingInvId);
+  if(!inv.email){alert('Add the client’s email first (highlighted field).');$('iEmail').focus();return}
+  const sub='Invoice '+inv.number+' — '+BIZ.name+' — '+fmt$(inv.amount);
+  location.href='mailto:'+encodeURIComponent(inv.email)+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(invoiceText(inv));
+}
+function printInvoice(){
+  saveInvoice();
+  const inv=invById(editingInvId);
+  $('printhost').innerHTML=invoiceSheetHTML(Object.assign({},inv));
+  window.print();
+}
+function markInvoice(status){
+  const inv=invById(editingInvId);if(!inv)return;
+  saveInvoice();
+  inv.status=status;
+  if(status==='paid'){
+    const e=eventById(inv.eventId);
+    if(e){e.paid=true;e.cleared=false}
+  }
+  save();closeOverlays();render();
+}
+
+/* ─────────────────────── misc ─────────────────────── */
+function closeOverlays(){document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open'))}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',ev=>{if(ev.target===o)closeOverlays()}));
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeOverlays()});
+
+function render(){
+  $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  renderToday();renderCalendar();renderMoney();renderInvoices();
+}
+
+load();
+ensureInvoices();
+initXfer();
+render();
+</script>
+<script type="module">
+if(window.FBCONFIG){
+  try{
+    const [{initializeApp},{getFirestore,doc,setDoc,deleteDoc,onSnapshot,collection},{getAuth,signInAnonymously}]=await Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")]);
+    const app=initializeApp(FBCONFIG), db=getFirestore(app);
+    await signInAnonymously(getAuth(app));
+    window.__fbWrite=(k,raw)=>{
+      (raw==null?deleteDoc(doc(db,"jlt",k))
+                :setDoc(doc(db,"jlt",k),{v:raw,t:Date.now()}))
+      .catch(e=>{
+        if(e.code==="permission-denied"){if(window.__syncDenied)window.__syncDenied();}
+        else if(typeof toast==="function")toast("Sync hiccup — will retry on your next change");});
+    };
+    const cloud={};let first=true;
+    onSnapshot(collection(db,"jlt"),snap=>{
+      let changed=false;
+      snap.docChanges().forEach(ch=>{
+        if(ch.type==="removed"){if(cloud[ch.doc.id]!==undefined){delete cloud[ch.doc.id];changed=true}}
+        else{const v=ch.doc.data().v;if(cloud[ch.doc.id]!==v){cloud[ch.doc.id]=v;changed=true}}});
+      if(first){first=false;
+        if(snap.empty){window.__pushAll()}          // first device in seeds the cloud
+        else{window.__adoptCloud(cloud)}            // otherwise the cloud copy wins
+        if(window.__syncOn)window.__syncOn();
+        return;}
+      if(changed)window.__adoptCloud(cloud);
+    },err=>{console.warn("sync listener",err);
+      if(err.code==="permission-denied"&&window.__syncDenied)window.__syncDenied();});
+  }catch(e){console.warn("sync off:",e)}
+}
+</script>
+</body>
+</html>
