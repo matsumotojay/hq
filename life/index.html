@@ -211,6 +211,29 @@
   .depadd{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:flex-end}
   .depadd .f{flex:1;min-width:110px}
   .depadd label{display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:3px}
+  /* outreach */
+  .outgroup{margin-bottom:16px}
+  .outgroup h3{font-size:13px;font-weight:800;margin:0 0 2px}
+  .outgroup .when{font-size:11.5px;color:var(--ink3);margin-bottom:7px}
+  .outgroup .when.soon{color:var(--urgent);font-weight:700}
+  .outrow{display:flex;gap:9px;align-items:flex-start;padding:9px 12px;border-bottom:1px solid var(--line)}
+  .outrow:last-child{border-bottom:none}
+  .outrow .nm{font-weight:600;font-size:14px}
+  .outrow .body{flex:1;min-width:0}
+  .outrow .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:3px}
+  .outrow .em{font-size:12px;color:var(--ink2);overflow-wrap:anywhere}
+  .outrow .em.missing{color:var(--owed);font-weight:600}
+  .st{font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 8px;border-radius:99px;cursor:pointer;border:1px solid transparent}
+  .st.todo{background:var(--chip);color:var(--ink2)}
+  .st.emailed{background:var(--owed-soft);color:var(--owed)}
+  .st.replied{background:var(--accent-soft);color:var(--accent-ink)}
+  .st.booked{background:var(--good-soft);color:var(--good)}
+  .st.passed{background:var(--chip);color:var(--ink3);text-decoration:line-through}
+  .warm{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px}
+  .warm.worked{background:var(--good-soft);color:var(--good)}
+  .warm.owes{background:var(--urgent-soft);color:var(--urgent)}
+  .warm.cold{background:var(--chip);color:var(--ink3)}
+  .tmplbox{width:100%;font-size:12.5px;line-height:1.5;min-height:330px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 
   /* ── INVOICES ────────────────────────── */
   .nudge{display:flex;gap:12px;align-items:center;padding:12px 15px;margin-bottom:10px;border-left:3px solid var(--owed)}
@@ -376,6 +399,20 @@
     <p class="nonbiz">Non-business (not counted toward the $100K goal): lawyer fees refund $7,559.91 · IRS federal refund $4,459.99 · birthday gifts $500 (Cathy &amp; AJ $100, Jose $200, Ace &amp; Aru $200) — gifts aren’t taxable income, so they sit outside gig revenue; the $500 went into the wedding fund.</p>
   </section>
 
+  <!-- ═══════════ OUTREACH ═══════════ -->
+  <section class="view" id="view-outreach">
+    <div class="monthstrip" id="outStats" style="margin-top:18px"></div>
+    <div class="listhead">
+      <h2>Pipeline</h2>
+      <div style="display:flex;gap:6px">
+        <button class="btn small" onclick="openTemplate()">✉ Template</button>
+        <button class="btn small" onclick="openOutModal()">＋ Add contact</button>
+      </div>
+    </div>
+    <div id="outList"></div>
+    <p class="nonbiz">Lineups pulled from the venues’ own sites. Say “scan the clubs” any week and I’ll refresh Academy LA, Exchange LA, Nova SD and Palladium, and flag names you’ve worked with.</p>
+  </section>
+
   <!-- ═══════════ INVOICES ═══════════ -->
   <section class="view" id="view-invoices">
     <div id="invNudges" style="margin-top:18px"></div>
@@ -400,6 +437,11 @@
     <button class="tab" id="tab-money" onclick="showTab('money')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.5 0-2.7.8-2.7 2s1.2 1.7 2.7 2 2.8.8 2.8 2-1.3 2-2.8 2c-1.1 0-2-.4-2.5-1.2M12 6.5V8m0 8v1.5"/></svg>
       Money
+    </button>
+    <button class="tab" id="tab-outreach" onclick="showTab('outreach')">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+      Outreach
+      <span class="badge" id="outBadge" style="display:none"></span>
     </button>
     <button class="tab" id="tab-invoices" onclick="showTab('invoices')">
       <svg viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
@@ -508,6 +550,51 @@
   </div>
 </div>
 
+<!-- ═══════════ OUTREACH MODAL ═══════════ -->
+<div class="overlay" id="outOverlay">
+  <div class="modal">
+    <h3 id="outModalTitle">New contact</h3>
+    <div class="fieldrow">
+      <div class="field"><label>Artist / contact</label><input id="oName" placeholder="e.g. Tchami"></div>
+      <div class="field"><label>Booking / mgmt email</label><input id="oEmail" type="email" placeholder="find it on their site"></div>
+    </div>
+    <div class="fieldrow">
+      <div class="field"><label>Event</label><input id="oEvent" placeholder="e.g. Academy LA"></div>
+      <div class="field"><label>Date</label><input id="oDate" type="date"></div>
+    </div>
+    <div class="fieldrow">
+      <div class="field"><label>Relationship</label>
+        <select id="oWarm"><option value="worked">Worked together before</option><option value="owes">Worked before — owes me money</option><option value="cold">New to me</option></select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="oStatus"><option value="todo">To contact</option><option value="emailed">Emailed</option><option value="replied">Replied</option><option value="booked">Booked</option><option value="passed">Passed</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Notes / the personal line for their email</label><textarea id="oNotes" rows="2" placeholder="e.g. shot his set at Lost in Dreams in July"></textarea></div>
+    <div class="modalfoot">
+      <button class="btn danger" id="oDelete" style="display:none" onclick="deleteOutreach()">Delete</button>
+      <span class="spacer"></span>
+      <button class="btn" onclick="closeOverlays()">Cancel</button>
+      <button class="btn primary" onclick="saveOutreach()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ EMAIL DRAFT MODAL ═══════════ -->
+<div class="overlay" id="mailOverlay">
+  <div class="modal">
+    <h3 id="mailTitle">Draft email</h3>
+    <div class="field"><label>Subject</label><input id="mSubj"></div>
+    <div class="field"><label>Body — edit the personal line before sending</label><textarea id="mBody" class="tmplbox"></textarea></div>
+    <div class="modalfoot">
+      <button class="btn" onclick="copyMail()">Copy</button>
+      <button class="btn primary" onclick="sendMail()">Open in email…</button>
+      <span class="spacer"></span>
+      <button class="btn" onclick="closeOverlays()">Close</button>
+    </div>
+  </div>
+</div>
+
 <div id="printhost"></div>
 
 <script>
@@ -584,7 +671,8 @@ function seed(){
       E({title:'📸 Manila Killa — Maeto Warehouse',gig:true,client:'Manila Killa',gross:null,date:'2026-09-12',details:'Arts District, DTLA. Email Brett to confirm details. ⚠︎ Same day as Eri & Dom’s wedding in Vista'})
     ],
     invoices:[],
-    wfund:[]
+    wfund:[],
+    outreach:[]
   };
 }
 function load(){
@@ -707,6 +795,37 @@ function migrate(){
     state.patch17=true;
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
+  }
+  // patch 24 (2026-08-17): seed the outreach pipeline from real lineups + Jay's own client history
+  if(!state.patch24){
+    state.patch24=true;
+    state.outreach=state.outreach||[];
+    const O=(name,event,date,warm,notes)=>({id:uid(),name,email:'',event,date,warm,status:'todo',notes,lastTouch:''});
+    if(!state.outreach.length){
+      state.outreach.push(
+        /* warm — already worked with them */
+        O('Electrik Seoul','Nova SD — K-Pop x EDM','2026-08-29','owes','4 shows together. Owes $1,700 (LA $800 + SD $900). Yetep headlines this one — ask about the invoices in the same thread.'),
+        O('Electrik Seoul','Exchange LA — K-Pop x EDM','2026-09-04','owes','Second show in a week. Offer a two-show rate — easier yes than two separate bookings.'),
+        O('Lost in Dreams','Academy LA pop-up (TELYKAST)','2026-08-27','worked','You shot 6 of their artists on Jul 15 for $2,750 — your single best festival day. You land from Vietnam 10:35 PM this night, so pitch the next one, not this.'),
+        O('Yetep','Lost Lands — Ohio','2026-09-20','owes','6 gigs together, most of any client. Owes $900. Rate for this set still TBD.'),
+        O('Chelsea (HERSHE)','Lost Lands — Ohio','2026-09-16','worked','4 gigs together. Rate for this set still TBD — ask via Brianna.'),
+        /* festivals you can stack */
+        O('Wasteland 2026 — lineup TBC','Insomniac · San Bernardino','2026-09-04','cold','Lineup not published yet. Once it is, pull the names and stack like Lost in Dreams.'),
+        O('Dreamstate SoCal — lineup TBC','Insomniac · SoCal','2026-11-20','cold','ONLY if the Osaka return lands on/before ~Nov 18 — waiting on Hikaru.'),
+        /* club leads worth a cold ask */
+        O('Tchami','Academy LA','2026-08-29','cold','Same night as your Chelsea shoot + Electrik Seoul SD — pitch a future date instead.'),
+        O('Alan Walker','Academy LA','2026-09-05','cold',''),
+        O('Flux Pavilion','Exchange LA','2026-09-05','cold','Also plays Nova SD Sep 18 — two shots at the same team.'),
+        O('Big Gigantic','Exchange LA','2026-09-12','cold',''),
+        O('Dillon Francis / Diplo / Pauly D','Academy LA — FCANCER','2026-09-23','cold','Charity night, three big names on one bill.'),
+        O('Cosmic Gate','Academy LA','2026-09-26','cold',''),
+        O('Nicky Romero','Academy LA','2026-10-02','cold',''),
+        O('Snakehips','Nova SD','2026-10-23','cold',''),
+        O('Chromeo','Nova SD','2026-10-30','cold','Same night as Escape — you’re booked with HERSHE.'),
+        O('Dimitri Vegas','Exchange LA','2026-10-30','cold','Same night as Escape — you’re booked.'),
+        O('Massano','Exchange LA','2026-11-14','cold','You’re in Osaka for Brandon & Coco’s wedding.')
+      );
+    }
   }
   // patch 23 (2026-08-17): wedding fund opens with the birthday gift money
   if(!state.patch23){
@@ -850,6 +969,7 @@ function snapshotDocs(){
   state.events.forEach(e=>{m['e.'+e.id]=JSON.stringify(e)});
   state.invoices.forEach(i=>{m['i.'+i.id]=JSON.stringify(i)});
   (state.wfund||[]).forEach(w=>{m['w.'+w.id]=JSON.stringify(w)});
+  (state.outreach||[]).forEach(o=>{m['o.'+o.id]=JSON.stringify(o)});
   const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq};
   Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch')meta[k]=state[k]});
   m['meta']=JSON.stringify(meta);
@@ -866,7 +986,7 @@ function pushDiff(){
 window.__pushAll=function(){lastPush={};pushDiff()};
 window.__adoptCloud=function(cloud){
   try{
-    const tasks=[],events=[],invoices=[],wfund=[];let meta=null;
+    const tasks=[],events=[],invoices=[],wfund=[],outreach=[];let meta=null;
     for(const k in cloud){
       let v;try{v=JSON.parse(cloud[k])}catch(e){continue}
       if(k==='meta')meta=v;
@@ -874,9 +994,11 @@ window.__adoptCloud=function(cloud){
       else if(k.slice(0,2)==='e.')events.push(v);
       else if(k.slice(0,2)==='i.')invoices.push(v);
       else if(k.slice(0,2)==='w.')wfund.push(v);
+      else if(k.slice(0,2)==='o.')outreach.push(v);
     }
     if(!meta)return;
     state.wfund=wfund.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    state.outreach=outreach;
     const order=meta.taskOrder||[];
     tasks.sort((a,b)=>{let ia=order.indexOf(a.id),ib=order.indexOf(b.id);
       if(ia<0)ia=9999;if(ib<0)ib=9999;return ia-ib});
@@ -1400,6 +1522,127 @@ function delDeposit(id){
   save();render();
 }
 
+/* ─────────────────────── OUTREACH ─────────────────────── */
+const OSTAT={todo:'To contact',emailed:'Emailed',replied:'Replied',booked:'Booked',passed:'Passed'};
+const ONEXT={todo:'emailed',emailed:'replied',replied:'booked',booked:'passed',passed:'todo'};
+const OWARM={worked:'worked together',owes:'owes you money',cold:'new'};
+function renderOutreach(){
+  const list=state.outreach||[], today=todayISO();
+  const n=s=>list.filter(o=>o.status===s).length;
+  $('outStats').innerHTML=
+     '<div class="card stat"><div class="lbl">To contact</div><div class="val num">'+n('todo')+'</div><div class="sub">warm leads first</div></div>'
+    +'<div class="card stat upc"><div class="lbl">Waiting on reply</div><div class="val num">'+n('emailed')+'</div><div class="sub">sent, no answer yet</div></div>'
+    +'<div class="card stat made"><div class="lbl">Booked</div><div class="val num">'+n('booked')+'</div><div class="sub">from outreach</div></div>';
+  const b=$('outBadge');
+  if(b){const c=n('todo');b.style.display=c?'flex':'none';b.textContent=c}
+  /* grouped by the event that gives you a reason to write */
+  const groups={};
+  list.forEach(o=>{const k=(o.date||'9999')+'|'+(o.event||'No event');(groups[k]=groups[k]||[]).push(o)});
+  const keys=Object.keys(groups).sort();
+  const w=$('outList');
+  if(!keys.length){w.innerHTML='<div class="card"><div class="tasklist-empty">Nothing in the pipeline yet — add a contact, or ask me to scan the clubs.</div></div>';return}
+  w.innerHTML=keys.map(k=>{
+    const [date,ev]=k.split('|'), rows=groups[k];
+    const days=date==='9999'?null:Math.round((new Date(date)-new Date(today))/864e5);
+    const when=days==null?'no date':(days<0?'passed':(days===0?'today':days+' days away'));
+    return '<div class="outgroup"><h3>'+esc(ev)+'</h3>'
+      +'<div class="when'+(days!=null&&days>=0&&days<=21?' soon':'')+'">'+(date==='9999'?'':fmtDate(date)+' · ')+when
+      +' · '+rows.length+' artist'+(rows.length===1?'':'s')+'</div><div class="card">'
+      +rows.map(o=>'<div class="outrow"><div class="body">'
+        +'<div class="nm">'+esc(o.name)+'</div>'
+        +'<div class="meta"><span class="st '+o.status+'" onclick="cycleOutreach(\''+o.id+'\')" title="Tap to advance">'+OSTAT[o.status]+'</span>'
+        +'<span class="warm '+o.warm+'">'+OWARM[o.warm]+'</span></div>'
+        +'<div class="em'+(o.email?'':' missing')+'">'+esc(o.email||'no email yet — find their booking contact')+'</div>'
+        +(o.notes?'<div class="em" style="color:var(--ink3)">'+esc(o.notes)+'</div>':'')
+        +'</div>'
+        +'<button class="iconbtn" title="Draft email" onclick="draftMail(\''+o.id+'\')">✉</button>'
+        +'<button class="iconbtn" title="Edit" onclick="openOutModal(\''+o.id+'\')">✎</button></div>').join('')
+      +'</div></div>';
+  }).join('');
+}
+function cycleOutreach(id){
+  const o=(state.outreach||[]).find(x=>x.id===id);if(!o)return;
+  o.status=ONEXT[o.status]||'todo';
+  if(o.status==='emailed')o.lastTouch=todayISO();
+  save();render();
+}
+let editingOutId=null;
+function openOutModal(id){
+  editingOutId=id||null;
+  const o=id?(state.outreach||[]).find(x=>x.id===id):null;
+  $('outModalTitle').textContent=o?'Edit contact':'New contact';
+  $('oName').value=o?o.name:'';$('oEmail').value=o?o.email:'';
+  $('oEvent').value=o?o.event:'';$('oDate').value=o?o.date:'';
+  $('oWarm').value=o?o.warm:'cold';$('oStatus').value=o?o.status:'todo';
+  $('oNotes').value=o?o.notes:'';
+  $('oDelete').style.display=o?'':'none';
+  $('outOverlay').classList.add('open');$('oName').focus();
+}
+function saveOutreach(){
+  const name=$('oName').value.trim();if(!name)return;
+  const d={name,email:$('oEmail').value.trim(),event:$('oEvent').value.trim(),date:$('oDate').value,
+           warm:$('oWarm').value,status:$('oStatus').value,notes:$('oNotes').value.trim()};
+  state.outreach=state.outreach||[];
+  if(editingOutId)Object.assign(state.outreach.find(x=>x.id===editingOutId),d);
+  else state.outreach.push(Object.assign({id:uid(),lastTouch:''},d));
+  save();closeOverlays();render();
+}
+function deleteOutreach(){
+  if(!editingOutId||!confirm('Remove this contact from the pipeline?'))return;
+  state.outreach=(state.outreach||[]).filter(x=>x.id!==editingOutId);
+  save();closeOverlays();render();
+}
+/* ---- the email ---- */
+function mailFor(o){
+  const ev=o.event||'your upcoming show', when=o.date?' on '+fmtDate(o.date):'';
+  const personal = o.warm==='cold'
+    ? '[one line: why them specifically — a set you caught, a venue you both work, a mutual artist]'
+    : (o.notes||'We\'ve worked together before and I\'d love to link up again.');
+  const body=
+`Hi${o.name?' — '+o.name+' team':''},
+
+I'm Jay Matsumoto, a photographer and videographer in LA. I shoot a lot in the SoCal dance scene — recent nights include Lost in Dreams, Academy LA, Exchange LA and Nova SD, plus festival work.
+
+I saw ${o.name} is playing ${ev}${when}. I'll be on site that day and wanted to ask whether you need coverage — stills, a short recap edit, or vertical content cut for socials.
+
+${personal}
+
+Recent work: jaymatsu.com
+Happy to put together a package that fits what you actually need — same-night turnarounds are doable if you want something up fast.
+
+Thanks for the time,
+
+Jay Matsumoto
+matsumotojay@gmail.com · (310) 951-2318 · jaymatsu.com`;
+  return {subject:'Coverage for '+o.name+(o.event?' — '+o.event:'')+(o.date?', '+fmtDate(o.date):''), body};
+}
+let mailingId=null;
+function draftMail(id){
+  const o=(state.outreach||[]).find(x=>x.id===id);if(!o)return;
+  mailingId=id;const m=mailFor(o);
+  $('mailTitle').textContent='Email — '+o.name;
+  $('mSubj').value=m.subject;$('mBody').value=m.body;
+  $('mailOverlay').classList.add('open');
+}
+function openTemplate(){
+  mailingId=null;
+  const m=mailFor({name:'{ARTIST}',event:'{EVENT}',date:'',warm:'cold',notes:''});
+  $('mailTitle').textContent='Outreach template';
+  $('mSubj').value=m.subject;$('mBody').value=m.body;
+  $('mailOverlay').classList.add('open');
+}
+function copyMail(){
+  navigator.clipboard.writeText($('mSubj').value+'\n\n'+$('mBody').value)
+    .then(()=>toast('Copied — paste into your email'),()=>toast('Couldn’t copy'));
+}
+function sendMail(){
+  const o=mailingId?(state.outreach||[]).find(x=>x.id===mailingId):null;
+  if(o&&!o.email){toast('No email on file for '+o.name+' yet');return}
+  location.href='mailto:'+encodeURIComponent(o?o.email:'')
+    +'?subject='+encodeURIComponent($('mSubj').value)+'&body='+encodeURIComponent($('mBody').value);
+  if(o&&o.status==='todo'){o.status='emailed';o.lastTouch=todayISO();save();render()}
+}
+
 /* ─────────────────────── INVOICES render ─────────────────────── */
 function renderInvoices(){
   const drafts=state.invoices.filter(i=>i.status==='draft');
@@ -1560,7 +1803,7 @@ document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeOverlays()});
 
 function render(){
   $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  renderToday();renderCalendar();renderMoney();renderFund();renderInvoices();
+  renderToday();renderCalendar();renderMoney();renderFund();renderOutreach();renderInvoices();
 }
 
 load();
