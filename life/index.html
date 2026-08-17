@@ -146,6 +146,10 @@
   .seg button.on.pers{background:var(--pers-soft);border-color:var(--pers);color:var(--pers)}
   .seg button.on.work{background:var(--good-soft);border-color:var(--good);color:var(--good)}
   tr.crossed td,tr.crossed td b{text-decoration:line-through;color:var(--ink3)}
+  tr.owedsub td{text-align:right;color:var(--ink2);font-size:12.5px;border-bottom:none;padding:5px 10px}
+  tr.owedsub td.r{color:var(--owed);font-weight:700}
+  tr.owedgrand td{text-align:right;font-weight:800;font-size:15px;border-top:2px solid var(--line);border-bottom:none;padding:9px 10px}
+  tr.owedgrand td.r{color:var(--owed)}
   td input[type=checkbox]{width:16px;height:16px;accent-color:var(--good);cursor:pointer}
   .evmore{font-size:10px;color:var(--ink3);margin-top:1px}
   .daypanel{margin-top:14px;padding:14px 16px}
@@ -180,6 +184,33 @@
   td.r,th.r{text-align:right}
   .tablewrap{overflow-x:auto}
   .nonbiz{font-size:12.5px;color:var(--ink3);margin:14px 0 30px}
+  /* wedding fund */
+  .fundcard{padding:16px 18px}
+  .fundhead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+  .fundhead .big{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--accent)}
+  .fundhead .of{font-size:13.5px;color:var(--ink2)}
+  .fundbar{height:10px;background:var(--surface2);border-radius:99px;margin:11px 0 6px;overflow:hidden;position:relative}
+  .fundbar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+  .fundbar b{position:absolute;top:-3px;width:2px;height:16px;background:var(--ink3);border-radius:1px}
+  .fundfacts{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)}
+  .fundfacts b{color:var(--ink)}
+  .miles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin:14px 0 4px}
+  .mile{border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .mile .d{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3)}
+  .mile .a{font-size:17px;font-weight:800;margin-top:2px}
+  .mile .s{font-size:11.5px;font-weight:700;margin-top:2px}
+  .mile.ok{border-color:var(--good)} .mile.ok .s{color:var(--good)}
+  .mile.warn{border-color:var(--owed)} .mile.warn .s{color:var(--owed)}
+  .mile.done{background:var(--good-soft);border-color:var(--good)} .mile.done .s{color:var(--good)}
+  .deprow{display:flex;gap:9px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .deprow:last-of-type{border-bottom:none}
+  .deprow .dd{flex:0 0 58px;color:var(--ink3);font-size:12px}
+  .deprow .ds{flex:1;min-width:0}
+  .deprow .da{font-weight:700;color:var(--good)}
+  .depempty{color:var(--ink3);font-size:12.5px;padding:8px 0}
+  .depadd{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:flex-end}
+  .depadd .f{flex:1;min-width:110px}
+  .depadd label{display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:3px}
 
   /* ── INVOICES ────────────────────────── */
   .nudge{display:flex;gap:12px;align-items:center;padding:12px 15px;margin-bottom:10px;border-left:3px solid var(--owed)}
@@ -337,9 +368,12 @@
       <button class="btn small" id="clearPaidBtn" style="display:none" onclick="clearPaid()">Clear paid ▸</button>
     </div>
     <div class="card tablewrap"><table id="owedTable"></table></div>
+    <h2>Wedding fund — Lake Toya</h2>
+    <div class="card fundcard" id="fundCard"></div>
+
     <h2>Collected</h2>
     <div class="card tablewrap"><table id="paidTable"></table></div>
-    <p class="nonbiz">Non-business (not counted toward goal): lawyer fees refund $7,559.91 · IRS federal refund $4,459.99</p>
+    <p class="nonbiz">Non-business (not counted toward the $100K goal): lawyer fees refund $7,559.91 · IRS federal refund $4,459.99 · birthday gifts $500 (Kathy &amp; AJ $100, Jose $200, Ace &amp; Aru $200) — gifts aren’t taxable income, so they sit outside gig revenue; the $500 went into the wedding fund.</p>
   </section>
 
   <!-- ═══════════ INVOICES ═══════════ -->
@@ -504,7 +538,7 @@ function seed(){
     top3:[null,null,null],
     invSeq:0,
     tasks:[
-      T('Make Partiful for birthday party','Urgent','Party is Aug 14 — tomorrow','2026-08-13'),
+      T('Make Partiful for birthday party','Urgent','Party was Fri Aug 14','2026-08-13'),
       T('Drop off camera at Dean’s Camera Repair','Urgent','Get it in before Vietnam (leave Aug 20)','2026-08-14'),
       T('Resolve Sep 12 double-booking','Urgent','Eri & Dom’s wedding (Vista, 4–10 PM) vs Manila Killa shoot (DTLA). Can’t do both.','2026-08-20'),
       T('Ask Yetep for $900 owed','Money','$400 July photoshoot + $500 Beyond. Also owes SF shoot + SF promo (amt TBD)'),
@@ -549,7 +583,8 @@ function seed(){
       E({title:'Chelsea (HERSHE) — shoot',gig:true,client:'Chelsea (HERSHE)',gross:null,date:'2026-08-29',details:'Rate TBD — confirm details'}),
       E({title:'📸 Manila Killa — Maeto Warehouse',gig:true,client:'Manila Killa',gross:null,date:'2026-09-12',details:'Arts District, DTLA. Email Brett to confirm details. ⚠︎ Same day as Eri & Dom’s wedding in Vista'})
     ],
-    invoices:[]
+    invoices:[],
+    wfund:[]
   };
 }
 function load(){
@@ -597,7 +632,7 @@ function migrate(){
   if(!state.patch4){
     state.patch4=true;
     state.tasks.unshift(
-      {id:uid(),title:'Follow up with Dean’s — camera repair quote',tag:'Waiting',notes:'Dean will have the damage assessment / repair cost Tuesday. You fly out the 20th.',due:'2026-08-18',status:'open',completedAt:null}
+      {id:uid(),title:'Follow up with Dean’s — camera repair quote',tag:'Waiting',notes:'Dean will have the damage assessment / repair cost on Tue Aug 18. You fly out Aug 20.',due:'2026-08-18',status:'open',completedAt:null}
     );
     const bw=state.events.find(e=>e.date==='2026-11-14'&&e.title.indexOf('Brandon')>-1);
     if(bw){bw.title='Brandon & Coco’s Wedding'}
@@ -672,6 +707,22 @@ function migrate(){
     state.patch17=true;
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
+  }
+  // patch 23 (2026-08-17): wedding fund opens with the birthday gift money
+  if(!state.patch23){
+    state.patch23=true;
+    state.wfund=state.wfund||[];
+    if(!state.wfund.length){
+      state.wfund.push(
+        {id:uid(),date:'2026-08-14',amount:100,source:'Birthday gift — Kathy & AJ',note:''},
+        {id:uid(),date:'2026-08-14',amount:200,source:'Birthday gift — Jose',note:''},
+        {id:uid(),date:'2026-08-14',amount:200,source:'Birthday gift — Ace & Aru',note:''}
+      );
+    }
+    state.tasks.unshift(
+      {id:uid(),title:'Open a separate account for the wedding fund',tag:'Money',notes:'Keep the $20K out of spending reach — the $500 birthday money is deposit #1. Then set the rule: every gig payment that lands, move ~40% straight in.',due:'2026-08-19',status:'open',completedAt:null},
+      {id:uid(),title:'Ask Jonny for exact amounts on all 4 wedding payments',tag:'Money',notes:'Dashboard has the DATES (Dec 1 2026 deposit 20%, Mar 1 2027 planner+garden, ~Mar 2027 catering in full, Apr 1 2027 accommodation balance) but not the amounts. Need them to size each savings milestone. jonny@hokkaidoresorts.com',due:'2026-09-15',status:'open',completedAt:null}
+    );
   }
   // patch 22 (2026-08-17): Brianna's brief — deadlines, reel refs, night preference, Bass Ventura fix
   if(!state.patch22){
@@ -796,6 +847,7 @@ function snapshotDocs(){
   state.tasks.forEach(t=>{m['t.'+t.id]=JSON.stringify(t)});
   state.events.forEach(e=>{m['e.'+e.id]=JSON.stringify(e)});
   state.invoices.forEach(i=>{m['i.'+i.id]=JSON.stringify(i)});
+  (state.wfund||[]).forEach(w=>{m['w.'+w.id]=JSON.stringify(w)});
   const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq};
   Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch')meta[k]=state[k]});
   m['meta']=JSON.stringify(meta);
@@ -812,15 +864,17 @@ function pushDiff(){
 window.__pushAll=function(){lastPush={};pushDiff()};
 window.__adoptCloud=function(cloud){
   try{
-    const tasks=[],events=[],invoices=[];let meta=null;
+    const tasks=[],events=[],invoices=[],wfund=[];let meta=null;
     for(const k in cloud){
       let v;try{v=JSON.parse(cloud[k])}catch(e){continue}
       if(k==='meta')meta=v;
       else if(k.slice(0,2)==='t.')tasks.push(v);
       else if(k.slice(0,2)==='e.')events.push(v);
       else if(k.slice(0,2)==='i.')invoices.push(v);
+      else if(k.slice(0,2)==='w.')wfund.push(v);
     }
     if(!meta)return;
+    state.wfund=wfund.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     const order=meta.taskOrder||[];
     tasks.sort((a,b)=>{let ia=order.indexOf(a.id),ib=order.indexOf(b.id);
       if(ia<0)ia=9999;if(ib<0)ib=9999;return ia-ib});
@@ -1242,7 +1296,7 @@ function renderMoney(){
     +(owedRows.length?owedRows.map(e=>
       '<tr'+(e.paid?' class="crossed"':'')+'><td><input type="checkbox" '+(e.paid?'checked':'')+' title="Paid?" onchange="togglePaid(\''+e.id+'\',this.checked)"></td>'
       +'<td><b>'+esc(e.client)+'</b></td><td>'+esc(e.title)+(e.gross>0?'':' <span class="chip money">needs rate</span>')+'</td><td>'+(e.date?fmtDate(e.date):monthLabel(monthKey(e)||'2026-07').split(' ')[0])+'</td>'
-      +'<td class="r num">'+fmt$(e.gross)+'</td></tr>').join('')
+      +'<td class="r num">'+fmt$(e.gross)+'</td></tr>').join('')+owedTotalsRows(owedRows)
       :'<tr><td colspan="5" style="color:var(--ink3)">All caught up — nothing owed.</td></tr>');
   // paid table
   const paidRows=state.events.filter(e=>e.gig&&e.paid).sort((a,b)=>(b.date||b.month||'').localeCompare(a.date||a.month||''));
@@ -1251,6 +1305,20 @@ function renderMoney(){
       +'<td class="r num">'+fmt$(e.gross)+'</td><td class="r num">'+(e.exp?fmt$(e.exp):'—')+'</td><td class="r num"><b>'+fmt$(net(e))+'</b></td></tr>').join('');
 }
 
+function owedTotalsRows(rows){
+  const today=todayISO();
+  let work=0,booked=0,tbd=0;
+  rows.forEach(e=>{
+    if(e.paid)return;
+    const past=e.date?e.date<=today:true;   // month-only entries are past work
+    if(e.gross>0){if(past)work+=e.gross;else booked+=e.gross}
+    else tbd++;
+  });
+  let h='<tr class="owedsub"><td colspan="4">Owed for work done</td><td class="r num">'+fmt$(work)+'</td></tr>';
+  if(booked>0)h+='<tr class="owedsub"><td colspan="4">Booked ahead (not done yet)</td><td class="r num">'+fmt$(booked)+'</td></tr>';
+  h+='<tr class="owedgrand"><td colspan="4">Total'+(tbd?' <span class="chip money">+'+tbd+' TBD</span>':'')+'</td><td class="r num">'+fmt$(work+booked)+'</td></tr>';
+  return h;
+}
 function togglePaid(id,checked){
   const e=eventById(id);if(!e)return;
   e.paid=checked;
@@ -1260,6 +1328,69 @@ function togglePaid(id,checked){
 }
 function clearPaid(){
   state.events.forEach(e=>{if(e.gig&&e.paid&&!e.cleared)e.cleared=true});
+  save();render();
+}
+
+/* ─────────────────────── WEDDING FUND ─────────────────────── */
+const WGOAL=20000;                       /* Jay's share; Hikaru covers ~$10K of the ~$30.4K total */
+const WMILES=[
+  {date:'2026-12-01',amt:5000, label:'Accommodation deposit'},
+  {date:'2027-03-01',amt:15000,label:'Planner + catering'},
+  {date:'2027-04-01',amt:20000,label:'Accommodation balance'}
+];
+function fundSaved(){return (state.wfund||[]).reduce((s,w)=>s+(parseFloat(w.amount)||0),0)}
+function renderFund(){
+  const w=$('fundCard');if(!w)return;
+  const saved=fundSaved(),left=Math.max(0,WGOAL-saved),today=todayISO();
+  const lastMile=WMILES[WMILES.length-1];
+  const daysLeft=Math.max(1,(new Date(lastMile.date)-new Date(today))/864e5);
+  const perMo=left/(daysLeft/30.44), perWk=left/(daysLeft/7);
+  let h='<div class="fundhead"><span class="big num">'+fmt$(saved)+'</span>'
+    +'<span class="of">of <b class="num">'+fmt$(WGOAL)+'</b> — your share of the ~$30,400 wedding</span></div>';
+  h+='<div class="fundbar"><i style="width:'+Math.min(100,saved/WGOAL*100)+'%"></i>'
+    +WMILES.slice(0,-1).map(m=>'<b style="left:'+(m.amt/WGOAL*100)+'%"></b>').join('')+'</div>';
+  h+='<div class="fundfacts"><span><b class="num">'+Math.round(saved/WGOAL*100)+'%</b> funded</span>'
+    +'<span><b class="num">'+fmt$(left)+'</b> to go</span>'
+    +'<span>Pace needed <b class="num">'+fmt$(Math.round(perMo))+'</b>/mo · <b class="num">'+fmt$(Math.round(perWk))+'</b>/wk</span></div>';
+  h+='<div class="miles">'+WMILES.map(m=>{
+      const need=m.amt-saved, dl=(new Date(m.date)-new Date(today))/864e5;
+      let cls='ok',s;
+      if(saved>=m.amt){cls='done';s='✓ covered'}
+      else if(dl<=0){cls='warn';s='past — short '+fmt$(need)}
+      else{
+        const mo=Math.max(0.1,dl/30.44), rate=need/mo;
+        cls = rate>3500?'warn':'ok';
+        s=fmt$(Math.round(rate))+'/mo from here';
+      }
+      return '<div class="mile '+cls+'"><div class="d">'+fmtDate(m.date)+'</div>'
+        +'<div class="a num">'+fmt$(m.amt)+'</div><div class="s">'+s+'</div>'
+        +'<div style="font-size:11px;color:var(--ink3);margin-top:2px">'+esc(m.label)+'</div></div>';
+    }).join('')+'</div>';
+  const deps=[...(state.wfund||[])].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  h+='<h3 style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin:14px 0 4px">Deposits</h3>';
+  h+=deps.length?deps.map(d=>'<div class="deprow"><span class="dd">'+fmtDate(d.date)+'</span>'
+      +'<span class="ds">'+esc(d.source||'Deposit')+(d.note?' <span style="color:var(--ink3)">· '+esc(d.note)+'</span>':'')+'</span>'
+      +'<span class="da num">+'+fmt$(d.amount)+'</span>'
+      +'<button class="iconbtn" title="Remove" onclick="delDeposit(\''+d.id+'\')">✕</button></div>').join('')
+    :'<div class="depempty">Nothing in the fund yet.</div>';
+  h+='<div class="depadd">'
+    +'<div class="f"><label>Date</label><input type="date" id="wDate" value="'+today+'"></div>'
+    +'<div class="f"><label>Where from</label><input id="wSrc" placeholder="e.g. Laya shoot"></div>'
+    +'<div class="f" style="max-width:110px"><label>Amount $</label><input id="wAmt" type="number" min="0" step="0.01"></div>'
+    +'<button class="btn primary small" onclick="addDeposit()">Add</button></div>';
+  w.innerHTML=h;
+}
+function addDeposit(){
+  const amt=parseFloat($('wAmt').value);
+  if(!amt||amt<=0){toast('Enter an amount first');return}
+  state.wfund=state.wfund||[];
+  state.wfund.push({id:uid(),date:$('wDate').value||todayISO(),amount:amt,source:$('wSrc').value.trim()||'Deposit',note:''});
+  state.wfund.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  save();render();toast('Added to the wedding fund');
+}
+function delDeposit(id){
+  if(!confirm('Remove this deposit from the wedding fund?'))return;
+  state.wfund=(state.wfund||[]).filter(w=>w.id!==id);
   save();render();
 }
 
@@ -1423,7 +1554,7 @@ document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeOverlays()});
 
 function render(){
   $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  renderToday();renderCalendar();renderMoney();renderInvoices();
+  renderToday();renderCalendar();renderMoney();renderFund();renderInvoices();
 }
 
 load();
