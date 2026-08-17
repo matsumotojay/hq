@@ -234,6 +234,16 @@
   .warm.owes{background:var(--urgent-soft);color:var(--urgent)}
   .warm.cold{background:var(--chip);color:var(--ink3)}
   .tmplbox{width:100%;font-size:12.5px;line-height:1.5;min-height:330px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .leadchip{font-size:10.5px;font-weight:600;line-height:1.25;padding:1px 4px;border-radius:4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--chip);color:var(--ink2)}
+  .leadchip.worked{background:var(--good-soft);color:var(--good)}
+  .leadchip.owes{background:var(--urgent-soft);color:var(--urgent)}
+  .leadchip.booked{background:var(--accent-soft);color:var(--accent-ink)}
+  .leaddet{padding:10px 0;border-bottom:1px solid var(--line)}
+  .leaddet:last-of-type{border-bottom:none}
+  .leaddet .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .leaddet .nm{font-weight:700;font-size:14.5px}
+  .leaddet .sub{font-size:12.5px;color:var(--ink2);margin-top:3px}
+  .leaddet .acts{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
 
   /* ── INVOICES ────────────────────────── */
   .nudge{display:flex;gap:12px;align-items:center;padding:12px 15px;margin-bottom:10px;border-left:3px solid var(--owed)}
@@ -402,13 +412,18 @@
   <!-- ═══════════ OUTREACH ═══════════ -->
   <section class="view" id="view-outreach">
     <div class="monthstrip" id="outStats" style="margin-top:18px"></div>
-    <div class="listhead">
-      <h2>Pipeline</h2>
-      <div style="display:flex;gap:6px">
-        <button class="btn small" onclick="openTemplate()">✉ Template</button>
-        <button class="btn small" onclick="openOutModal()">＋ Add contact</button>
-      </div>
+    <div class="calhead">
+      <button class="btn small" onclick="outNav(-1)">‹</button>
+      <h2 id="outCalTitle"></h2>
+      <button class="btn small" onclick="outNav(1)">›</button>
+      <span style="flex:1"></span>
+      <button class="btn small" onclick="openTemplate()">✉ Template</button>
+      <button class="btn primary small" onclick="openOutModal()">＋ Add</button>
     </div>
+    <div class="calgrid" id="outDow"></div>
+    <div class="calgrid" id="outGrid"></div>
+    <div class="card daypanel" id="outDayPanel" style="display:none"></div>
+    <div class="listhead"><h2>Everything in the pipeline</h2></div>
     <div id="outList"></div>
     <p class="nonbiz">Lineups pulled from the venues’ own sites. Say “scan the clubs” any week and I’ll refresh Academy LA, Exchange LA, Nova SD and Palladium, and flag names you’ve worked with.</p>
   </section>
@@ -1526,9 +1541,55 @@ function delDeposit(id){
 const OSTAT={todo:'To contact',emailed:'Emailed',replied:'Replied',booked:'Booked',passed:'Passed'};
 const ONEXT={todo:'emailed',emailed:'replied',replied:'booked',booked:'passed',passed:'todo'};
 const OWARM={worked:'worked together',owes:'owes you money',cold:'new'};
+let outY=2026,outM=7,outSel=null;
+function outNav(d){outM+=d;if(outM<0){outM=11;outY--}if(outM>11){outM=0;outY++}render()}
+function leadsOn(iso){return (state.outreach||[]).filter(o=>o.date===iso)}
+function leadDetail(o){
+  return '<div class="leaddet"><div class="top"><span class="nm">'+esc(o.name)+'</span>'
+    +'<span class="st '+o.status+'" onclick="cycleOutreach(\''+o.id+'\')" title="Tap to advance">'+OSTAT[o.status]+'</span>'
+    +'<span class="warm '+o.warm+'">'+OWARM[o.warm]+'</span></div>'
+    +'<div class="sub">'+esc(o.event||'—')+'</div>'
+    +'<div class="sub'+(o.email?'':' ')+'" style="'+(o.email?'':'color:var(--owed);font-weight:600')+'">'
+      +esc(o.email||'no email yet — find their booking contact')+'</div>'
+    +(o.notes?'<div class="sub" style="color:var(--ink3)">'+escLink(o.notes)+'</div>':'')
+    +'<div class="acts"><button class="btn small" onclick="draftMail(\''+o.id+'\')">✉ Draft email</button>'
+    +'<button class="btn small" onclick="openOutModal(\''+o.id+'\')">✎ Edit</button></div></div>';
+}
+function renderOutreachCal(){
+  const today=todayISO();
+  if(!outSel)outSel=today;
+  $('outCalTitle').textContent=new Date(outY,outM,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  $('outDow').innerHTML=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>'<div class="dow">'+d+'</div>').join('');
+  const first=new Date(outY,outM,1), start=new Date(outY,outM,1-first.getDay());
+  const grid=$('outGrid');grid.innerHTML='';
+  for(let i=0;i<42;i++){
+    const d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);
+    const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(i===35&&d.getMonth()!==outM)break;
+    const cell=document.createElement('div');
+    cell.className='day'+(d.getMonth()!==outM?' out':'')+(iso===today?' today':'')+(iso===outSel?' sel':'');
+    cell.innerHTML='<div class="dnum">'+d.getDate()+'</div>';
+    const ls=leadsOn(iso);
+    ls.slice(0,2).forEach(o=>{
+      const cls=o.status==='booked'?'booked':(o.warm==='owes'?'owes':(o.warm==='worked'?'worked':''));
+      cell.innerHTML+='<div class="leadchip '+cls+'">'+esc(o.name)+'</div>';
+    });
+    if(ls.length>2)cell.innerHTML+='<div class="evmore">+'+(ls.length-2)+' more</div>';
+    cell.onclick=()=>{outSel=iso;render()};
+    grid.appendChild(cell);
+  }
+  const panel=$('outDayPanel'), ls=leadsOn(outSel);
+  panel.style.display='';
+  let h='<h3>'+new Date(outSel+'T12:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+'</h3>';
+  h+=ls.length?ls.map(leadDetail).join('')
+     :'<p style="color:var(--ink3);font-size:13.5px">No leads this day.</p>';
+  h+='<div style="margin-top:10px"><button class="btn small" onclick="openOutModal(null,\''+outSel+'\')">＋ Add a lead on this day</button></div>';
+  panel.innerHTML=h;
+}
 function renderOutreach(){
   const list=state.outreach||[], today=todayISO();
   const n=s=>list.filter(o=>o.status===s).length;
+  renderOutreachCal();
   $('outStats').innerHTML=
      '<div class="card stat"><div class="lbl">To contact</div><div class="val num">'+n('todo')+'</div><div class="sub">warm leads first</div></div>'
     +'<div class="card stat upc"><div class="lbl">Waiting on reply</div><div class="val num">'+n('emailed')+'</div><div class="sub">sent, no answer yet</div></div>'
@@ -1567,12 +1628,12 @@ function cycleOutreach(id){
   save();render();
 }
 let editingOutId=null;
-function openOutModal(id){
+function openOutModal(id,presetDate){
   editingOutId=id||null;
   const o=id?(state.outreach||[]).find(x=>x.id===id):null;
   $('outModalTitle').textContent=o?'Edit contact':'New contact';
   $('oName').value=o?o.name:'';$('oEmail').value=o?o.email:'';
-  $('oEvent').value=o?o.event:'';$('oDate').value=o?o.date:'';
+  $('oEvent').value=o?o.event:'';$('oDate').value=o?o.date:(presetDate||outSel||'');
   $('oWarm').value=o?o.warm:'cold';$('oStatus').value=o?o.status:'todo';
   $('oNotes').value=o?o.notes:'';
   $('oDelete').style.display=o?'':'none';
