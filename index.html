@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Lake Toya HQ — Jay &amp; Hikaru</title>
 
 <style>
@@ -850,6 +851,11 @@ a{color:var(--sky)}
 
 <div class="page" id="p-seat">
   <div class="ph"><h2>🪑 <span lang-en>Table plan</span><span lang-ja>席次</span></h2><p><span lang-en>Hikaru&rsquo;s layout: four vertical rows, each two tables joined end-to-end — 3 a side plus one on the end, 7 per table. You two sit at the head table. Drag anyone onto any seat; her suggested seating is already in.</span><span lang-ja>光さんの配置案：縦4列、各列はテーブル2台を縦に連結（片側3名＋端1名の7名掛け）。おふたりは上座に。席へ直接ドラッグできます。光さんの案を配置済みです。</span></p></div>
+  <div class="card pad" style="margin-bottom:.9rem">
+    <h4 style="margin-bottom:.15rem">📐 <span lang-en>The tent, to scale</span><span lang-ja>テント実寸プラン</span></h4>
+    <p style="font-size:.78rem;color:var(--ink-faint);margin:0 0 .6rem"><span lang-en>Ayuko confirmed 10m &times; 15m on 17 Aug 2026. Everything below is drawn to that scale on a 1-metre grid — tables 1800&times;1200, 75cm behind each chair.</span><span lang-ja>鮎子さんより10m&times;15mとご確認（2026年8月17日）。以下はすべて実寸・1mグリッドで作図しています（テーブル1800&times;1200、椅子の後方75cm）。</span></p>
+    <div id="tentplan"></div>
+  </div>
   <div class="card pad dock" style="margin-bottom:.9rem"><div class="dock-h"><span style="font-family:var(--disp);font-weight:800"><span lang-en>Not seated</span><span lang-ja>未配置</span></span><span class="cap" data-cap-for="spool">—</span><button type="button" class="dock-t" data-dock="p-seat"><span lang-en>hide</span><span lang-ja>隠す</span></button></div><div class="zone" data-zone="spool" id="z-spool"></div></div>
   <div id="seatlay"></div>
 </div>
@@ -1071,7 +1077,7 @@ function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=c
 function bi(e,j){return '<span lang-en>'+e+'</span><span lang-ja>'+j+'</span>';}
 var FBCONFIG=window.FBCONFIG={"apiKey": "AIzaSyAAnT69AtL-m53iQ-DuCF0PRNrdHcmvZaM", "authDomain": "lake-toya-hq.firebaseapp.com", "projectId": "lake-toya-hq", "storageBucket": "lake-toya-hq.firebasestorage.app", "messagingSenderId": "246123481676", "appId": "1:246123481676:web:8017ebd6ac8b8f3530c2e9"};
 /* keys that are personal viewing preferences stay per-device; everything else syncs */
-var SYNCSKIP=window.SYNCSKIP=/^(tab|lang|cur|curbind|imgsplit|l3ids|hseed|jseed|hseed2|lastedit|moreopen|driveday|nextfilter|tboxopen|fwopen|hpopen|jpopen|hopen|jopen|dock\.)/;
+var SYNCSKIP=window.SYNCSKIP=/^(tab|lang|cur|curbind|imgsplit|l3ids|hseed|jseed|hseed2|lastedit|moreopen|driveday|nextfilter|tboxopen|tentv|fwopen|hpopen|jpopen|hopen|jopen|dock\.)/;
 var UNDO=[];
 function save(k,v){try{
   if(k!=="lastedit"&&k!=="tab"&&k!=="moreopen"){
@@ -1431,11 +1437,19 @@ var CHEFS=[
   fj:["お一人様25,000〜30,000円","人件費込み・別途10%税","ドリンク別"],
   hik:"Not in her ranking.",hikj:"光のランキング外。",
   tags:[["Staff included","スタッフ込み","yes"],["Drinks separate","ドリンク別","no"]]},
- {id:"santo",n:"Santo Niseko",nj:"Santo（ニセコ）",c:"#9E93A6",p:P.quest,lo:750000,hi:800000,budget:800000,drinksIncl:false,
-  f:["¥15,000 a head, all inclusive — via Ayuko, 11 Aug","No sushi or ramen — those must be ordered separately","Drinks separate"],
-  fj:["お一人様15,000円・オールインクルーシブ（鮎子さん経由・8月11日）","寿司とラーメンは対応不可・別途手配","ドリンク別"],
+ {id:"santo",n:"Santo Niseko",nj:"Santo（ニセコ）",c:"#9E93A6",p:P.quest,lo:750000,hi:825000,budget:825000,drinksIncl:false,
+  f:["¥15,000 a head, <b>all inclusive</b> — nothing for staff or travel on top",
+     "<b>Confirmed by Ayuko, 17 Aug 2026</b>, answering the question about hidden staff fees: the only addition is 10% consumption tax",
+     "<b>Recalculated live for the planning headcount</b>, the same way Teranishi&rsquo;s quote is",
+     "No sushi or ramen — those must be ordered separately",
+     "⚠️ <b>Still unclear whether drinks are inside the ¥15,000</b> — &ldquo;all inclusive&rdquo; was about staff. Teranishi&rsquo;s quote carries ¥5,000 an adult for 120 minutes of drinks, so the comparison turns on this"],
+  fj:["お一人様15,000円・<b>オールインクルーシブ</b>。スタッフ・出張費の追加なし",
+     "<b>鮎子さん確認済み（2026年8月17日）</b>。スタッフ費用に関する質問への回答で、追加は消費税10%のみとのこと",
+     "<b>計画人数で自動再計算</b>（寺西さんの見積もりと同じ方式）",
+     "寿司とラーメンは対応不可・別途手配",
+     "⚠️ <b>ドリンクが15,000円に含まれるかは未確認</b>。「オールインクルーシブ」はスタッフ費用についての回答でした。寺西さんは大人1名5,000円（120分）のため、比較の分かれ目はここです"],
   hik:"",hikj:"",
-  tags:[["Quoted ¥800,000 all in","見積もり約800,000円","ok"],["No sushi/ramen","寿司・ラーメン不可","no"]]}];
+  tags:[["All-in, no staff fees","スタッフ費用なし","yes"],["Cheapest full quote","最安の総額","yes"],["Drinks unconfirmed","ドリンク未確認","no"],["No sushi/ramen","寿司・ラーメン不可","no"]]}];
 
 var PHOTOG=[
  {id:"nom",n:"Nom-san",nj:"のむさん",amt:120000,link:"https://www.instagram.com/nom.photo/",linkl:"Instagram",linkj:"インスタグラム",front:true,
@@ -1551,7 +1565,7 @@ var TCAT=[
 var TASKS=[
  /* ① Venue & Operations */
  {id:"t101",c:1,o:"j",n:"Venue contract",nj:"会場契約",due:"2026-12-01",d:"Holding deposit is paid; the 20% accommodation deposit lands on this date",dj:"予約金は支払い済み。宿泊費デポジット20%がこの日"},
- {id:"p10", c:1,o:"j",n:"Confirm the table layout with Makiko",nj:"テーブル配置をまきこさんに確認",due:"2027-03-01",d:"She has 8 guest tables on file and recommends four 1800×120 joined into two long rows",dj:"まきこさんはゲストテーブル8卓で認識。1800×120を4台繋げて2列を推奨"},
+ {id:"p10", c:1,o:"j",n:"Confirm the table layout with Makiko",nj:"テーブル配置をまきこさんに確認",due:"2027-03-01",d:"She has 8 guest tables on file and recommends four 1800×120 joined into two long rows. <b>Tent confirmed 10m × 15m (Ayuko, 17 Aug 2026).</b> Three a side on an 1800mm table is 60cm per person — comfortable. The problem is not the seats, it is the floor: four rows side by side need 10.8m across and the tent is 10m. See the scale plan on the Tables tab.",dj:"まきこさんはゲストテーブル8卓で認識。1800×120を4台繋げて2列を推奨。<b>テントは10m×15mで確定（鮎子さん・2026年8月17日）。</b>1800mmのテーブルに片側3名で1名あたり60cm — ゆとりがあります。問題は席幅ではなく床面積で、4列を横並びにすると10.8m必要ですがテントは10mです。「席次」タブの実寸プランをご覧ください。"},
  {id:"t103",c:1,o:"j",n:"Create the event timeline",nj:"タイムスケジュール作成",due:"2027-02-01",d:"The running order on The day tab is the draft — Ayuko finalises it",dj:"「当日」タブの進行が下書き。最終版は鮎子さんが作成"},
  {id:"t102",c:1,o:"j",n:"Layout design",nj:"レイアウト設計",due:"2027-03-01",d:"",dj:""},
  {id:"t104",c:1,o:"j",n:"Rain backup plan",nj:"雨天時プラン",due:"2027-04-01",d:"Tent and sound are confirmed until 9pm — the plan is what moves indoors and when you call it",dj:"テントと音響は21時まで確認済み。何を屋内に移すか、いつ判断するかを決める"},
@@ -2567,8 +2581,8 @@ var MILESTONES=[
   note:"Hikaru flies home on the 25th and Jay carries on to the 28th. Anything that needs the two of you in a room together has to be done by the 25th.",
   notej:"光は25日に帰国し、ジェイは28日まで滞在。ふたりで決める必要があることは25日までに終わらせる想定です。"},
  {id:"m_makiko",d:"2026-09-05",ic:"🎀",n:"Answer Makiko about decor",nj:"まきこさんへ装飾の回答期限",
-  note:"Her hard deadline — June books out fast. Blocked until Ayuko answers the table layout question, because the decoration count depends on how the tables are arranged.",
-  notej:"まきこさんの締切。6月は予約が埋まりやすいとのこと。テーブル配列で装飾数が変わるため、鮎子さんからの回答待ちです。"},
+  note:"Her hard deadline — June books out fast. <b>No longer blocked:</b> Ayuko confirmed on 17 Aug 2026 that the tent is 10m × 15m and the four-row layout works, so the decoration count can be settled.",
+  notej:"まきこさんの締切。6月は予約が埋まりやすいとのこと。<b>待ち状態は解消:</b> 2026年8月17日に鮎子さんよりテントは10m×15m、4列配置で問題なしとご回答いただいたため、装飾数を確定できます。"},
  {id:"m_shoot",d:"2026-11-16",ic:"📸",n:"Pre-wedding shoot — Kagaen, Osaka",nj:"前撮り — 華雅苑 大阪店",
   note:"Booked. Arrive 08:45, shot at Daisen Park. <b>¥110,000 including tax</b> for the one-kimono plan. Jay gets one outfit and no hair set. Hikaru is deciding on a second colour uchikake for +¥10,000.",
   notej:"予約済み。8:45来店、大仙公園で撮影。和装壱点プラン<b>110,000円（税込）</b>。ジェイは衣装1点でヘアセットなし。色打掛の追加（+10,000円）を検討中。"},
@@ -2838,6 +2852,7 @@ function rowAmount(r){
   if(r.toggle)return getTog(r.toggle)?TOGGLES[r.toggle].amt:0;
   if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));
     if(c&&c.id==="tera")return teraQuote();          /* live from the real headcount */
+    if(c&&c.id==="santo")return santoQuote();
     return c&&c.budget!=null?c.budget:0;}
   if(r.choice==="photo"){var pg=photogById(getChoice("photo"));return pg?pg.amt:0;}
   if(r.choice==="hmu"){var hm=hmuById(getChoice("hmu"));return hm?hm.amt:0;}
@@ -3289,6 +3304,7 @@ function rowBase(r){
   if(r.toggle)return getTog(r.toggle)?TOGGLES[r.toggle].amt:0;
   if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));
     if(c&&c.id==="tera")return teraQuote();
+    if(c&&c.id==="santo")return santoQuote();
     return c&&c.budget!=null?c.budget:0;}
   if(r.choice==="photo"){var pg=photogById(getChoice("photo"));return pg?pg.amt:0;}
   if(r.choice==="hmu"){var hm=hmuById(getChoice("hmu"));return hm?hm.amt:0;}
@@ -3739,6 +3755,149 @@ function renderMap(){
   var src=IMG[L()==="ja"?"map_ja":"map_en"];
   w.innerHTML='<img src="'+src+'" alt="'+t("Map of hotels around Lake Toya with drive times to the venue","洞爺湖周辺のホテル地図・会場までの所要時間")+'" style="width:100%;height:auto;display:block;border-radius:14px">';
 }
+/* ---------- the tent, drawn to scale ----------
+   Ayuko confirmed 10m x 15m on 17 Aug 2026. Everything here is metres, so the
+   drawing and the clearance labels can never drift apart — the labels are
+   computed from the same numbers that place the rectangles. */
+var TENT={W:10,L:15};
+var TBL={W:1.8,D:1.2};      /* one guest table, from Makiko's file */
+var BANKL=TBL.W*2;          /* two joined end-to-end = one of the dashboard's rows */
+var CH=0.75;                /* a seated person, measured from the table edge */
+var WALK=0.6;               /* room to get past the back of a chair */
+var PITCH=TBL.D+CH*2+WALK;  /* 3.3m from one row to the next */
+var SPAN=TBL.D+CH*2;        /* 2.7m — a row plus its chairs, nothing spare */
+var SEATD=0.45,SEATW=0.5,SEATP=0.6;
+
+function bankSeats(b){
+  var s=[],k;
+  if(b.h){
+    for(k=0;k<6;k++){
+      s.push({x:b.x+0.05+k*SEATP,y:b.y-SEATD,w:SEATW,h:SEATD});
+      s.push({x:b.x+0.05+k*SEATP,y:b.y+TBL.D,w:SEATW,h:SEATD});
+    }
+    s.push({x:b.x-SEATD,y:b.y+TBL.D/2-SEATW/2,w:SEATD,h:SEATW});
+    s.push({x:b.x+BANKL,y:b.y+TBL.D/2-SEATW/2,w:SEATD,h:SEATW});
+  }else{
+    for(k=0;k<6;k++){
+      s.push({x:b.x-SEATD,y:b.y+0.05+k*SEATP,w:SEATD,h:SEATW});
+      s.push({x:b.x+TBL.D,y:b.y+0.05+k*SEATP,w:SEATD,h:SEATW});
+    }
+    s.push({x:b.x+TBL.D/2-SEATW/2,y:b.y-SEATD,w:SEATW,h:SEATD});
+    s.push({x:b.x+TBL.D/2-SEATW/2,y:b.y+BANKL,w:SEATW,h:SEATD});
+  }
+  return s;
+}
+function tentLayouts(){
+  var L={};
+  /* A — exactly what the Tables tab draws: four rows side by side. */
+  var aStart=(TENT.W-(3*PITCH+SPAN))/2, aBanks=[],i;
+  for(i=0;i<4;i++) aBanks.push({x:aStart+i*PITCH+CH,y:5.4,h:false});
+  L.side={n:"Four rows side by side",nj:"4列を横並び",what:"Four rows",whatj:"4列を",
+    sub:"What the Tables tab draws today",subj:"現在の「席次」タブの配置",
+    banks:aBanks,head:{x:(TENT.W-TBL.W)/2,y:1.6},buffet:null,dance:null,
+    need:3*PITCH+SPAN,have:TENT.W,axis:"across the 10m width",axisj:"幅10m方向"};
+  /* B — the same four rows, turned to run down the long side instead. */
+  var bBanks=[];
+  for(i=0;i<4;i++) bBanks.push({x:(TENT.W-BANKL)/2,y:3.6+i*PITCH,h:true});
+  L.rows={n:"Four rows down the length",nj:"4列を長辺方向に",what:"Four rows",whatj:"4列を",
+    sub:"Same rows, rotated a quarter turn",subj:"同じ配置を90度回転",
+    banks:bBanks,head:{x:(TENT.W-TBL.W)/2,y:1.0},
+    buffet:{x:0.5,y:6.0,w:0.75,h:3.6},dance:null,
+    need:3*PITCH+SPAN,have:TENT.L,axis:"along the 15m length",axisj:"長さ15m方向"};
+  /* C — two rows by two, which is the only version that frees a square. */
+  var cx=[(TENT.W-(PITCH+SPAN))/2+CH,(TENT.W-(PITCH+SPAN))/2+CH+PITCH],cBanks=[];
+  for(i=0;i<2;i++) for(var j=0;j<2;j++) cBanks.push({x:cx[j],y:3.2+i*(BANKL+1.2),h:false});
+  L.grid={n:"Two by two",nj:"2列×2段",what:"Two columns",whatj:"2列を",
+    sub:"Four rows, stacked two deep",subj:"4列を2列×2段に",
+    banks:cBanks,head:{x:(TENT.W-TBL.W)/2,y:0.6},
+    buffet:{x:0.4,y:4.0,w:0.75,h:3.6},dance:{x:3.0,y:12.5,w:4.0,h:2.3},
+    need:PITCH+SPAN,have:TENT.W,axis:"across the 10m width",axisj:"幅10m方向"};
+  return L;
+}
+function tentPlan(key){
+  var L=tentLayouts(),lay=L[key]||L.grid,P=1.9,sc=1;
+  var vb=(-P)+" "+(-P)+" "+(TENT.W+P*2)+" "+(TENT.L+P*2);
+  var o='<svg viewBox="'+vb+'" style="width:100%;height:auto;max-height:78vh;display:block" '+
+        'xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">';
+  o+='<defs><pattern id="tg" width="1" height="1" patternUnits="userSpaceOnUse">'+
+     '<path d="M1 0V1H0" fill="none" stroke="var(--line)" stroke-width=".02"/></pattern></defs>';
+  var over=lay.need>lay.have+1e-9;
+  /* the floor */
+  o+='<rect x="0" y="0" width="'+TENT.W+'" height="'+TENT.L+'" fill="url(#tg)"/>';
+  o+='<rect x="0" y="0" width="'+TENT.W+'" height="'+TENT.L+'" fill="none" stroke="var(--ink)" stroke-width=".09"/>';
+  /* the rows */
+  lay.banks.forEach(function(b,n){
+    var w=b.h?BANKL:TBL.D,h=b.h?TBL.D:BANKL;
+    var bad=over&&(b.x-CH<-0.001||b.x+w+CH>TENT.W+0.001||b.y-CH<-0.001||b.y+h+CH>TENT.L+0.001);
+    bankSeats(b).forEach(function(s){
+      o+='<rect x="'+s.x.toFixed(2)+'" y="'+s.y.toFixed(2)+'" width="'+s.w+'" height="'+s.h+'" rx=".12" '+
+         'fill="'+(bad?"var(--coral)":"var(--grape)")+'" opacity=".55"/>';});
+    o+='<rect x="'+b.x.toFixed(2)+'" y="'+b.y.toFixed(2)+'" width="'+w+'" height="'+h+'" rx=".08" '+
+       'fill="var(--card)" stroke="'+(bad?"var(--coral)":"var(--ink-soft)")+'" stroke-width=".07"/>';
+    o+='<text x="'+(b.x+w/2).toFixed(2)+'" y="'+(b.y+h/2+0.22).toFixed(2)+'" text-anchor="middle" '+
+       'font-size=".62" font-weight="700" fill="var(--ink-soft)">'+(n*2+1)+'·'+(n*2+2)+'</text>';
+  });
+  /* head table */
+  var hd=lay.head;
+  o+='<rect x="'+hd.x+'" y="'+hd.y+'" width="'+TBL.W+'" height="'+TBL.D+'" rx=".08" fill="var(--pink)" opacity=".35"/>';
+  o+='<rect x="'+hd.x+'" y="'+hd.y+'" width="'+TBL.W+'" height="'+TBL.D+'" rx=".08" fill="none" stroke="var(--pink)" stroke-width=".07"/>';
+  o+='<text x="'+(hd.x+TBL.W/2)+'" y="'+(hd.y+TBL.D/2+0.2)+'" text-anchor="middle" font-size=".55" font-weight="700" fill="var(--ink)">'+t("You two","おふたり")+'</text>';
+  /* buffet + dance floor */
+  if(lay.buffet){var bf=lay.buffet;
+    o+='<rect x="'+bf.x+'" y="'+bf.y+'" width="'+bf.w+'" height="'+bf.h+'" rx=".08" fill="var(--amber)" opacity=".45" stroke="var(--amber)" stroke-width=".06"/>';
+    o+='<text x="'+(bf.x+bf.w/2)+'" y="'+(bf.y+bf.h/2)+'" text-anchor="middle" font-size=".5" font-weight="700" fill="var(--ink)" transform="rotate(90 '+(bf.x+bf.w/2)+' '+(bf.y+bf.h/2)+')">'+t("BUFFET","ビュッフェ")+'</text>';}
+  if(lay.dance){var df=lay.dance;
+    o+='<rect x="'+df.x+'" y="'+df.y+'" width="'+df.w+'" height="'+df.h+'" rx=".12" fill="var(--teal)" opacity=".3" stroke="var(--teal)" stroke-width=".07" stroke-dasharray=".3 .2"/>';
+    o+='<text x="'+(df.x+df.w/2)+'" y="'+(df.y+df.h/2+0.2)+'" text-anchor="middle" font-size=".62" font-weight="700" fill="var(--ink)">'+t("DANCE FLOOR","ダンスフロア")+'</text>';}
+  /* the tent's own dimensions */
+  o+='<text x="'+(TENT.W/2)+'" y="-0.75" text-anchor="middle" font-size=".78" font-weight="800" fill="var(--ink)">'+TENT.W+' m</text>';
+  o+='<text x="-0.8" y="'+(TENT.L/2)+'" text-anchor="middle" font-size=".78" font-weight="800" fill="var(--ink)" transform="rotate(-90 -0.8 '+(TENT.L/2)+')">'+TENT.L+' m</text>';
+  /* the one measurement that decides it */
+  var y0=TENT.L+0.95;
+  o+='<line x1="0" y1="'+y0+'" x2="'+lay.need.toFixed(2)+'" y2="'+y0+'" stroke="'+(over?"var(--coral)":"var(--leaf)")+'" stroke-width=".07"/>';
+  o+='<line x1="0" y1="'+(y0-.22)+'" x2="0" y2="'+(y0+.22)+'" stroke="'+(over?"var(--coral)":"var(--leaf)")+'" stroke-width=".07"/>';
+  o+='<line x1="'+lay.need.toFixed(2)+'" y1="'+(y0-.22)+'" x2="'+lay.need.toFixed(2)+'" y2="'+(y0+.22)+'" stroke="'+(over?"var(--coral)":"var(--leaf)")+'" stroke-width=".07"/>';
+  o+='<text x="'+(lay.need/2).toFixed(2)+'" y="'+(y0+.85)+'" text-anchor="middle" font-size=".62" font-weight="800" '+
+     'fill="'+(over?"var(--coral)":"var(--leaf)")+'">'+lay.need.toFixed(1)+' m '+t("needed ","必要 ")+(over?"▶ "+lay.have+" m "+t("available","有効"):"✓")+'</text>';
+  o+='</svg>';
+  return o;
+}
+function renderTent(){
+  var w=document.getElementById("tentplan"); if(!w) return;
+  var L=tentLayouts(),key=load("tentv","grid"); if(!L[key])key="grid";
+  var lay=L[key],over=lay.need>lay.have+1e-9;
+  var h='<div class="seg" style="margin-bottom:.7rem;max-width:100%;overflow:auto">';
+  ["side","rows","grid"].forEach(function(k){
+    h+='<button type="button" data-tv="'+k+'" style="flex:1;font:inherit;font-family:var(--disp);font-weight:800;'+
+       'font-size:.72rem;border:0;padding:.5rem .5rem;cursor:pointer;white-space:nowrap;'+
+       (k===key?'background:var(--accent);color:#fff':'background:transparent;color:var(--ink-faint)')+'">'+
+       bi(L[k].n,L[k].nj)+'</button>';});
+  h+='</div>';
+  h+='<div style="font-size:.82rem;color:var(--ink-soft);margin-bottom:.5rem">'+bi(lay.sub,lay.subj)+'</div>';
+  h+=tentPlan(key);
+  var need=lay.need,have=lay.have,gap=have-need;
+  h+='<div class="card pad" style="margin-top:.8rem;border-color:'+(over?"var(--coral)":"var(--leaf)")+
+     ';background:color-mix(in srgb,'+(over?"var(--coral)":"var(--leaf)")+' 8%,var(--card))">'+
+     '<div style="font-family:var(--disp);font-weight:800;font-size:.9rem;margin-bottom:.3rem">'+
+     (over?bi("Does not fit","収まりません"):bi("Fits","収まります"))+'</div>'+
+     '<div style="font-size:.84rem;line-height:1.7">'+
+     bi(lay.what+" "+lay.axis+" need <b>"+need.toFixed(1)+"m</b>. You have <b>"+have+"m</b>"+
+        (over?", so it is over by <b>"+Math.abs(gap).toFixed(1)+"m</b>."
+             :", leaving <b>"+gap.toFixed(1)+"m</b> spare."),
+        lay.axisj+"に"+lay.whatj+"並べると<b>"+need.toFixed(1)+"m</b>必要です。有効寸法は<b>"+have+"m</b>で、"+
+        (over?"<b>"+Math.abs(gap).toFixed(1)+"m</b>不足します。":"<b>"+gap.toFixed(1)+"m</b>の余裕があります。"))+
+     '</div></div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:.5rem 1.1rem;margin-top:.7rem;font-size:.76rem;color:var(--ink-faint)">'+
+     '<span>'+bi("Table 1800×1200","テーブル 1800×1200")+'</span>'+
+     '<span>'+bi("Seat 60cm","1席 60cm")+'</span>'+
+     '<span>'+bi("Chair 75cm","椅子 75cm")+'</span>'+
+     '<span>'+bi("Walkway 60cm","通路 60cm")+'</span>'+
+     '<span>'+bi("Row to row "+PITCH.toFixed(1)+"m","列間 "+PITCH.toFixed(1)+"m")+'</span></div>';
+  w.innerHTML=h;
+  w.querySelectorAll("[data-tv]").forEach(function(b){
+    b.addEventListener("click",function(){save("tentv",b.dataset.tv);renderTent();});});
+}
+
 function renderSeat(){
   var wrap=document.getElementById("seatlay"); if(!wrap) return;
   document.getElementById("z-spool").innerHTML="";
@@ -3943,6 +4102,9 @@ function teraQuote(){
   var pre=13000*s.adults + 5000*s.adults + 5000*s.kids + 450000;
   return Math.round(pre*1.1);
 }
+/* Santo: Ayuko confirmed 17 Aug 2026 that ¥15,000 a head is all-inclusive —
+   no staff or travel on top — with consumption tax the only addition. */
+function santoQuote(){ return Math.round(15000*planHead()*1.1); }
 function rosterStats(){
   var st={going:0,maybe:0,no:0,budget:0,flight:0,train:0,car:0,local:0,cars:0,needAirport:0,needDay:0,kids:0};
   PEOPLE.forEach(function(p){
@@ -4652,23 +4814,40 @@ function renderInvNotes(){
 }
 /* ---------- questions for Ayuko: gather, then send as one email ---------- */
 var AYUKOQ=[
- {id:"ay1",q:"The booking site lists six bedrooms but you confirmed eight — could you tell us about the two that aren&rsquo;t listed? Their names, and how they&rsquo;re laid out (beds and how many each sleeps).",qj:"予約サイトには寝室が6室の掲載ですが、8室あるとご確認いただきました。掲載のない2室について、お部屋の名称とベッド構成・定員を教えていただけますでしょうか。"},
+ {id:"ay1",q:"The booking site lists six bedrooms but you confirmed eight — could you tell us about the two that aren&rsquo;t listed? Their names, and how they&rsquo;re laid out (beds and how many each sleeps).",qj:"予約サイトには寝室が6室の掲載ですが、8室あるとご確認いただきました。掲載のない2室について、お部屋の名称とベッド構成・定員を教えていただけますでしょうか。",st:"her",a:"She is emailing the Lakehouse floor plan. The six-versus-eight gap is explained: the <b>Hydrangea family suite is two bedrooms</b>, and there is a further room that is not listed because it is let room-only. <b>She did not mention photos</b> — the pictures of those rooms, and of the Tulip room, still need chasing.",aj:"レイクハウスの間取り図をメールで送ってくださるとのこと。6室と8室の差については、<b>アジサイのファミリースイートが2寝室</b>で、さらに「客室のみ」の貸出のため掲載していないお部屋が1室ある、というご説明でした。<br><b>お写真については触れられていません</b> — 該当のお部屋とチューリップの写真は改めてお願いする必要があります。"},
  {id:"ay3",q:"Wedding-day transport. We&rsquo;re renting the van for a round trip from the airport — the day before the wedding and the day after — but the wedding day itself is still open. All our guests are staying within about 10–15 minutes of the Lakehouse. Could we hire a vehicle to collect everyone from their accommodation and bring them to the venue before the ceremony? Then for the journey home: anyone who wants to leave earlier, from around 19:30, can take a taxi. But for guests leaving later, roughly between 21:00 and midnight, could the van do a run to drop people back at their accommodation? One trip would be enough rather than several. Could we have an estimate for hiring the van on the wedding day itself?",qj:"挙式当日の送迎についてご相談です。空港との往復（式の前日と翌日）はバンをお借りする予定ですが、当日の移動が未定です。ゲストは全員レイクハウスから10〜15分圏内に宿泊しております。<br>①挙式前に、各宿泊先を回って会場までお送りいただく車両を手配することは可能でしょうか。<br>②お帰りについては、19:30頃から早めに戻られる方はタクシーをご利用いただく想定です。一方で21:00〜24:00頃に戻られる方について、バンで各宿泊先までお送りいただくことは可能でしょうか。複数便ではなく1便で構いません。<br>挙式当日にバンを手配する場合のお見積もりをいただけますでしょうか。"},
- {id:"ay8",q:"Could you share the menu for each catering option? Photos would be wonderful if they have them.",qj:"各ケータリングのメニュー内容をご共有いただけますでしょうか。お写真があれば嬉しいです。"},
- {id:"ay9",q:"Santo&rsquo;s staff fees — what is charged on top of the ¥15,000 a head? Teranishi&rsquo;s quote lists ¥450,000 for kitchen car, chef, cooks, service staff, sommelier and travel, so we&rsquo;d like to compare on the same terms.",qj:"Santoさんについて、お一人様15,000円に加えてかかる費用（スタッフ・出張費など）を教えてください。寺西さんの見積もりでは諸経費が450,000円（キッチンカー・シェフ・調理／サービススタッフ・ソムリエ・交通費）でしたので、同じ条件で比較したく存じます。"},
- {id:"ay16",q:"For the outsourced sushi and ramen — we&rsquo;re thinking sushi for all 50, and ramen for around 30, since we don&rsquo;t expect everyone to have a bowl. We&rsquo;re imagining the ramen as self-serve. Roughly what would that come to? And could you confirm whether Teranishi-san is able to provide either of them himself?",qj:"外部手配の寿司とラーメンについて、寿司は50名分、ラーメンは全員は召し上がらない想定で30食程度を考えております。ラーメンはセルフサービス形式をイメージしております。概算でいくらほどになりますでしょうか。また、寺西さんご自身で対応可能かどうかもあわせて教えていただけますでしょうか。"},
- {id:"ay10",q:"For the outdoor dining area under the tent — how many tables fit lengthwise and widthwise? We&rsquo;re planning the arrangement in the attached picture: four rows of two tables joined end-to-end, seven seats each. Does that look workable to you, and will it fit under the tent?",qj:"テント下のお食事スペースについて、縦・横それぞれテーブルが何卓入りますでしょうか。添付の図のような配置を考えております（テーブル2台を縦に連結した列を4列、各テーブル7席）。この配置で問題なさそうでしょうか、またテント内に収まりますでしょうか。"},
- {id:"ay17",q:"Could we see Teranishi&rsquo;s full drink menu? The quote lists sparkling, red and white wine and soft drinks, but we&rsquo;d like to see everything that&rsquo;s included.",qj:"寺西さんのドリンクメニューを一覧で拝見できますでしょうか。見積書にはスパークリング・赤・白ワイン・ソフトドリンクとございますが、含まれる内容をすべて確認したく存じます。"},
- {id:"ay18",q:"We&rsquo;re planning for Teranishi&rsquo;s drink service to begin at 16:30. As quoted that covers 120 minutes, to 18:30 — could it run through to 19:30 instead? What would that additional hour cost if it were drinks only?",qj:"寺西さんのドリンクサービスは16:30開始を予定しております。ご提示の120分では18:30までとなりますが、19:30まで延長していただくことは可能でしょうか。ドリンクのみの延長とした場合、追加1時間の料金を教えていただけますでしょうか。"},
- {id:"ay19",q:"Our guest count is now planned at 50. Could we have a revised estimate on that basis? We&rsquo;d also like to understand how the total is affected — whether 50 requires additional service staff, or whether the fixed costs remain as quoted.",qj:"ゲストは現在50名で計画しております。50名でのお見積もりをいただけますでしょうか。あわせて、50名の場合にサービススタッフの増員が必要か、諸経費はご提示のままか、金額への影響も教えていただけますと幸いです。"},
- {id:"ay20",q:"Do any of the menus have a children&rsquo;s rate? Six children are coming, and we&rsquo;d like the totals to be as accurate as possible — if they&rsquo;re charged the same as adults that&rsquo;s no problem, we just want to know.",qj:"各メニューにお子様料金の設定はありますでしょうか。お子さまが6名参加予定のため、できるだけ正確な総額を把握したく存じます。大人と同額でも問題ございませんが、割引の有無を確認できればと思います。"},
- {id:"ay11",q:"We&rsquo;ll use the Lakehouse&rsquo;s own plates and tablecloths — does the house also have napkins, or should we bring our own?",qj:"食器・テーブルクロスはレイクハウスのものを使わせていただく予定です。ナプキンもご用意がありますでしょうか、それとも各自で準備した方がよいでしょうか。"},
- {id:"ay13",q:"Teranishi&rsquo;s drink service runs 120 minutes, so we&rsquo;d like to cover the rest of the day ourselves — buying beer, highballs and soft drinks and keeping them in coolers for the welcome beforehand and the later part of the evening. Is that alright at the Lakehouse, and would there be any corkage or service charge?",qj:"寺西さんのドリンクサービスは120分のため、それ以外の時間は自分たちで用意したいと考えております。ビールやハイボール、ソフトドリンクを購入し、クーラーボックスで前半のウェルカムと夜の時間帯に提供するイメージです。レイクハウスで問題ないでしょうか。また持ち込み料やサービス料はかかりますか。"},];
+ {id:"ay8",q:"Could you share the menu for each catering option? Photos would be wonderful if they have them.",qj:"各ケータリングのメニュー内容をご共有いただけますでしょうか。お写真があれば嬉しいです。",st:"you",a:"There is no fixed menu — it is built around what you ask for. She already has Hokkaido specialities lined up: <b>scallops and wagyu</b>. <b>She is waiting on your list of anything else to add.</b>",aj:"決まったメニューはなく、こちらの希望に合わせて組み立てる形とのこと。北海道の名物として<b>ホタテと和牛</b>は既に押さえてくださっています。<b>他に加えたいものがあれば返信が必要です。</b>"},
+ {id:"ay9",q:"Santo&rsquo;s staff fees — what is charged on top of the ¥15,000 a head? Teranishi&rsquo;s quote lists ¥450,000 for kitchen car, chef, cooks, service staff, sommelier and travel, so we&rsquo;d like to compare on the same terms.",qj:"Santoさんについて、お一人様15,000円に加えてかかる費用（スタッフ・出張費など）を教えてください。寺西さんの見積もりでは諸経費が450,000円（キッチンカー・シェフ・調理／サービススタッフ・ソムリエ・交通費）でしたので、同じ条件で比較したく存じます。",st:"ok",a:"<b>Nothing on top.</b> The ¥15,000 a head is all-inclusive — no staff and no travel fees — and <b>10% consumption tax</b> is the only addition. At 50 that is <b>¥825,000</b>.",aj:"<b>追加費用なし。</b>お一人様15,000円がオールインクルーシブで、スタッフ費用・出張費はかかりません。追加は<b>消費税10%</b>のみ。50名なら<b>825,000円</b>です。"},
+ {id:"ay16",q:"For the outsourced sushi and ramen — we&rsquo;re thinking sushi for all 50, and ramen for around 30, since we don&rsquo;t expect everyone to have a bowl. We&rsquo;re imagining the ramen as self-serve. Roughly what would that come to? And could you confirm whether Teranishi-san is able to provide either of them himself?",qj:"外部手配の寿司とラーメンについて、寿司は50名分、ラーメンは全員は召し上がらない想定で30食程度を考えております。ラーメンはセルフサービス形式をイメージしております。概算でいくらほどになりますでしょうか。また、寺西さんご自身で対応可能かどうかもあわせて教えていただけますでしょうか。",st:"park",a:"<b>Parked — not chasing this.</b> Never asked, and Jay is happy for the wedding to go ahead without sushi or ramen. Left here in case it comes back.",aj:"<b>保留 — 追いかけません。</b>未送信のままですが、ジェイは寿司・ラーメンなしでも問題ないとのこと。復活する場合に備えて残してあります。"},
+ {id:"ay10",q:"For the outdoor dining area under the tent — how many tables fit lengthwise and widthwise? We&rsquo;re planning the arrangement in the attached picture: four rows of two tables joined end-to-end, seven seats each. Does that look workable to you, and will it fit under the tent?",qj:"テント下のお食事スペースについて、縦・横それぞれテーブルが何卓入りますでしょうか。添付の図のような配置を考えております（テーブル2台を縦に連結した列を4列、各テーブル7席）。この配置で問題なさそうでしょうか、またテント内に収まりますでしょうか。",st:"you",a:"<b>The tent is 10m × 15m (150m²), and the configuration works.</b> The four rows sit across the 10m width and stack along the 15m length — about 39m² of the 150m², leaving a 10m × 4m strip clear at one end. <b>She has asked two things back:</b> do you want a dance floor, and she needs a buffet station — she suggests the corner near table 2.",aj:"<b>テントは10m×15m（150㎡）、この配置で問題なし。</b>4列を10m幅の方向に並べ、15mの長さ方向に重ねる形です。ダイニング部分は150㎡のうち約39㎡で、片側に10m×4mのスペースが残ります。<b>鮎子さんから2点ご質問:</b> ダンスフロアは必要か、そしてビュッフェ台の設置場所（2番テーブル横の角を提案）。"},
+ {id:"ay17",q:"Could we see Teranishi&rsquo;s full drink menu? The quote lists sparkling, red and white wine and soft drinks, but we&rsquo;d like to see everything that&rsquo;s included.",qj:"寺西さんのドリンクメニューを一覧で拝見できますでしょうか。見積書にはスパークリング・赤・白ワイン・ソフトドリンクとございますが、含まれる内容をすべて確認したく存じます。",st:"her",a:"Checking with Teranishi-san.",aj:"寺西さんに確認中とのこと。"},
+ {id:"ay18",q:"We&rsquo;re planning for Teranishi&rsquo;s drink service to begin at 16:30. As quoted that covers 120 minutes, to 18:30 — could it run through to 19:30 instead? What would that additional hour cost if it were drinks only?",qj:"寺西さんのドリンクサービスは16:30開始を予定しております。ご提示の120分では18:30までとなりますが、19:30まで延長していただくことは可能でしょうか。ドリンクのみの延長とした場合、追加1時間の料金を教えていただけますでしょうか。",st:"todo",a:"<b>This one never went out</b> — the email of 17 Aug 2026 asked only for Teranishi&rsquo;s drink menu, not for the extension to 19:30. Add it to the next message.",aj:"<b>この質問は未送信です</b> — 2026年8月17日のメールでは寺西さんのドリンクメニューのみお伺いし、19:30への延長は含めていませんでした。次回のメールに追加しましょう。"},
+ {id:"ay19",q:"Our guest count is now planned at 50. Could we have a revised estimate on that basis? We&rsquo;d also like to understand how the total is affected — whether 50 requires additional service staff, or whether the fixed costs remain as quoted.",qj:"ゲストは現在50名で計画しております。50名でのお見積もりをいただけますでしょうか。あわせて、50名の場合にサービススタッフの増員が必要か、諸経費はご提示のままか、金額への影響も教えていただけますと幸いです。",st:"her",a:"She will revise the quote for 50.",aj:"50名で見積もりを作り直してくださるとのこと。"},
+ {id:"ay20",q:"Do any of the menus have a children&rsquo;s rate? Six children are coming, and we&rsquo;d like the totals to be as accurate as possible — if they&rsquo;re charged the same as adults that&rsquo;s no problem, we just want to know.",qj:"各メニューにお子様料金の設定はありますでしょうか。お子さまが6名参加予定のため、できるだけ正確な総額を把握したく存じます。大人と同額でも問題ございませんが、割引の有無を確認できればと思います。",st:"her",a:"She is checking a children&rsquo;s rate with each caterer. Most were closed for Obon, so she asked us to wait until Monday.",aj:"各ケータリング業者にお子様料金の有無を確認中とのこと。お盆で休みのところが多く、月曜まで待ってほしいとのことでした。"},
+ {id:"ay11",q:"We&rsquo;ll use the Lakehouse&rsquo;s own plates and tablecloths — does the house also have napkins, or should we bring our own?",qj:"食器・テーブルクロスはレイクハウスのものを使わせていただく予定です。ナプキンもご用意がありますでしょうか、それとも各自で準備した方がよいでしょうか。",st:"ok",a:"<b>Bring your own napkins</b>, unless disposable wet towels are acceptable to you.",aj:"<b>ナプキンは持参が必要。</b>使い捨てのおしぼりで良ければそちらでも対応可能とのこと。"},
+ {id:"ay13",q:"Teranishi&rsquo;s drink service runs 120 minutes, so we&rsquo;d like to cover the rest of the day ourselves — buying beer, highballs and soft drinks and keeping them in coolers for the welcome beforehand and the later part of the evening. Is that alright at the Lakehouse, and would there be any corkage or service charge?",qj:"寺西さんのドリンクサービスは120分のため、それ以外の時間は自分たちで用意したいと考えております。ビールやハイボール、ソフトドリンクを購入し、クーラーボックスで前半のウェルカムと夜の時間帯に提供するイメージです。レイクハウスで問題ないでしょうか。また持ち込み料やサービス料はかかりますか。",st:"ok",a:"<b>No corkage and no service charge</b> from the Lakehouse for bringing your own drinks.",aj:"<b>持ち込み料・サービス料ともにかかりません。</b>ドリンクの持ち込みはレイクハウス側は問題なしとのこと。"},];
 function ayList(){
   var del=load("ayqdel",{});
   return AYUKOQ.filter(function(x){return !del[x.id];})
     .concat(load("ayq",[]).map(function(x){ var p=biNorm({n:x.n,nj:x.nj,src:x.src});
       return {id:x.id,q:p.n,qj:p.nj,src:p.src,mine:true};}));
+}
+/* Her reply, shown under the question it answers. "st" is who the ball is with:
+   ok = settled, her = she still owes us, you = she is waiting on you, gap = never answered. */
+var AYST={ok:["Answered","回答済み","--leaf"],her:["She is checking","確認中","--amber"],
+          you:["Needs your reply","返信が必要","--sky"],gap:["No answer yet","未回答","--coral"],
+          todo:["Not asked yet","未送信","--grape"],park:["Parked","保留","--ink-faint"]};
+function ayAnswer(x){
+  var ov=load("ayans."+x.id,null), a=ov?ov.n:x.a, aj=ov?ov.nj:x.aj, st=(ov&&ov.st)||x.st;
+  if(!a&&!aj&&!st) return "";
+  var s=AYST[st]||AYST.ok;
+  return '<div style="margin-top:.5rem;padding:.55rem .75rem;border-left:3px solid var('+s[2]+');'+
+    'background:var(--sunk);border-radius:0 10px 10px 0;font-size:.86rem;line-height:1.6;font-weight:400">'+
+    '<span style="display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;'+
+    'color:var('+s[2]+');margin-right:.45rem">'+bi(s[0],s[1])+'</span>'+
+    ((a||aj)?(ov?biUser({n:a,nj:aj,src:ov.src}):bi(a,aj)):"")+
+    (st==="gap"||st==="todo"||st==="park"?"":'<span style="display:block;margin-top:.3rem;font-size:.72rem;color:var(--ink-faint)">'+
+    bi("Ayuko, 17 Aug 2026","鮎子さん・2026年8月17日")+'</span>')+'</div>';
 }
 function renderAyuko(){
   var w=document.getElementById("ayuko"); if(!w) return; w.innerHTML="";
@@ -4677,7 +4856,7 @@ function renderAyuko(){
     var d=el("div","tk"+(done[x.id]?" done":""));
     d.innerHTML='<input type="checkbox" '+(done[x.id]?"checked":"")+' title="'+t("tick when she has answered","回答済みになったらチェック")+'">'+
       '<div class="tk-b"><div class="tk-n" style="font-weight:600">'+(x.mine?biUser({n:x.q,nj:x.qj,src:x.src}):bi(x.q,x.qj))+
-      (done[x.id]?'<span class="dtag">'+bi("Answered","回答済み")+'</span>':'')+'</div></div>'+
+      (done[x.id]?'<span class="dtag">'+bi("Answered","回答済み")+'</span>':'')+'</div>'+ayAnswer(x)+'</div>'+
       '<button class="del" data-dq="'+x.id+'">✕</button>';
     d.querySelector("input").addEventListener("change",function(e){
       var m=load("ayqdone",{});m[x.id]=e.target.checked;save("ayqdone",m);renderAll();});
@@ -4785,7 +4964,7 @@ function renderAll(){
   renderBudget();renderUpdates();
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
   renderHeroShot();renderCal();renderInbox();renderFeed();renderDecor2();renderBeauty();
-  renderStay();renderSeat();renderDrive();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
+  renderStay();renderSeat();renderTent();renderDrive();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
   document.querySelectorAll(".m").forEach(function(e){e.textContent=money(parseFloat(e.dataset.yen));});
