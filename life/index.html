@@ -136,6 +136,8 @@
   .ledgerrow.up .amt{color:var(--owed)}
   .ledgerrow.pd .amt{color:var(--good)}
   .ledgerrow.pd .g::before{content:"✓ ";color:var(--good)}
+  .ledgerrow.cost .amt{color:var(--urgent)}
+  .ledgerrow.cost.pd .g::before{content:"− ";color:var(--urgent)}
   .ledgertot{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0 0;color:var(--ink2)}
   .ledgertot.grand{font-weight:800;font-size:14px;color:var(--ink);border-top:2px solid var(--line);margin-top:5px;padding-top:7px}
   .ledgerempty{color:var(--ink3);font-size:12.5px;padding:6px 0}
@@ -671,6 +673,30 @@ function migrate(){
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
   }
+  // patch 22 (2026-08-17): Brianna's brief — deadlines, reel refs, night preference, Bass Ventura fix
+  if(!state.patch22){
+    state.patch22=true;
+    const sh=state.events.find(e=>e.client==='Chelsea (HERSHE)'&&e.date==='2026-08-29');
+    if(sh){sh.details='~3–4 hrs · 7 reels × $150 = $1,050 · promoting “Maximum Shela” feat. Bass Ventura\nChelsea + Luis (Bass Ventura) available ANYTIME Sat — they PREFER NIGHTTIME for the aesthetic. ⚠️ Night collides with the Electrik Seoul SD show — propose golden hour/early evening, or resolve SD first. They asked YOU for time + location ideas.\nDELIVERABLES: teaser reel by Sep 2 (posting date) · release-day reel Sep 4\nReel 1 refs (teaser): https://www.instagram.com/reels/DavZ50dRNrU/ https://www.instagram.com/reels/DZBAhiuxL2I/\nReel 2 ref (release day): https://www.instagram.com/reels/DZKlHYkM1kM/\nContent ideas: https://docs.google.com/document/d/1e8LViafW5qCYlzCr1B-uQzjQLok3X3x2Imkg0s5LaY8/edit\nSong: https://on.soundcloud.com/oftDKzNoyjuQ8z9DLi\nManager: Brianna Irvin (she/her) · Optimystic Endeavors · 801-866-8702'}
+    const rel=state.events.find(e=>e.title.indexOf('HERSHE — song release')>-1);
+    if(rel){rel.title='🎵 “Maximum Shela” release — Reel 2 posts';rel.details='Chelsea’s single (feat. Bass Ventura) drops — release-day reel posts today: https://www.instagram.com/reels/DZKlHYkM1kM/ (ref) · shot Aug 29'}
+    state.events.push(
+      {id:uid(),title:'🎬 HERSHE teaser reel POSTS — deliver edit',details:'Brianna needs the teaser in hand today (posting date). Edit window Aug 30 – Sep 1.\nRefs: https://www.instagram.com/reels/DavZ50dRNrU/ https://www.instagram.com/reels/DZBAhiuxL2I/',date:'2026-09-02',endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''}
+    );
+    const ct=state.tasks.find(t=>t.title.indexOf('Confirm Chelsea')>-1&&t.status==='open');
+    if(ct){ct.title='Reply to Brianna — propose Aug 29 time + location';ct.notes='They want NIGHT for the aesthetic, but the SD show is that night — pitch golden hour/early evening or resolve SD. Brianna: 801-866-8702. Teaser due Sep 2!';ct.due='2026-08-18'}
+  }
+  // patch 21 (2026-08-17): Lost Lands stay confirmed — trip costs now count against Sept profit
+  if(!state.patch21){
+    state.patch21=true;
+    state.events.push(
+      {id:uid(),title:'Lost Lands — trip costs (flights + stay)',details:'UA flights $358.40 + stay ~$400 (estimate — give me the exact number when you have it)\nCounts against September so the ledger shows real profit after expenses',date:'2026-09-16',endDate:'',start:'',end:'',gig:true,client:'Lost Lands trip',gross:0,exp:758.40,paid:true,cleared:true,invoiceId:null,invoiceDismissed:false,month:''}
+    );
+    const trip=state.events.find(e=>e.title==='Lost Lands — Ohio');
+    if(trip){trip.details='Festival trip · flights booked (G7ERLJ) · stay confirmed ~$400\nTrip costs ~$758.40 → profit = Chelsea (16th, TBD) + Yetep (20th, TBD) + any lineup pickups − $758'}
+    const st=state.tasks.find(t=>t.title.indexOf('Book stay for Lost Lands')>-1&&t.status==='open');
+    if(st){st.status='done'}
+  }
   // patch 20 (2026-08-17): Lost Lands flights booked — United G7ERLJ
   if(!state.patch20){
     state.patch20=true;
@@ -1082,7 +1108,7 @@ function renderCalendar(){
   // money strip for viewed month
   const mm=moneyByMonth()[mk]||{made:0,upcoming:0,tbd:0};
   $('calMoney').innerHTML=
-    '<div class="card stat made"><div class="lbl">Made · '+esc(monthLabel(mk).split(' ')[0])+'</div><div class="val num">'+fmt$(mm.made)+'</div><div class="sub">net, collected</div></div>'
+    '<div class="card stat made"><div class="lbl">Made · '+esc(monthLabel(mk).split(' ')[0])+'</div><div class="val num"'+(mm.made<0?' style="color:var(--urgent)"':'')+'>'+fmt$(mm.made)+'</div><div class="sub">net, collected'+(mm.made<0?' — costs ahead of income':'')+'</div></div>'
    +'<div class="card stat upc"><div class="lbl">Upcoming</div><div class="val num">'+fmt$(mm.upcoming)+(mm.tbd?' <span style="font-size:12px">+'+mm.tbd+' TBD</span>':'')+'</div><div class="sub">billed / owed</div></div>'
    +'<div class="card stat"><div class="lbl">Projected</div><div class="val num">'+fmt$(mm.made+mm.upcoming)+'</div><div class="sub">if all collected</div></div>';
   // dow header
@@ -1134,7 +1160,8 @@ function renderCalendar(){
   gigs.forEach(e=>{
     if(e.gross>0)billed+=e.gross;
     if(e.paid)made+=net(e);
-    led+='<div class="ledgerrow '+(e.paid?'pd':'up')+'"><span class="g">'+(e.date?e.date.slice(8,10).replace(/^0/,'')+' · ':'')+esc(e.client||e.title)+'</span><span class="amt num">'+fmt$(e.gross)+'</span></div>';
+    const isCost=!(e.gross>0)&&(e.exp||0)>0;
+    led+='<div class="ledgerrow '+(e.paid?'pd':'up')+(isCost?' cost':'')+'"><span class="g">'+(e.date?e.date.slice(8,10).replace(/^0/,'')+' · ':'')+esc(e.client||e.title)+'</span><span class="amt num">'+(isCost?'-'+fmt$(e.exp):fmt$(e.gross))+'</span></div>';
   });
   led+='<div class="ledgertot"><span>Billed</span><span class="num">'+fmt$(billed)+'</span></div>'
      +'<div class="ledgertot grand"><span>Made (net)</span><span class="num">'+fmt$(made)+'</span></div>';
@@ -1204,7 +1231,7 @@ function renderMoney(){
   $('monthCards').innerHTML=keys.map(k=>{
     const m=mm[k];
     return '<div class="card mcard"><h3>'+monthLabel(k)+'</h3>'
-      +'<div class="mline">Made (net)<b class="num" style="color:var(--good)">'+fmt$(m.made)+'</b></div>'
+      +'<div class="mline">Made (net)<b class="num" style="color:var(--'+(m.made<0?'urgent':'good')+')">'+fmt$(m.made)+'</b></div>'
       +'<div class="mline">Upcoming / owed<b class="num" style="color:var(--owed)">'+fmt$(m.upcoming)+(m.tbd?' +'+m.tbd+' TBD':'')+'</b></div>'
       +'<div class="mline total">Projected<b class="num">'+fmt$(m.made+m.upcoming)+'</b></div></div>';
   }).join('');
