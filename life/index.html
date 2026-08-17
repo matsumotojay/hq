@@ -373,7 +373,7 @@
 
     <h2>Collected</h2>
     <div class="card tablewrap"><table id="paidTable"></table></div>
-    <p class="nonbiz">Non-business (not counted toward the $100K goal): lawyer fees refund $7,559.91 · IRS federal refund $4,459.99 · birthday gifts $500 (Kathy &amp; AJ $100, Jose $200, Ace &amp; Aru $200) — gifts aren’t taxable income, so they sit outside gig revenue; the $500 went into the wedding fund.</p>
+    <p class="nonbiz">Non-business (not counted toward the $100K goal): lawyer fees refund $7,559.91 · IRS federal refund $4,459.99 · birthday gifts $500 (Cathy &amp; AJ $100, Jose $200, Ace &amp; Aru $200) — gifts aren’t taxable income, so they sit outside gig revenue; the $500 went into the wedding fund.</p>
   </section>
 
   <!-- ═══════════ INVOICES ═══════════ -->
@@ -714,15 +714,17 @@ function migrate(){
     state.wfund=state.wfund||[];
     if(!state.wfund.length){
       state.wfund.push(
-        {id:uid(),date:'2026-08-14',amount:100,source:'Birthday gift — Kathy & AJ',note:''},
+        {id:uid(),date:'2026-08-14',amount:100,source:'Birthday gift — Cathy & AJ',note:''},
         {id:uid(),date:'2026-08-14',amount:200,source:'Birthday gift — Jose',note:''},
         {id:uid(),date:'2026-08-14',amount:200,source:'Birthday gift — Ace & Aru',note:''}
       );
     }
-    state.tasks.unshift(
-      {id:uid(),title:'Open a separate account for the wedding fund',tag:'Money',notes:'Keep the $20K out of spending reach — the $500 birthday money is deposit #1. Then set the rule: every gig payment that lands, move ~40% straight in.',due:'2026-08-19',status:'open',completedAt:null},
-      {id:uid(),title:'Ask Jonny for exact amounts on all 4 wedding payments',tag:'Money',notes:'Dashboard has the DATES (Dec 1 2026 deposit 20%, Mar 1 2027 planner+garden, ~Mar 2027 catering in full, Apr 1 2027 accommodation balance) but not the amounts. Need them to size each savings milestone. jonny@hokkaidoresorts.com',due:'2026-09-15',status:'open',completedAt:null}
-    );
+    /* idempotent by title — a re-run on another device must not duplicate these */
+    const lacks=t=>!state.tasks.some(x=>x.title===t);
+    if(lacks('Open a separate account for the wedding fund'))
+      state.tasks.unshift({id:uid(),title:'Open a separate account for the wedding fund',tag:'Money',notes:'Keep the $20K out of spending reach — the $500 birthday money is deposit #1. Then set the rule: every gig payment that lands, move ~40% straight in.',due:'2026-08-19',status:'open',completedAt:null});
+    if(lacks('Ask Jonny for exact amounts on all 4 wedding payments'))
+      state.tasks.unshift({id:uid(),title:'Ask Jonny for exact amounts on all 4 wedding payments',tag:'Money',notes:'Dashboard has the DATES (Dec 1 2026 deposit 20%, Mar 1 2027 planner+garden, ~Mar 2027 catering in full, Apr 1 2027 accommodation balance) but not the amounts. Need them to size each savings milestone. jonny@hokkaidoresorts.com',due:'2026-09-15',status:'open',completedAt:null});
   }
   // patch 22 (2026-08-17): Brianna's brief — deadlines, reel refs, night preference, Bass Ventura fix
   if(!state.patch22){
@@ -882,6 +884,10 @@ window.__adoptCloud=function(cloud){
     state.invoices=invoices.sort((a,b)=>String(a.number).localeCompare(String(b.number)));
     state.top3=meta.top3||[null,null,null];
     state.invSeq=meta.invSeq||0;
+    /* The cloud is authoritative on which patches have actually LANDED. A flag set locally
+       before adoption must not survive it — otherwise the patch is marked done while the
+       data it wrote gets replaced by the cloud copy, and it never reaches any device. */
+    Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch'&&!(k in meta))delete state[k]});
     Object.keys(meta).forEach(k=>{if(k.slice(0,5)==='patch')state[k]=meta[k]});
     lastPush=snapshotDocs();          // suppress echo of what we just received
     migrate();                        // patches this build knows that the cloud doesn't yet
