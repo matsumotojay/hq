@@ -632,21 +632,22 @@
           <div class="field"><label>To</label><input id="cmTo" type="email" placeholder="client@email.com"></div>
           <div class="field"><label>Cc <span style="font-weight:400;color:var(--ink3)">(optional)</span></label><input id="cmCc" type="email" placeholder="yourself, manager…"></div>
         </div>
-        <div class="field"><label>From</label><input id="cmFrom" disabled></div>
+        <div class="fieldrow">
+          <div class="field"><label>From</label><input id="cmFrom" disabled></div>
+          <div class="field"><label>Phone <span style="font-weight:400;color:var(--ink3)">(to text)</span></label><input id="cmPhone" type="tel" placeholder="(310) 555-0000"></div>
+        </div>
         <div class="field"><label>Subject</label><input id="cmSubj"></div>
         <div class="field"><label>Message</label><textarea id="cmBody" rows="9"></textarea></div>
-        <label class="cminc"><input type="checkbox" id="cmInclude" checked onchange="cmChanged()"><span>Paste the invoice details into the email body too</span></label>
         <div class="modalfoot" style="justify-content:flex-start">
           <button class="btn primary" onclick="openInGmail()">✉ Open in Gmail</button>
-          <button class="btn" onclick="composeSavePDF()">⬇ Save PDF</button>
-          <button class="btn" onclick="composeCopy()">Copy message</button>
+          <button class="btn" onclick="textInvoice()">💬 Text it</button>
         </div>
         <div class="modalfoot" style="justify-content:flex-start;margin-top:6px">
           <button class="btn" onclick="composeMarkSent()">I sent it — mark sent ✓</button>
           <span class="spacer"></span>
           <button class="btn" onclick="closeOverlays()">Close</button>
         </div>
-        <p class="cmnote">Gmail can’t carry a file through a link, so: <b>Save PDF</b> first, then <b>Open in Gmail</b> and drop the file in. Nothing sends from here — you review it in Gmail and hit send yourself.</p>
+        <p class="cmnote"><b>Open in Gmail</b> saves the invoice PDF first, then opens the draft — drag the file from Downloads into the message. Google won’t let a link attach a file, so that drag is the one manual step. Nothing sends from here.</p>
       </div>
       <div>
         <div class="attachbox">
@@ -912,6 +913,31 @@ function migrate(){
     state.patch17=true;
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
+  }
+  // patch 29 (2026-08-18): contacts pulled out of Gmail + Google Contacts
+  if(!state.patch29){
+    state.patch29=true;
+    state.contacts=state.contacts||{};
+    const seed=(client,rec)=>{
+      const cur=state.contacts[client];
+      const now=(typeof cur==='string')?{email:cur,cc:'',phone:''}:(cur||{email:'',cc:'',phone:''});
+      /* never overwrite something Jay typed himself */
+      if(!now.email&&rec.email)now.email=rec.email;
+      if(!now.cc&&rec.cc)now.cc=rec.cc;
+      if(!now.phone&&rec.phone)now.phone=rec.phone;
+      state.contacts[client]=now;
+    };
+    seed('Yetep',{email:'imyetep@gmail.com',cc:'',phone:''});
+    seed('Bedpop',{email:'tom@bedpops.com',cc:'donghwan@koma.media',phone:''});
+    seed('Electrik Seoul',{email:'nino.lee@insomniac.com',cc:'princess.labrador@insomniacclubs.com',phone:''});
+    seed('Chelsea (HERSHE)',{email:'',cc:'brianna@optimysticendeavors.com',phone:'801-866-8702'});
+    state.invoices.forEach(i=>{if(i.status!=='paid'&&!i.email)i.email=contactFor(i.client)});
+    /* the three I could not find anywhere — Jay has to supply them */
+    if(!state.tasks.some(t=>t.title.indexOf('missing client emails')>-1)){
+      state.tasks.unshift({id:uid(),title:'Fill the 3 missing client emails',tag:'Money',
+        notes:'Blocking $1,400 of drafted invoices. Not in Gmail or Google Contacts — you have never emailed them:\n• Wafu Bento ($1,200) — zero emails in your inbox, so this one lives in DMs or in person\n• Alvyn ($100) — your threads go through Koko/Shelby on the LID26 media side\n• Hoang Entertainment Inc. ($100) — Surrey BC; the only Hoang in your contacts is Rose Hoang (lamgiang66@yahoo.com), probably not it\nAdd each one on its card in the Invoices tab and it is remembered for good.',
+        due:'2026-08-19',status:'open',completedAt:null});
+    }
   }
   // patch 28 (2026-08-18): invoice numbers carry the year — ES-0710 would collide in 2027
   if(!state.patch28){
@@ -1973,14 +1999,27 @@ function sendMail(){
    ONE email, not two. A draft that never left the laptop is not "overdue" — the
    Net-15 clock starts at sentAt, so the desk separates three different problems:
    money you haven't billed, money you're waiting on, and money that's late.      */
-function contactFor(client){return (state.contacts||{})[client]||''}
-function setContact(client,email){
-  state.contacts=state.contacts||{};
-  email=(email||'').trim();
-  if(email)state.contacts[client]=email; else delete state.contacts[client];
-  state.invoices.forEach(i=>{if(i.client===client&&i.status!=='paid')i.email=email});
-  save();render();
+/* A contact used to be a bare email string. Now it is {email,cc,phone} so the
+   manager gets cc'd and the same person can be texted — old strings still read. */
+function contactRec(client){
+  const c=(state.contacts||{})[client];
+  if(!c)return {email:'',cc:'',phone:''};
+  if(typeof c==='string')return {email:c,cc:'',phone:''};
+  return {email:c.email||'',cc:c.cc||'',phone:c.phone||''};
 }
+function contactFor(client){return contactRec(client).email}
+function saveContact(client,patch){
+  state.contacts=state.contacts||{};
+  const rec=Object.assign(contactRec(client),patch);
+  rec.email=(rec.email||'').trim();rec.cc=(rec.cc||'').trim();rec.phone=(rec.phone||'').trim();
+  if(!rec.email&&!rec.cc&&!rec.phone)delete state.contacts[client];
+  else state.contacts[client]=rec;
+  state.invoices.forEach(i=>{if(i.client===client&&i.status!=='paid')i.email=rec.email});
+  save();
+}
+function setContact(client,email){saveContact(client,{email:email});render()}
+function setPhone(client,phone){saveContact(client,{phone:phone});render()}
+function telHref(p){return String(p||'').replace(/[^\d+]/g,'')}
 function daysFrom(iso){return Math.round((new Date(todayISO())-new Date(iso))/864e5)}
 function overdueDays(inv){
   if(inv.status!=='sent'||!inv.sentAt)return 0;
@@ -2071,24 +2110,19 @@ function openCompose(ctx){
   composeCtx=ctx;
   $('cmTitle').textContent=ctx.title;
   $('cmTo').value=ctx.to||'';
-  $('cmCc').value=state.mailcc||'';
+  $('cmCc').value=contactRec(ctx.client).cc||state.mailcc||'';
   $('cmFrom').value=BIZ.email;
   $('cmSubj').value=ctx.subject||'';
   $('cmBody').value=ctx.body||'';
-  $('cmInclude').checked=true;
+  $('cmPhone').value=contactRec(ctx.client).phone||'';
   $('cmFiles').textContent=ctx.invoices.map(i=>i.number+'.pdf').join('  ');
   $('cmThumbs').innerHTML=ctx.invoices.map(i=>'<div class="attachthumb">'+invoiceSheetHTML(i)+'</div>').join('');
   closeOverlays();
   $('mailOverlay').classList.add('open');   /* must be visible before it can be measured */
   document.querySelectorAll('#cmThumbs .attachthumb').forEach(fitSheet);
 }
-function cmChanged(){}
-function composeBody(){
-  let b=$('cmBody').value;
-  if($('cmInclude').checked&&composeCtx.invoices.length)
-    b+='\n\n────────────────\n\n'+composeCtx.invoices.map(invoiceText).join('\n\n────────────────\n\n');
-  return b;
-}
+/* The invoice travels as the attached PDF — it does not belong in the body. */
+function composeBody(){return $('cmBody').value}
 function gmailUrl(){
   const cc=$('cmCc').value.trim();
   return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
@@ -2097,20 +2131,35 @@ function gmailUrl(){
     +'&su='+encodeURIComponent($('cmSubj').value)
     +'&body='+encodeURIComponent(composeBody());
 }
-function openInGmail(){
-  const to=$('cmTo').value.trim();
-  if(!to){toast('Add the To address first');$('cmTo').focus();return}
-  if(composeCtx.client)setContact(composeCtx.client,to);
+function composeRemember(){
+  if(composeCtx.client)saveContact(composeCtx.client,{email:$('cmTo').value.trim(),cc:$('cmCc').value.trim(),phone:$('cmPhone').value.trim()});
   state.mailcc=$('cmCc').value.trim();save();
-  window.open(gmailUrl(),'_blank','noopener');
-  toast('Gmail opened — attach the PDF, then send');
-}
-function composeCopy(){
-  navigator.clipboard.writeText(composeBody()).then(()=>toast('Message copied'),()=>toast('Copy failed'));
 }
 function composeSavePDF(){
   $('printhost').innerHTML=composeCtx.invoices.map(i=>invoiceSheetHTML(i)).join('');
   window.print();
+}
+function openInGmail(){
+  const to=$('cmTo').value.trim();
+  if(!to){toast('Add the To address first');$('cmTo').focus();return}
+  composeRemember();
+  const url=gmailUrl();
+  composeSavePDF();                       /* the file is in Downloads before Gmail opens */
+  setTimeout(()=>{window.open(url,'_blank','noopener');toast('Drag the PDF in, then send')},400);
+}
+/* SMS can't carry a file either, so the text points at the email. */
+function smsText(){
+  const inv=composeCtx.invoices;
+  const nums=inv.map(i=>i.number).join(', ');
+  const tot=inv.reduce((t,i)=>t+(i.amount||0),0);
+  return 'Hi '+greetName(composeCtx.client)+' — '+(composeCtx.kind==='chase'?'following up on ':'just sent ')
+    +(inv.length>1?'invoices ':'invoice ')+nums+' ('+fmt$(tot)+') to your email. Thanks! — Jay';
+}
+function textInvoice(){
+  const ph=telHref($('cmPhone').value);
+  if(!ph){toast('Add a phone number first');$('cmPhone').focus();return}
+  composeRemember();
+  location.href='sms:'+ph+'&body='+encodeURIComponent(smsText());
 }
 function composeMarkSent(){
   if(composeCtx.kind==='chase'){
@@ -2266,10 +2315,15 @@ function renderCollect(){
         +'<span>'+when+'</span><span class="num" style="font-weight:700;color:var(--ink)">'+fmt$(i.amount)+'</span>'
         +'<button class="btn small" onclick="openInvoice(\''+i.id+'\')">Open</button></div>';
     });
+    const rec=contactRec(g.client);
+    const qc=JSON.stringify(g.client).replace(/"/g,'&quot;');
     h+='<div class="cmail"><span style="font-size:12.5px;color:var(--ink3);flex:none">✉</span>'
       +'<input id="em-'+id+'" type="email" placeholder="client email — needed to send" value="'+esc(g.email)+'" '
-      +'onchange="setContact('+JSON.stringify(g.client).replace(/"/g,'&quot;')+',this.value)">'
-      +(g.email?'<span class="chip good" style="flex:none">saved</span>':'')+'</div>';
+      +'onchange="setContact('+qc+',this.value)">'
+      +(g.email?'<span class="chip good" style="flex:none">saved</span>':'')+'</div>'
+      +'<div class="cmail"><span style="font-size:12.5px;color:var(--ink3);flex:none">💬</span>'
+      +'<input type="tel" placeholder="phone — to text it" value="'+esc(rec.phone)+'" onchange="setPhone('+qc+',this.value)">'
+      +(rec.cc?'<span class="chip accent" style="flex:none" title="Cc\u2019d on every send">cc '+esc(rec.cc.split('@')[0])+'</span>':'')+'</div>';
     const q=JSON.stringify(g.client).replace(/"/g,'&quot;');
     h+='<div class="cact">';
     if(g.unsent.length){
