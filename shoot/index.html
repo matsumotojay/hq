@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maximum Shela: Shoot Brief</title>
+<style>
+ :root{
+   --paper:#F6F7F8; --panel:#FFFFFF; --ink:#15171C; --ink2:#3D434F;
+   --muted:#767D8B; --rule:#E0E3E8; --rule2:#EDEFF2; --accent:#B32438; --ok:#2E8B57;
+ }
+ @media (prefers-color-scheme: dark){
+   :root{ --paper:#0E1014; --panel:#141720; --ink:#EEF0F3; --ink2:#C3C8D2;
+     --muted:#868D9C; --rule:#232733; --rule2:#1B1F28; --accent:#FF5069; --ok:#4BAE7F; }
+ }
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--paper);color:var(--ink);
+   font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+   font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+ .sheet{max-width:900px;margin:0 auto;padding:20px 26px 96px}
+
+ /* sync bar */
+ .bar{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:1px solid var(--rule);
+   display:flex;align-items:center;gap:12px;padding:10px 0;margin-bottom:26px;flex-wrap:wrap}
+ .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+ .dot.on{background:var(--ok)} .dot.err{background:var(--accent)}
+ .status{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;letter-spacing:.06em;
+   color:var(--muted)}
+ .whobox{margin-left:auto;display:flex;align-items:center;gap:7px}
+ .whobox label{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.13em;
+   text-transform:uppercase;color:var(--muted)}
+ .whobox input{background:var(--panel);border:1px solid var(--rule);border-radius:3px;color:var(--ink);
+   padding:5px 9px;font:inherit;font-size:13.5px;width:120px}
+
+ .mast{border-bottom:2px solid var(--ink);padding-bottom:20px}
+ .slug{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.2em;
+   text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+ h1{font-size:clamp(38px,6.6vw,60px);line-height:.98;font-weight:700;letter-spacing:-.033em;margin:0 0 10px}
+ .byline{color:var(--ink2);margin:0;font-size:16.5px;max-width:58ch}
+
+ .facts{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--rule)}
+ @media(max-width:760px){.facts{grid-template-columns:repeat(2,1fr)}}
+ .f{padding:16px 18px 16px 0;border-right:1px solid var(--rule2)}
+ .f:last-child{border-right:none}
+ .f dt{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.15em;
+   text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+ .f dd{margin:0;font-size:17px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+ .f dd em{display:block;font-style:normal;font-weight:400;font-size:13.5px;color:var(--muted);margin-top:3px}
+
+ section{padding:34px 0;border-bottom:1px solid var(--rule)}
+ h2.sec{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;letter-spacing:.18em;
+   text-transform:uppercase;color:var(--muted);margin:0 0 16px;font-weight:600;
+   display:flex;align-items:center;gap:12px}
+ p{margin:0 0 14px;max-width:68ch;color:var(--ink2)}
+ p strong{color:var(--ink);font-weight:600}
+
+ /* editable affordance */
+ [contenteditable]{outline:none;border-radius:3px;transition:background .12s,box-shadow .12s}
+ [contenteditable]:hover{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+ [contenteditable]:focus{background:var(--panel);box-shadow:0 0 0 2px var(--accent)}
+ .hint{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+   color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:2px 7px}
+
+ .rowlist{list-style:none;margin:0;padding:0;max-width:68ch}
+ .rowlist li{display:grid;grid-template-columns:170px 1fr 26px;gap:14px;padding:11px 0;
+   border-top:1px solid var(--rule2);font-size:15.5px;color:var(--ink2);align-items:start}
+ .rowlist li:first-child{border-top:none}
+ .rowlist b{color:var(--ink);font-weight:600}
+ @media(max-width:560px){.rowlist li{grid-template-columns:1fr 26px;gap:4px 10px}
+   .rowlist li b{grid-column:1}}
+
+ .people li{grid-template-columns:1fr auto 26px}
+ .people .tel{font-family:ui-monospace,Menlo,monospace;font-size:15px;white-space:nowrap;color:var(--ink2)}
+ .people .role{color:var(--muted);font-weight:400;font-size:14px}
+
+ .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;
+   border-radius:3px;opacity:0}
+ li:hover .x,tr:hover .x{opacity:1}
+ .x:hover{color:var(--accent);background:var(--rule2)}
+ .add{background:none;border:1px dashed var(--rule);color:var(--muted);cursor:pointer;
+   font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+   padding:7px 12px;border-radius:3px;margin-top:14px}
+ .add:hover{border-color:var(--accent);color:var(--accent)}
+
+ .scroll{overflow-x:auto}
+ table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:600px}
+ th{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.14em;
+   text-transform:uppercase;color:var(--muted);text-align:left;padding:0 14px 9px 0;
+   border-bottom:1px solid var(--rule);font-weight:600}
+ td{padding:13px 14px 13px 0;border-bottom:1px solid var(--rule2);vertical-align:top;color:var(--ink2)}
+ td.n{font-family:ui-monospace,Menlo,monospace;color:var(--muted);width:34px;font-size:13px}
+ td.d{font-family:ui-monospace,Menlo,monospace;white-space:nowrap;width:110px}
+ td.d.hot{color:var(--accent);font-weight:600}
+ td.act{width:26px}
+ .rt{color:var(--ink);font-weight:600;font-size:15px;display:block;margin-bottom:2px}
+
+ .refs{list-style:none;margin:0;padding:0;max-width:68ch}
+ .refs li{padding:10px 0;border-top:1px solid var(--rule2);font-size:15px;color:var(--muted)}
+ .refs li:first-child{border-top:none}
+ .refs a{font-weight:600}
+
+ .mapfig{margin:0 0 18px;padding:0}
+ .mapwrap{position:relative;border-radius:4px;overflow:hidden;background:var(--rule2)}
+ .mapwrap img{display:block;width:100%;height:auto}
+ .mapwrap svg{position:absolute;inset:0;width:100%;height:100%}
+ .mapfig figcaption{font-size:13px;color:var(--muted);padding-top:9px;
+   font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+ .total{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;color:var(--ink);
+   border-top:1px solid var(--rule);padding-top:12px;max-width:68ch}
+ .total b{color:var(--accent)}
+
+ .loc{padding:44px 0;border-bottom:1px solid var(--rule)}
+ .lochead{display:grid;grid-template-columns:64px 1fr;gap:0 20px;align-items:start;margin-bottom:20px}
+ @media(max-width:560px){.lochead{grid-template-columns:44px 1fr;gap:0 14px}}
+ .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:clamp(30px,5vw,46px);line-height:.86;
+   color:var(--accent);font-weight:500;letter-spacing:-.04em}
+ .loc h3{font-size:clamp(21px,3.2vw,27px);line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-.018em}
+ .meta{margin:0;font-size:13.5px;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+ .meta a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--rule)}
+ .meta a:hover{color:var(--accent);border-color:var(--accent)}
+ .loctext{max-width:68ch}
+ @media(min-width:561px){.loctext,.collage{margin-left:84px}}
+ .collage{display:grid;gap:6px;margin:0 0 20px}
+ .collage img{display:block;width:100%;height:100%;object-fit:cover}
+ .collage>div{overflow:hidden;background:var(--rule2);border-radius:3px;min-height:0}
+ .c2{grid-template-columns:1fr 1fr;grid-auto-rows:300px}
+ .c3{grid-template-columns:1.4fr 1fr;grid-template-rows:170px 170px}
+ .c3 .tall{grid-row:span 2}
+ @media(max-width:560px){.c2,.c3{grid-template-columns:1fr;grid-template-rows:none;grid-auto-rows:240px}
+   .c3 .tall{grid-row:auto}}
+ .note{border-top:1px solid var(--rule);padding-top:12px;margin:2px 0 0;max-width:68ch;
+   font-size:14.5px;color:var(--muted)}
+ .note b{color:var(--ink);font-weight:600}
+
+ /* notes for jay */
+ .notes{max-width:68ch}
+ .note-item{border-top:1px solid var(--rule2);padding:14px 0;display:grid;
+   grid-template-columns:1fr 26px;gap:10px}
+ .note-item:first-child{border-top:none}
+ .note-head{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.1em;
+   text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+ .note-body{color:var(--ink2);font-size:15.5px}
+ .note-empty{color:var(--muted);font-size:15px;font-style:italic}
+ .end{padding-top:26px;color:var(--muted);font-size:14px}
+ a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+ <div class="bar">
+  <span class="dot" id="dot"></span><span class="status" id="status">connecting</span>
+  <span class="hint">everything here is editable</span>
+  <span class="whobox"><label for="who">You are</label><input id="who" placeholder="name"></span>
+ </div>
+
+ <header class="mast">
+  <p class="slug">Content shoot &middot; production brief</p>
+  <h1 contenteditable data-k="title">Maximum Shela</h1>
+  <p class="byline" contenteditable data-k="byline">Seven reels for Chelsea's single with Bass Ventura. Locations are at the bottom.</p>
+ </header>
+
+ <dl class="facts">
+  <div class="f"><dt>Date</dt><dd contenteditable data-k="f.date">Fri Aug 28<em>2026</em></dd></div>
+  <div class="f"><dt>Call</dt><dd contenteditable data-k="f.call">7:30 PM<em>3 to 4 hours</em></dd></div>
+  <div class="f"><dt>Look</dt><dd contenteditable data-k="f.look">Red<em>practical plus RGB</em></dd></div>
+  <div class="f"><dt>Rate</dt><dd contenteditable data-k="f.rate">$1,050<em>7 reels at $150</em></dd></div>
+ </dl>
+
+ <section>
+  <h2 class="sec">Contacts</h2>
+  <ul class="rowlist people" id="list-contacts"></ul>
+  <button class="add" data-add="contacts">+ add contact</button>
+ </section>
+
+ <section>
+  <h2 class="sec">Overview</h2>
+  <div contenteditable data-k="overview">
+   <p>We shoot all seven in one night. Everything runs red, some of it coming from the locations themselves and the rest from the light I bring.</p>
+   <p><strong>The five locations below are suggestions.</strong> Pick the ones you like and I will build the night around them. Four are close enough together downtown that we could do several in one go if you want the variety.</p>
+  </div>
+ </section>
+
+ <section>
+  <h2 class="sec">Equipment</h2>
+  <ul class="rowlist" id="list-kit"></ul>
+  <button class="add" data-add="kit">+ add equipment</button>
+ </section>
+
+ <section>
+  <h2 class="sec">Deliverables</h2>
+  <div class="scroll">
+   <table><thead><tr><th></th><th>Reel</th><th>Due</th><th>Ref</th><th></th></tr></thead>
+   <tbody id="list-reels"></tbody></table>
+  </div>
+  <button class="add" data-add="reels">+ add reel</button>
+ </section>
+
+ <section>
+  <h2 class="sec">Alternate ideas</h2>
+  <p contenteditable data-k="alt.intro">A couple from the replacement list at the back of your doc that I would rather not lose.</p>
+  <ul class="rowlist" id="list-alts"></ul>
+  <button class="add" data-add="alts">+ add idea</button>
+  <ul class="refs" style="margin-top:16px"><li contenteditable data-k="alt.refs">Replacement refs from your doc:
+   <a href="https://www.instagram.com/p/DPUIDtcEw98/">one</a> &middot;
+   <a href="https://www.instagram.com/p/DLhhgdqp7lf/">two</a>, the one that goes into rapping &middot;
+   <a href="https://www.instagram.com/p/DLDLrSwAzby/">three</a>, intro zoom only</li></ul>
+ </section>
+
+ <section>
+  <h2 class="sec">Editing notes</h2>
+  <p contenteditable data-k="edit.intro">Styles you flagged that you want in the edit. Splitting them by what I have to capture on the night versus what I can add afterwards, because two of these cannot be faked later.</p>
+  <ul class="rowlist" id="list-edits"></ul>
+  <button class="add" data-add="edits">+ add note</button>
+  <ul class="refs" style="margin-top:16px"><li contenteditable data-k="edit.refs">Editing style refs:
+   <a href="https://www.instagram.com/reel/DYxbiDIhfDj/">one</a> &middot;
+   <a href="https://www.instagram.com/reel/DZKHmhtsU4T/">two</a></li></ul>
+ </section>
+
+ <section>
+  <h2 class="sec">Notes</h2>
+  <p contenteditable data-k="notes.intro">Anything you think of, drop it here. I get it the moment you save.</p>
+  <div class="notes" id="list-notes"></div>
+  <button class="add" data-add="notes">+ add a note</button>
+ </section>
+
+ <section>
+  <h2 class="sec">Reference docs</h2>
+  <ul class="refs"><li contenteditable data-k="refdocs">
+   <a href="https://docs.google.com/document/d/1e8LViafW5qCYlzCr1B-uQzjQLok3X3x2Imkg0s5LaY8/edit">Content ideas doc</a>
+   has all seven reel concepts plus the replacement options.
+   <a href="https://on.soundcloud.com/oftDKzNoyjuQ8z9DLi">Maximum Shela</a> is the track.
+   The visual reference for each reel is in the table above.</li></ul>
+ </section>
+
+ <section>
+  <h2 class="sec">The map</h2>
+  <p contenteditable data-k="map.intro">All five pinned with the drive times between them. The four downtown ones are basically on top of each other. LACMA sits way out west, so I dashed that line to whichever of the others it is closest to.</p>
+  <figure class="mapfig">
+   <div class="mapwrap"><img src="img/map.jpg" alt="Map of the five locations"><svg viewBox="0 0 1266 686" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><line x1="91.1" y1="271.1" x2="922.7" y2="380.4" stroke="#FF5069" stroke-width="3" stroke-linecap="round" stroke-dasharray="9 7" opacity=".95"/><line x1="971.0" y1="236.2" x2="1036.3" y2="250.4" stroke="#FF5069" stroke-width="3" stroke-linecap="round" opacity=".95"/><line x1="1036.3" y1="250.4" x2="922.7" y2="380.4" stroke="#FF5069" stroke-width="3" stroke-linecap="round" opacity=".95"/><line x1="922.7" y1="380.4" x2="1046.1" y2="438.0" stroke="#FF5069" stroke-width="3" stroke-linecap="round" opacity=".95"/><g><circle cx="971.0" cy="236.2" r="15" fill="#0B0D11" fill-opacity=".92" stroke="#FF5069" stroke-width="2"/><text x="971.0" y="241.4" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">01</text></g><g><circle cx="1036.3" cy="250.4" r="15" fill="#0B0D11" fill-opacity=".92" stroke="#FF5069" stroke-width="2"/><text x="1036.3" y="255.6" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">02</text></g><g><circle cx="1046.1" cy="438.0" r="15" fill="#0B0D11" fill-opacity=".92" stroke="#FF5069" stroke-width="2"/><text x="1046.1" y="443.2" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">03</text></g><g><circle cx="922.7" cy="380.4" r="15" fill="#0B0D11" fill-opacity=".92" stroke="#FF5069" stroke-width="2"/><text x="922.7" y="385.6" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">04</text></g><g><circle cx="91.1" cy="271.1" r="15" fill="#0B0D11" fill-opacity=".92" stroke="#FF5069" stroke-width="2"/><text x="91.1" y="276.3" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">05</text></g><text x="971.0" y="210.2" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" stroke="#0B0D11" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">Centennial</text><text x="1088.3" y="256.4" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" stroke="#0B0D11" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">Central Plaza</text><text x="1090.1" y="444.0" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" stroke="#0B0D11" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">Hewitt</text><text x="860.7" y="385.4" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" stroke="#0B0D11" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">Lower Grand</text><text x="91.1" y="245.1" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" stroke="#0B0D11" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">LACMA</text><g><rect x="433.0" y="299.0" width="146.0" height="26" rx="3" fill="#0B0D11" fill-opacity=".88" stroke="#FF5069" stroke-width="1.2"/><text x="506.0" y="317.0" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14.5" font-weight="600">23 min / 8.7 mi</text></g><g><rect x="934.2" y="187.0" width="137.6" height="26" rx="3" fill="#0B0D11" fill-opacity=".88" stroke="#FF5069" stroke-width="1.2"/><text x="1003.0" y="205.0" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14.5" font-weight="600">4 min / 0.9 mi</text></g><g><rect x="989.2" y="305.0" width="137.6" height="26" rx="3" fill="#0B0D11" fill-opacity=".88" stroke="#FF5069" stroke-width="1.2"/><text x="1058.0" y="323.0" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14.5" font-weight="600">7 min / 1.6 mi</text></g><g><rect x="871.2" y="433.0" width="137.6" height="26" rx="3" fill="#0B0D11" fill-opacity=".88" stroke="#FF5069" stroke-width="1.2"/><text x="940.0" y="451.0" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14.5" font-weight="600">8 min / 1.4 mi</text></g></svg></div>
+   <figcaption>Drive times at current traffic. Centennial to Central Plaza is a 12 minute walk if we leave the car.</figcaption>
+  </figure>
+  <p class="total" contenteditable data-k="map.total">All four downtown come to about <b>19 minutes</b> of driving in the order shown. Centennial has to go first because of the light. Add LACMA and we are looking at closer to <b>45 minutes</b> in the car.</p>
+ </section>
+
+ <section style="border-bottom:none;padding-bottom:8px">
+  <h2 class="sec">Location options</h2>
+  <p contenteditable data-k="loc.intro">Five spots I think could work. Tell me which ones you like and I will sort out the route.</p>
+ </section>
+
+ <article class="loc">
+  <div class="lochead"><div class="num">01</div><div>
+   <h3 contenteditable data-k="loc1.title">Centennial St &amp; Figueroa Terrace</h3>
+   <p class="meta">Victor Heights &middot; <a href="https://www.google.com/maps/search/?api=1&amp;query=34.066736,-118.245915">34.066736, -118.245915</a></p></div></div>
+  <div class="collage c2"><div><img src="img/centennial-a.jpg" alt=""></div><div><img src="img/centennial-b.jpg" alt=""></div></div>
+  <div class="loctext" contenteditable data-k="loc1.body">
+   <p>Residential street up on a hill, and downtown lines up right down the middle of it. Cars parked both sides. The second photo is what we would be going for, sky still blue with the buildings already lit.</p>
+   <p class="note"><b>Timing.</b> This only works in about a 25 minute window right after sunset. If you want it, we start here.</p>
+  </div>
+ </article>
+
+ <article class="loc">
+  <div class="lochead"><div class="num">02</div><div>
+   <h3 contenteditable data-k="loc2.title">Chinatown Central Plaza</h3>
+   <p class="meta">943 N Broadway &middot; <a href="https://www.google.com/maps/search/?api=1&amp;query=34.065226,-118.237499">34.065226, -118.237499</a></p></div></div>
+  <div class="collage c2"><div><img src="img/chinatown-a.jpg" alt=""></div><div><img src="img/chinatown-b.jpg" alt=""></div></div>
+  <div class="loctext" contenteditable data-k="loc2.body">
+   <p>Lanterns hang the whole length of the plaza and there is neon on the gate and the storefronts. It is all pedestrian, so we are not working around cars.</p>
+   <p>The red is already there before I turn anything on, so my light adds to it instead of doing all the work. The walkways are narrow, which suits the fisheye, and the lanterns overhead work for the look-up shot.</p>
+  </div>
+ </article>
+
+ <article class="loc">
+  <div class="lochead"><div class="num">03</div><div>
+   <h3 contenteditable data-k="loc3.title">303 S Hewitt St &amp; Traction Ave</h3>
+   <p class="meta">Arts District &middot; <a href="https://www.google.com/maps/search/?api=1&amp;query=34.045219,-118.236236">34.045219, -118.236236</a></p></div></div>
+  <div class="collage c3"><div class="tall"><img src="img/hewitt-b.jpg" alt=""></div><div><img src="img/hewitt-a.jpg" alt=""></div><div><img src="img/hewitt-c.jpg" alt=""></div></div>
+  <div class="loctext" contenteditable data-k="loc3.body">
+   <p>The murals wrap the corner at Traction, floor to roof, both sides of the street. These photos are daytime so you can actually see the art.</p>
+   <p>At night the street lights hit the paint and everything around it goes black. I would light you against that. The alley off Traction is where I would shoot the alleyway reels.</p>
+  </div>
+ </article>
+
+ <article class="loc">
+  <div class="lochead"><div class="num">04</div><div>
+   <h3 contenteditable data-k="loc4.title">Lower Grand Ave</h3>
+   <p class="meta">Between 3rd and 4th &middot; <a href="https://www.google.com/maps/search/?api=1&amp;query=34.051368,-118.252126">34.051368, -118.252126</a></p></div></div>
+  <div class="collage c2"><div><img src="img/grand-a.jpg" alt=""></div><div><img src="img/grand-b.jpg" alt=""></div></div>
+  <div class="loctext" contenteditable data-k="loc4.body">
+   <p>The sunken road under downtown, with concrete columns and strip lights running the whole ceiling. Car people shoot here all the time, and it has been in Terminator, Dark Knight Rises, and a stack of Audi and Hyundai commercials.</p>
+   <p>It is lit and covered, so it does not matter how late we get there.</p>
+   <p class="note"><b>Shot ideas.</b> Two things I would do here. Reel 06, rotating the gimbal up into those ceiling columns so the spin has an actual pattern to turn against. And the falling shot, coming out of one of the tunnel openings under the bridge.</p>
+  </div>
+ </article>
+
+ <article class="loc" style="border-bottom:none">
+  <div class="lochead"><div class="num">05</div><div>
+   <h3 contenteditable data-k="loc5.title">Urban Light, LACMA</h3>
+   <p class="meta">5905 Wilshire Blvd &middot; <a href="https://www.google.com/maps/search/?api=1&amp;query=34.063024,-118.359237">34.063024, -118.359237</a></p></div></div>
+  <div class="collage c2"><div><img src="img/lacma-a.jpg" alt=""></div><div><img src="img/lacma-b.jpg" alt=""></div></div>
+  <div class="loctext" contenteditable data-k="loc5.body">
+   <p>The lamp posts. Free, outside, lit all night. The symmetry does most of the work, so a silhouette or you walking through the middle needs almost no setup.</p>
+   <p class="note"><b>The drive.</b> 23 minutes from Lower Grand, 28 from Hewitt. There are usually other people shooting there at night.</p>
+  </div>
+ </article>
+
+ <p class="end">Each location links through to its spot on the map.</p>
+</div>
+
+<script type="module">
+const CFG = {"apiKey": "AIzaSyAAnT69AtL-m53iQ-DuCF0PRNrdHcmvZaM", "authDomain": "lake-toya-hq.firebaseapp.com", "projectId": "lake-toya-hq", "storageBucket": "lake-toya-hq.firebasestorage.app", "messagingSenderId": "246123481676", "appId": "1:246123481676:web:8017ebd6ac8b8f3530c2e9"};
+const COL = 'shoot';
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const $ = id => document.getElementById(id);
+const dot = $('dot'), status = $('status');
+let db = null, ready = false;
+const cache = {};              // key -> value from cloud
+let localEdit = null;          // element currently being typed in
+
+/* ---------- seed content (first load writes these) ---------- */
+const SEED = {
+ 'contacts': [
+   {name:'Jay Matsumoto', role:'shooting', tel:'310-951-2318'},
+   {name:'Chelsea', role:'HERSHE', tel:'978-587-5317'},
+   {name:'Brianna Irvin', role:'management, Optimystic', tel:'801-866-8702'}],
+ 'kit': [
+   {name:'RGB light', desc:'Main light. This is what gets us the red.'},
+   {name:'Osmo Pocket / gimbal', desc:'For the low angle stuff on the teaser and the spin on reel 06.'},
+   {name:'VHS camera', desc:'All of reel 07, plus a few shots cut into the teaser.'},
+   {name:'Fisheye lens', desc:'For the zooms on reel 04.'},
+   {name:'Tripod', desc:'Reel 05 needs the camera completely still.'},
+   {name:'Speaker', desc:'How loud we go depends on where we are.'}],
+ 'reels': [
+   {n:'01', title:'The Teaser', desc:'Needs a strong hook and some mystery to it. Quick cuts of different things, movement, maybe some running, with VHS shots mixed through. The second reference is more music video: low angle, gimbal moving with you while you rap.', due:'Wed Sep 2', hot:true, ref:'<a href="https://www.instagram.com/reels/DavZ50dRNrU/">a</a> <a href="https://www.instagram.com/reels/DZBAhiuxL2I/">b</a>'},
+   {n:'02', title:'The Alleyway', desc:'You two rapping in an alley. Opens on hands, shot horizontal.', due:'Fri Sep 4', hot:true, ref:'<a href="https://www.instagram.com/reels/DZKlHYkM1kM/">ref</a>'},
+   {n:'03', title:'Alleyway, Second Angle', desc:'Same setup as 02 from a new angle. Second post that day.', due:'Fri Sep 4', hot:true, ref:'<a href="https://www.instagram.com/reel/DY43k3vMtsq/">ref</a>'},
+   {n:'04', title:'Fisheye', desc:'Wide distorted lens, fast zooms and hard cuts on the beat.', due:'After Sep 4', hot:false, ref:'<a href="https://www.instagram.com/reel/DbTP-3ftKPQ/">ref</a>'},
+   {n:'05', title:'The Clones', desc:'Multiple copies of you in one frame. Camera locked off, nothing moving behind you.', due:'After Sep 4', hot:false, ref:'<a href="https://www.instagram.com/p/DU12KmCCQlp/">ref</a>'},
+   {n:'06', title:'Look Up and Rotate', desc:'Camera down low pointing up at you, rotating as it goes. I would shoot this at Lower Grand, where the ceiling columns give the spin something to turn against.', due:'After Sep 4', hot:false, ref:'<a href="https://www.instagram.com/reel/DaalIrHN8yD/">ref</a>'},
+   {n:'07', title:'VHS', desc:'Shot on tape. Heavy distortion, tracking lines, degraded look.', due:'After Sep 4', hot:false, ref:'<a href="https://www.instagram.com/p/DBZG12Kve1d/">ref</a>'}],
+ 'alts': [
+   {name:'Falling out of the sky', desc:'Strong hook. I would shoot this at Lower Grand, dropping into frame out of one of the tunnel openings under the bridge. You come out of the dark and the reveal does the work. Good candidate for the front of the teaser.'},
+   {name:'The collage', desc:'Multicam feel but cut as a collage. Close on the mouth, details of the outfit, a few small pieces running at once. Could be its own reel or fold into the teaser.'}],
+ 'edits': [
+   {name:'Slow shutter', desc:'Shoot on the day. Dragging the shutter smears the motion and there is no way to add it in post, so I need to set it while we are rolling.'},
+   {name:'Slow motion', desc:'Shoot on the day. I will grab slowed passes at every location so there is always an option.'},
+   {name:'Tracking boxes', desc:'Added after. The little boxes that follow you around frame. I just need clean, steady shots to track against.'},
+   {name:'Fast zooms and cuts', desc:'Mix of both. Punch-ins on the day, timed to the beat in the edit.'}],
+ 'notes': []
+};
+
+/* ---------- helpers ---------- */
+const uid = () => Math.random().toString(36).slice(2,9);
+const esc = s => (s||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function setStatus(t, cls){ status.textContent = t; dot.className = 'dot' + (cls?' '+cls:''); }
+function save(key, val){
+  cache[key] = val;
+  if(!db){ localStorage.setItem('shoot:'+key, JSON.stringify(val)); return; }
+  setDoc(doc(db, COL, key), {v: JSON.stringify(val), t: Date.now()}).catch(e => setStatus('save failed','err'));
+}
+function del(key){
+  delete cache[key];
+  if(db) deleteDoc(doc(db, COL, key)).catch(()=>{});
+  else localStorage.removeItem('shoot:'+key);
+}
+
+/* ---------- static editable blocks ---------- */
+let saveTimer = {};
+document.querySelectorAll('[contenteditable][data-k]').forEach(el => {
+  const k = 't.' + el.dataset.k;
+  el.addEventListener('focus', () => { localEdit = el; });
+  el.addEventListener('blur',  () => { localEdit = null; });
+  el.addEventListener('input', () => {
+    clearTimeout(saveTimer[k]);
+    saveTimer[k] = setTimeout(() => save(k, el.innerHTML), 600);
+  });
+});
+function applyStatic(){
+  document.querySelectorAll('[contenteditable][data-k]').forEach(el => {
+    const k = 't.' + el.dataset.k;
+    if(cache[k] !== undefined && el !== localEdit && el.innerHTML !== cache[k]) el.innerHTML = cache[k];
+  });
+}
+
+/* ---------- lists ---------- */
+const LIST_KEY = n => 'l.' + n;
+function getList(name){
+  return cache[LIST_KEY(name)] || null;
+}
+function setList(name, arr){ save(LIST_KEY(name), arr); renderList(name); }
+
+function fieldHTML(val, path, cls){
+  return `<span contenteditable data-list-field="${path}" class="${cls||''}">${val||''}</span>`;
+}
+
+function renderList(name){
+  const arr = getList(name);
+  if(!arr) return;
+  const host = $('list-' + name);
+  if(!host) return;
+  if(name === 'contacts'){
+    host.innerHTML = arr.map((it,i) => `<li>
+      <span>${fieldHTML(it.name, name+'.'+i+'.name','')} <span class="role">${fieldHTML(it.role, name+'.'+i+'.role','')}</span></span>
+      <span class="tel">${fieldHTML(it.tel, name+'.'+i+'.tel','')}</span>
+      <button class="x" data-del="${name}.${i}" title="remove">&times;</button></li>`).join('');
+  } else if(name === 'reels'){
+    host.innerHTML = arr.map((it,i) => `<tr>
+      <td class="n">${fieldHTML(it.n, name+'.'+i+'.n','')}</td>
+      <td><span class="rt">${fieldHTML(it.title, name+'.'+i+'.title','')}</span>${fieldHTML(it.desc, name+'.'+i+'.desc','')}</td>
+      <td class="d ${it.hot?'hot':''}">${fieldHTML(it.due, name+'.'+i+'.due','')}</td>
+      <td>${fieldHTML(it.ref, name+'.'+i+'.ref','')}</td>
+      <td class="act"><button class="x" data-del="${name}.${i}" title="remove">&times;</button></td></tr>`).join('');
+  } else if(name === 'notes'){
+    host.innerHTML = arr.length ? arr.map((it,i) => `<div class="note-item"><div>
+      <div class="note-head">${esc(it.who||'someone')} &middot; ${esc(it.when||'')}</div>
+      <div class="note-body">${fieldHTML(it.text, name+'.'+i+'.text','')}</div></div>
+      <button class="x" data-del="${name}.${i}" title="remove">&times;</button></div>`).join('')
+      : '<p class="note-empty">Nothing yet. Add anything you think of.</p>';
+  } else {
+    host.innerHTML = arr.map((it,i) => `<li>
+      <b>${fieldHTML(it.name, name+'.'+i+'.name','')}</b>
+      <span>${fieldHTML(it.desc, name+'.'+i+'.desc','')}</span>
+      <button class="x" data-del="${name}.${i}" title="remove">&times;</button></li>`).join('');
+  }
+}
+
+document.addEventListener('input', e => {
+  const path = e.target.dataset && e.target.dataset.listField;
+  if(!path) return;
+  const [name, idx, field] = path.split('.');
+  const arr = getList(name); if(!arr || !arr[idx]) return;
+  arr[idx][field] = e.target.innerHTML;
+  clearTimeout(saveTimer[path]);
+  saveTimer[path] = setTimeout(() => save(LIST_KEY(name), arr), 600);
+});
+document.addEventListener('focusin', e => { if(e.target.dataset && e.target.dataset.listField) localEdit = e.target; });
+document.addEventListener('focusout', e => { if(e.target.dataset && e.target.dataset.listField) localEdit = null; });
+
+document.addEventListener('click', e => {
+  const d = e.target.closest('[data-del]');
+  if(d){ const [name, idx] = d.dataset.del.split('.');
+    const arr = getList(name); if(!arr) return;
+    arr.splice(+idx,1); setList(name, arr); return; }
+  const a = e.target.closest('[data-add]');
+  if(a){
+    const name = a.dataset.add; const arr = getList(name) || [];
+    if(name === 'contacts') arr.push({name:'Name', role:'role', tel:'000-000-0000'});
+    else if(name === 'reels') arr.push({n:String(arr.length+1).padStart(2,'0'), title:'New reel', desc:'What it is.', due:'TBC', hot:false, ref:''});
+    else if(name === 'notes'){
+      const who = ($('who').value || '').trim() || 'someone';
+      const when = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      arr.unshift({who, when, text:'', id:uid()});
+    }
+    else arr.push({name:'New item', desc:'Details.'});
+    setList(name, arr);
+    const host = $('list-' + name);
+    const f = host && host.querySelector('[data-list-field]');
+    if(name === 'notes' && f) f.focus();
+  }
+});
+
+/* ---------- boot ---------- */
+function renderAll(){ applyStatic(); ['contacts','kit','reels','alts','edits','notes'].forEach(renderList); }
+
+function seedIfEmpty(){
+  Object.keys(SEED).forEach(name => {
+    if(getList(name) === null) save(LIST_KEY(name), SEED[name]);
+  });
+  renderAll();
+}
+
+try {
+  const app = initializeApp(CFG);
+  db = getFirestore(app);
+  signInAnonymously(getAuth(app)).then(() => {
+    setStatus('live', 'on');
+    onSnapshot(collection(db, COL), snap => {
+      snap.docChanges().forEach(ch => {
+        const k = ch.doc.id;
+        if(ch.type === 'removed'){ delete cache[k]; return; }
+        try { cache[k] = JSON.parse(ch.doc.data().v); } catch(e){}
+      });
+      if(!ready){ ready = true; seedIfEmpty(); } else renderAll();
+    }, err => setStatus('sync blocked', 'err'));
+  }).catch(() => { setStatus('offline, local only', 'err'); loadLocal(); });
+} catch(e){ setStatus('offline, local only', 'err'); loadLocal(); }
+
+function loadLocal(){
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    if(key.startsWith('shoot:')){ try{ cache[key.slice(6)] = JSON.parse(localStorage.getItem(key)); }catch(e){} }
+  }
+  ready = true; seedIfEmpty();
+}
+setTimeout(() => { if(!ready){ setStatus('offline, local only','err'); loadLocal(); } }, 6000);
+
+$('who').value = localStorage.getItem('shoot:who') || '';
+$('who').addEventListener('input', e => localStorage.setItem('shoot:who', e.target.value));
+</script>
+</body>
+</html>
