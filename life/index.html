@@ -280,6 +280,15 @@
   .collect .cact{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
   .collect .cwhy{font-size:12.5px;color:var(--ink3);margin-top:7px}
   .collect .cwhy b{color:var(--urgent)}
+  .itemrow{display:grid;grid-template-columns:1fr 132px 54px 92px 34px 28px;gap:6px;align-items:center;margin-bottom:6px}
+  .itemrow .ipaid{width:17px;height:17px;accent-color:var(--good);cursor:pointer;justify-self:center}
+  .itemrow input{font-size:13px;padding:5px 8px}
+  @media (max-width:820px){
+    .itemrow{grid-template-columns:1fr 58px 84px 30px 26px;row-gap:4px;margin-bottom:12px}
+    .itemrow .idesc{grid-column:1/-1}
+  }
+  .itemhead{display:grid;grid-template-columns:1fr 132px 54px 92px 34px 28px;gap:6px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+  @media (max-width:820px){.itemhead{display:none}}
 
   /* ── modal ───────────────────────────── */
   .overlay{position:fixed;inset:0;background:rgba(15,18,20,.45);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;z-index:50;overflow-y:auto}
@@ -315,6 +324,8 @@
   .invsheet th:nth-child(2),.invsheet td:nth-child(2){text-align:center}
   .invsheet th:nth-child(3),.invsheet td:nth-child(3),.invsheet th:nth-child(4),.invsheet td:nth-child(4){text-align:right}
   .invsheet td{border-bottom:1px solid rgba(255,255,255,.35);padding:12px;color:#EDEDEB}
+  .invsheet tr.freeline td{color:#BDBDB9}
+  .invsheet tr.freeline td:last-child{color:#7FD1A8;font-weight:800;letter-spacing:.04em}
   .invsheet .totbox{display:flex;justify-content:flex-end;margin-top:0}
   .invsheet .totbox i{font-style:normal;background:#fff;color:#161616;font-weight:800;font-size:16px;padding:11px 18px;display:flex;gap:36px}
   .invsheet .terms{margin-top:16px;color:#9A9A96;font-size:11.5px;white-space:pre-line}
@@ -562,11 +573,10 @@
         <div class="field"><label>Bill to — client / company</label><input id="iClient"></div>
         <div class="field"><label>Client email <span style="font-weight:400;color:var(--ink3)">(needed to send)</span></label><input id="iEmail" type="email" placeholder="client@email.com"></div>
         <div class="field"><label>Client address (optional)</label><textarea id="iAddr" rows="2"></textarea></div>
-        <div class="field"><label>Service description</label><input id="iDesc"></div>
-        <div class="fieldrow">
-          <div class="field"><label>Service date</label><input id="iDate" type="date"></div>
-          <div class="field" style="flex:0 0 64px"><label>Qty</label><input id="iQty" type="number" min="1" step="1" value="1"></div>
-          <div class="field"><label>Unit price $</label><input id="iPrice" type="number" min="0" step="0.01"></div>
+        <div class="field"><label>Line items</label>
+          <div class="itemhead"><span>Description</span><span>Service date</span><span>Qty</span><span>Unit $</span><span title="Already paid">Paid</span><span></span></div>
+          <div id="iItems"></div>
+          <button class="btn small" onclick="addInvItem()" style="margin-top:7px">＋ Add line</button>
         </div>
         <div class="fieldrow">
           <div class="field"><label>Terms</label>
@@ -850,6 +860,47 @@ function migrate(){
     state.patch17=true;
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
+  }
+  // patch 27 (2026-08-18): the missing SF show, and Hoang's real billing entity
+  if(!state.patch27){
+    state.patch27=true;
+    /* Bill Graham SF, May 30 — done and never logged, so it never got billed */
+    if(!state.events.some(e=>e.client==='Yetep'&&e.date==='2026-05-30')){
+      const ev={id:uid(),title:'Yetep — Bill Graham SF',
+        details:'Multicam reel for the Medicine remix, plus photos.\nBill Graham Civic Auditorium, San Francisco.',
+        date:'2026-05-30',endDate:'',start:'',end:'',gig:true,client:'Yetep',gross:200,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''};
+      const inv={id:uid(),number:'YETEP-0530',eventId:ev.id,client:'Yetep',email:contactFor('Yetep'),addr:'',
+        desc:'Multicam reel (Medicine remix) + photos — Bill Graham Civic Auditorium, SF',
+        svcDate:'2026-05-30',qty:1,price:200,amount:200,issue:'2026-08-18',terms:'Net 15',
+        pay:BIZ.pay,note:BIZ.note,status:'draft',sentAt:'',chases:[],fresh:false};
+      ev.invoiceId=inv.id;
+      state.events.push(ev);state.invoices.push(inv);
+    }
+    const yt=state.tasks.find(t=>t.title.indexOf('Ask Yetep')>-1);
+    if(yt){
+      yt.title='Ask Yetep: $1,100 owed + his Lost Lands rate';
+      yt.notes='$400 studio portraits + reel content (Jul 30) · $500 Beyond · $200 Bill Graham SF (May 30) = $1,100, all drafted and ready to send · AND set his rate for Lost Lands (Sun Sep 20) — trip costs $758.40 are sunk, price accordingly';
+    }
+    /* Hoang bills through his company */
+    const hg=state.invoices.find(i=>i.number==='HOANG-0807');
+    if(hg&&!hg.addr){
+      hg.client='Hoang Entertainment Inc.';
+      hg.addr='9226 132 Street\nSurrey, British Columbia V3V 5P9\nCanada';
+      hg.desc='USC photoshoot — 30+ delivered photos';
+      hg.note='Also included at no charge: raw in-car video clip, delivered separately.\n'+BIZ.note;
+    }
+  }
+  // patch 26 (2026-08-18): say what the Yetep July shoot actually was — "July photoshoot" tells him nothing
+  if(!state.patch26){
+    state.patch26=true;
+    const ev=state.events.find(e=>e.client==='Yetep'&&e.date==='2026-07-30');
+    if(ev){
+      ev.title='Yetep — studio portraits + reel content';
+      ev.details='Updated studio portraits for general use — new show announcements, poster and flyer artwork.\nReel content shot the same day.';
+    }
+    const iv=state.invoices.find(i=>i.number==='YETEP-0730')||state.invoices.find(i=>i.client==='Yetep'&&i.svcDate==='2026-07-30');
+    if(iv&&iv.status!=='paid')iv.desc='Studio portraits (show announcements, posters & flyers, general use) + reel content';
   }
   // patch 25 (2026-08-18): shoot brief link on the calendar, locations sent, Dean parked
   if(!state.patch25){
@@ -1162,6 +1213,24 @@ function addDays(iso,n){const[y,m,d]=iso.split('-').map(Number);const dt=new Dat
 function taskById(id){return state.tasks.find(t=>t.id===id)}
 function eventById(id){return state.events.find(e=>e.id===id)}
 function invById(id){return state.invoices.find(i=>i.id===id)}
+/* An invoice is a list of lines. Older single-line invoices have no items[],
+   so read them through invItems() and they behave like a one-line invoice. */
+function invItems(inv){
+  if(Array.isArray(inv.items)&&inv.items.length)return inv.items;
+  return [{desc:inv.desc||'',svcDate:inv.svcDate||'',qty:inv.qty||1,price:(inv.price!=null?inv.price:inv.amount)}];
+}
+function lineTotal(it){return (parseInt(it.qty)||1)*(parseFloat(it.price)||0)}
+function lineFree(it){return it.price===0||it.price==='0'}
+/* Lines already settled stay on the invoice — they show the client what the
+   relationship is worth — but the total is what he still owes, not the history. */
+function invAmount(inv){return invItems(inv).reduce((t,it)=>t+(it.paid?0:lineTotal(it)),0)}
+function invEventIds(inv){
+  if(Array.isArray(inv.eventIds)&&inv.eventIds.length)return inv.eventIds;
+  return inv.eventId?[inv.eventId]:[];
+}
+function invMarkPaidEvents(inv){
+  invEventIds(inv).forEach(id=>{const e=eventById(id);if(e){e.paid=true;e.cleared=false}});
+}
 function tagClass(tag){return tag==='Urgent'?'urgent':(tag==='Money'?'money':(tag==='Wedding'?'accent':''))}
 
 /* ─────────────────────── auto-invoicing ─────────────────────── */
@@ -1968,11 +2037,7 @@ function markGroupPaid(client){
   const g=groupByName(client);if(!g)return;
   if(!confirm('Mark all '+fmt$(g.total)+' from '+client+' as paid?'))return;
   const amt=g.total;
-  g.invs.forEach(i=>{
-    i.status='paid';i.fresh=false;
-    const e=eventById(i.eventId);
-    if(e){e.paid=true;e.cleared=false}
-  });
+  g.invs.forEach(i=>{i.status='paid';i.fresh=false;invMarkPaidEvents(i)});
   save();render();
   offerFundCut(amt,client);
 }
@@ -1990,6 +2055,33 @@ function offerFundCut(amount,label){
   state.wfund.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   save();render();
   toast(fmt$(cut)+' logged — '+fmt$(fundSaved())+' saved of $20,000');
+}
+/* Three invoices for the same artist is three things for him to open, approve and
+   pay. One itemized invoice is one. Merging keeps every line — nothing is summed away. */
+function mergeGroup(client){
+  const g=groupByName(client);if(!g)return;
+  const list=g.unsent.slice().sort((a,b)=>(a.svcDate||'9999').localeCompare(b.svcDate||'9999'));
+  if(list.length<2){toast('Only one invoice — nothing to combine');return}
+  const tot=list.reduce((t,i)=>t+(i.amount||0),0);
+  if(!confirm('Combine '+list.length+' invoices for '+client+' into one itemized invoice?\n\n'
+    +list.map(i=>'• '+i.number+' — '+fmt$(i.amount)).join('\n')
+    +'\n\nTotal stays '+fmt$(tot)+'. Every line stays on the invoice, under '+list[0].number+'.'))return;
+  const base=list[0], items=[], evs=[];
+  list.forEach(i=>{
+    invItems(i).forEach(it=>items.push(Object.assign({},it)));
+    invEventIds(i).forEach(id=>{if(evs.indexOf(id)<0)evs.push(id)});
+  });
+  base.items=items;
+  base.eventIds=evs;base.eventId=evs[0]||null;
+  base.desc=items.map(it=>it.desc).filter(Boolean).join(' · ');
+  base.svcDate=items.map(it=>it.svcDate).filter(Boolean).sort()[0]||'';
+  base.amount=invAmount(base);
+  base.qty=1;base.price=null;
+  const gone=list.slice(1).map(i=>i.id);
+  state.invoices=state.invoices.filter(i=>gone.indexOf(i.id)<0);
+  evs.forEach(id=>{const e=eventById(id);if(e)e.invoiceId=base.id});
+  save();render();
+  toast('Combined into '+base.number+' — '+items.length+' lines, '+fmt$(base.amount));
 }
 function unsendGroup(client){
   const g=groupByName(client);if(!g)return;
@@ -2037,6 +2129,7 @@ function renderCollect(){
     h+='<div class="cact">';
     if(g.unsent.length){
       h+='<button class="btn primary small" onclick="sendGroup('+q+')">✉ Send '+(g.unsent.length>1?'all '+g.unsent.length:'invoice')+'</button>'
+        +(g.unsent.length>1?'<button class="btn small" onclick="mergeGroup('+q+')" title="One itemized invoice instead of '+g.unsent.length+'">⇢ Combine into one</button>':'')
         +'<button class="btn small" onclick="copyGroup('+q+')">Copy</button>'
         +'<button class="btn small" onclick="markGroupSent('+q+')">Mark sent ✓</button>';
     }else if(g.sent.length){
@@ -2101,16 +2194,14 @@ function renderInvoices(){
 function invQuickPaid(id){
   const inv=invById(id);if(!inv)return;
   inv.status='paid';inv.fresh=false;
-  const e=eventById(inv.eventId);
-  if(e){e.paid=true;e.cleared=false}
+  invMarkPaidEvents(inv);
   save();render();
   offerFundCut(inv.amount,inv.client||inv.number);
 }
 function deleteInvoiceById(id){
   const inv=invById(id);if(!inv)return;
   if(!confirm('Delete '+inv.number+'? The gig stays in Money, and no new invoice will be auto-created for it. (If they simply paid you, use “Paid ✓” instead.)'))return;
-  const e=eventById(inv.eventId);
-  if(e){e.invoiceId=null;e.invoiceDismissed=true}
+  invEventIds(inv).forEach(id=>{const e=eventById(id);if(e){e.invoiceId=null;e.invoiceDismissed=true}});
   state.invoices=state.invoices.filter(i=>i.id!==id);
   save();render();
 }
@@ -2123,21 +2214,52 @@ function openInvoice(id){
   inv.fresh=false;
   $('invModalTitle').textContent=inv.number+' — '+inv.client;
   $('iClient').value=inv.client;$('iEmail').value=inv.email;$('iAddr').value=inv.addr;
-  $('iDesc').value=inv.desc;$('iDate').value=inv.svcDate;
-  $('iQty').value=inv.qty||1;$('iPrice').value=(inv.price??inv.amount)??'';
+  editingItems=invItems(inv).map(it=>Object.assign({},it));
+  renderInvItems();
   $('iTerms').value=inv.terms;$('iIssue').value=inv.issue;
   $('iPay').value=inv.pay;$('iNote').value=inv.note;
-  ['iClient','iEmail','iAddr','iDesc','iDate','iQty','iPrice','iIssue','iPay','iNote'].forEach(fid=>{$(fid).oninput=invFormChanged});
+  ['iClient','iEmail','iAddr','iIssue','iPay','iNote'].forEach(fid=>{$(fid).oninput=invFormChanged});
   $('invOverlay').classList.add('open');
   invFormChanged();
 }
+let editingItems=[];
+function renderInvItems(){
+  const host=$('iItems');if(!host)return;
+  host.innerHTML=editingItems.map((it,n)=>
+    '<div class="itemrow">'
+    +'<input class="idesc" data-n="'+n+'" placeholder="what you did" value="'+esc(it.desc||'')+'">'
+    +'<input class="idate" data-n="'+n+'" type="date" value="'+(it.svcDate||'')+'">'
+    +'<input class="iqty" data-n="'+n+'" type="number" min="1" step="1" title="Qty" placeholder="qty" value="'+(it.qty||1)+'">'
+    +'<input class="iprice" data-n="'+n+'" type="number" min="0" step="0.01" title="Unit price" placeholder="unit $" value="'+(it.price!=null?it.price:'')+'">'
+    +'<input class="ipaid" data-n="'+n+'" type="checkbox" title="Already paid — stays on the invoice, not added to the total"'+(it.paid?' checked':'')+'>'
+    +(editingItems.length>1?'<button class="iconbtn" title="Remove line" onclick="delInvItem('+n+')">🗑</button>':'<span></span>')
+    +'</div>').join('');
+  host.querySelectorAll('input').forEach(el=>{el.oninput=readInvItems});
+}
+function readInvItems(){
+  const host=$('iItems');
+  host.querySelectorAll('.idesc').forEach(el=>{editingItems[+el.dataset.n].desc=el.value});
+  host.querySelectorAll('.idate').forEach(el=>{editingItems[+el.dataset.n].svcDate=el.value});
+  host.querySelectorAll('.iqty').forEach(el=>{editingItems[+el.dataset.n].qty=Math.max(1,parseInt(el.value)||1)});
+  host.querySelectorAll('.iprice').forEach(el=>{editingItems[+el.dataset.n].price=el.value!==''?parseFloat(el.value):null});
+  host.querySelectorAll('.ipaid').forEach(el=>{editingItems[+el.dataset.n].paid=el.checked});
+  invFormChanged();
+}
+function addInvItem(){editingItems.push({desc:'',svcDate:'',qty:1,price:null,paid:false});renderInvItems();invFormChanged()}
+function delInvItem(n){editingItems.splice(n,1);renderInvItems();invFormChanged()}
 function invFromForm(){
-  const qty=Math.max(1,parseInt($('iQty').value)||1);
-  const price=$('iPrice').value!==''?parseFloat($('iPrice').value):null;
+  const items=editingItems.map(it=>({desc:(it.desc||'').trim(),svcDate:it.svcDate||'',
+    qty:Math.max(1,parseInt(it.qty)||1),price:it.price!=null&&it.price!==''?parseFloat(it.price):null,paid:!!it.paid}));
+  const priced=items.some(it=>it.price!=null);
+  const total=items.reduce((t,it)=>t+(it.paid?0:lineTotal(it)),0);
   return {
     client:$('iClient').value.trim(),email:$('iEmail').value.trim(),addr:$('iAddr').value.trim(),
-    desc:$('iDesc').value.trim(),svcDate:$('iDate').value,
-    qty,price,amount:price!=null?qty*price:null,
+    items,
+    desc:items.map(it=>it.desc).filter(Boolean).join(' · '),
+    svcDate:items.map(it=>it.svcDate).filter(Boolean).sort()[0]||'',
+    qty:items.length===1?items[0].qty:1,
+    price:items.length===1?items[0].price:null,
+    amount:priced?total:null,
     terms:$('iTerms').value,issue:$('iIssue').value,
     pay:$('iPay').value.trim(),note:$('iNote').value.trim()
   };
@@ -2145,14 +2267,14 @@ function invFromForm(){
 function invFormChanged(){
   const inv=invById(editingInvId);if(!inv)return;
   const d=Object.assign({},inv,invFromForm());
+  d.items=editingItems;
   $('invPreview').innerHTML=invoiceSheetHTML(d);
   $('iEmail').classList.toggle('missing',!d.email);
 }
 function fmtDateLong(iso){if(!iso)return'—';const[y,m,d]=iso.split('-').map(Number);const dt=new Date(y,m-1,d);return d+' '+dt.toLocaleDateString('en-US',{month:'long'})+' '+y}
 function invoiceSheetHTML(inv){
   const due=dueDate(inv);
-  const qty=inv.qty||1, price=inv.price??inv.amount, total=(qty*(price||0))||inv.amount;
-  const desc=(inv.desc||'—')+(inv.svcDate?' — '+fmtDate(inv.svcDate):'');
+  const items=invItems(inv), total=invAmount(inv)||inv.amount;
   return '<div class="invsheet">'
     +'<div class="top"><div><div class="brand">'+esc(BIZ.brand)+'</div><div class="brandsub">'+esc(BIZ.brandSub)+'</div></div>'
     +'<div><div class="invnum">Invoice Number: '+esc(inv.number)+'</div>'
@@ -2162,8 +2284,11 @@ function invoiceSheetHTML(inv){
     +'<div class="party"><div class="lbl">Billed From</div><div class="nm">'+esc(BIZ.name)+'</div><div class="ln">'+esc(BIZ.sub)+'</div></div>'
     +'</div>'
     +'<table><tr><th>Description</th><th>Qty</th><th>Price</th><th>Total</th></tr>'
-    +'<tr><td>'+esc(desc)+'</td><td class="num">'+qty+'</td><td class="num">'+fmt$(price)+'</td><td class="num">'+fmt$(total)+'</td></tr></table>'
-    +'<div class="totbox"><i><span>TOTAL</span><span class="num">'+fmt$(total)+'</span></i></div>'
+    +items.map(it=>{const free=lineFree(it), settled=!!it.paid;
+      return '<tr'+(free||settled?' class="freeline"':'')+'><td>'+esc(it.desc||'—')+(it.svcDate?' — '+fmtDate(it.svcDate):'')+'</td>'
+      +'<td class="num">'+(it.qty||1)+'</td><td class="num">'+(free?'—':fmt$(it.price))+'</td>'
+      +'<td class="num">'+(free?'FREE':(settled?'PAID':fmt$(lineTotal(it))))+'</td></tr>'}).join('')+'</table>'
+    +'<div class="totbox"><i><span>'+(items.some(it=>it.paid)?'TOTAL DUE':'TOTAL')+'</span><span class="num">'+fmt$(total)+'</span></i></div>'
     +'<div class="terms">Due '+fmtDate(due)+' · '+esc(inv.terms)+(inv.note?'\n'+esc(inv.note):'')+'</div>'
     +'<div class="bottom">'
     +'<div class="pay"><div class="h">Payment Methods:</div><div class="v">'+esc(inv.pay||BIZ.pay)+'</div></div>'
@@ -2176,22 +2301,29 @@ function saveInvoice(){
   const inv=invById(editingInvId);if(!inv)return;
   Object.assign(inv,invFromForm());
   if(inv.client&&inv.email){state.contacts=state.contacts||{};state.contacts[inv.client]=inv.email}
-  const e=eventById(inv.eventId);
-  if(e&&inv.amount!=null){e.gross=inv.amount}
+  const evs=invEventIds(inv);
+  if(evs.length===1&&invItems(inv).length===1&&inv.amount!=null){
+    const e=eventById(evs[0]);if(e)e.gross=inv.amount;
+  }
   save();render();invFormChanged();
 }
 function invoiceText(inv){
   const due=dueDate(inv);
-  const qty=inv.qty||1, price=inv.price??inv.amount, total=(qty*(price||0))||inv.amount;
+  const items=invItems(inv), total=invAmount(inv)||inv.amount;
+  const lines=items.map(it=>{
+    const head='  • '+(it.desc||'—')+(it.svcDate?' — '+fmtDate(it.svcDate):'');
+    if(lineFree(it))return head+' — FREE (no charge)';
+    if(it.paid)return head+' — '+fmt$(lineTotal(it))+' — PAID, thank you';
+    return head+' — '+(it.qty||1)+' × '+fmt$(it.price)+' = '+fmt$(lineTotal(it));
+  });
   return [BIZ.brand+' — '+BIZ.brandSub,'INVOICE '+inv.number,'Date: '+fmtDateLong(inv.issue),'',
     'Billed To: '+inv.client+(inv.email?' <'+inv.email+'>':'')+(inv.addr?', '+inv.addr.replace(/\n/g,', '):''),
     'Billed From: '+BIZ.name+', '+BIZ.sub.replace(/\n/g,', '),'',
-    'Description: '+inv.desc+(inv.svcDate?' — '+fmtDate(inv.svcDate):''),
-    'Qty: '+qty+' × '+fmt$(price),
-    'TOTAL: '+fmt$(total),
+    (items.length>1?'Items:':'Item:')].concat(lines).concat(['',
+    (items.some(it=>it.paid)?'TOTAL DUE: ':'TOTAL: ')+fmt$(total),
     'Due: '+fmtDate(due)+' ('+inv.terms+')','',
     'Payment Methods:',inv.pay||BIZ.pay,'',
-    inv.note||'',BIZ.email+' · '+BIZ.site+' · '+BIZ.phone].join('\n');
+    inv.note||'',BIZ.email+' · '+BIZ.site+' · '+BIZ.phone]).join('\n');
 }
 function copyInvoice(){
   saveInvoice();
@@ -2216,10 +2348,7 @@ function markInvoice(status){
   saveInvoice();
   inv.status=status;
   if(status==='sent'&&!inv.sentAt)inv.sentAt=todayISO();
-  if(status==='paid'){
-    const e=eventById(inv.eventId);
-    if(e){e.paid=true;e.cleared=false}
-  }
+  if(status==='paid')invMarkPaidEvents(inv);
   save();closeOverlays();render();
   if(status==='paid')offerFundCut(inv.amount,inv.client||inv.number);
 }
