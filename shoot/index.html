@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="build" content="20260818-144724">
+<meta name="build" content="20260818-145254">
 <title>Maximum Shella: Shoot Brief</title>
 <style>
  :root{
@@ -225,6 +225,52 @@
  .dock.min{background:transparent;border-top:none;box-shadow:none}
  .end{color:var(--muted);font-size:14px;padding:6px 0 0}
  section[id],article[id]{scroll-margin-top:104px}
+
+ /* ---- desktop: lay it out as a dashboard, not a column ---- */
+ @media(min-width:1000px){
+   .sheet{max-width:1240px;display:grid;grid-template-columns:repeat(12,1fr);
+     column-gap:20px;row-gap:20px;align-items:start;padding:0 30px 80px}
+   .sheet>*{margin:0}
+   .jump{grid-column:1/-1;margin:0 -30px 4px}
+   .mast{grid-column:1/-1}
+   .facts{grid-column:1/-1;margin:0}
+   #sec-contacts{grid-column:1/span 4}
+   #sec-overview{grid-column:5/span 8}
+   #sec-reels{grid-column:1/-1}
+   #sec-ideas{grid-column:1/span 7}
+   #sec-notes{grid-column:8/span 5}
+   #sec-locations{grid-column:1/-1}
+   #sec-locintro{grid-column:1/-1;padding-bottom:4px}
+   .loc{grid-column:span 6}
+   #sec-refs{grid-column:1/span 6}
+   #sec-gear{grid-column:7/span 6}
+   .end{grid-column:1/-1}
+   .toast,.newver{grid-column:1}
+
+   /* small cards get tighter chrome so they do not look half empty */
+   #sec-contacts,#sec-notes,#sec-refs,#sec-gear,#sec-ideas{padding-bottom:18px}
+   #sec-contacts h2.sec,#sec-notes h2.sec,#sec-refs h2.sec,#sec-gear h2.sec{
+     padding:13px 22px 11px;margin-bottom:12px}
+   #sec-contacts .rowlist,#sec-refs .refs,#sec-gear .rowlist,#sec-gear>h3,
+   #sec-notes .composer,#sec-notes .notes,#sec-notes>p{margin-left:22px;margin-right:22px}
+   #sec-contacts .rowlist li{padding:9px 0;font-size:14.5px}
+   #sec-contacts .people .tel{font-size:14px}
+   #sec-contacts .add{margin-top:12px;padding:6px 11px}
+   #sec-notes .cbody{min-height:64px}
+
+   /* two locations across: keep the pictures the hero */
+   .loc .c2{grid-auto-rows:210px}
+   .loc .c3{grid-template-rows:126px 126px}
+   .loc{padding:22px}
+   .loc .lochead{grid-template-columns:52px 1fr;gap:0 14px;margin-bottom:16px}
+   .loc .num{font-size:32px}
+   .loc h3{font-size:21px}
+   .loctext{max-width:none}
+ }
+ @media(min-width:1000px) and (max-width:1140px){
+   #sec-contacts{grid-column:1/span 5}
+   #sec-overview{grid-column:6/span 7}
+ }
 
  /* ---- mobile ---- */
  @media(max-width:640px){
@@ -664,7 +710,7 @@ window.addEventListener('load', () => { pinTop(); [200,600,1200].forEach(t => se
 
 /* ---------- self-update check ---------- */
 (() => {
-  const BUILD = '20260818-144724';
+  const BUILD = '20260818-145254';
   const meta = document.querySelector('meta[name="build"]');
   if(meta) meta.content = BUILD;
 
