@@ -304,39 +304,44 @@
   .modalfoot .spacer{flex:1}
 
   /* invoice sheet */
-  .invlayout{display:grid;grid-template-columns:340px 1fr;gap:20px}
-  @media (max-width:860px){.invlayout{grid-template-columns:1fr}}
+  .invlayout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px}
+  @media (max-width:860px){.invlayout{grid-template-columns:minmax(0,1fr)}}
+  #invPreview{min-width:0;overflow:hidden}
   /* invoice sheet — MATSU dark letterhead */
-  .invsheet{background:#1A1A1A;color:#F2F2F0;border-radius:8px;padding:36px 38px 0;font-size:13.5px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
-  .invsheet .top{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
-  .invsheet .brand{font-weight:800;font-size:36px;letter-spacing:.03em;color:#fff;line-height:1}
-  .invsheet .brandsub{color:#E5484D;font-size:15px;margin-top:4px}
+  .sheetscale{overflow:hidden}
+  .invsheet{width:816px;min-height:1056px;display:flex;flex-direction:column;
+    background:#1A1A1A;color:#F2F2F0;border-radius:8px;padding:52px 54px 0;font-size:12.5px;line-height:1.45;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
+  .invsheet .top{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;flex-wrap:nowrap}
+  .invsheet .top>div:last-child{margin-left:auto;flex:none;text-align:right}
+  .invsheet .brand{font-weight:800;font-size:33px;letter-spacing:.03em;color:#fff;line-height:1}
+  .invsheet .brandsub{color:#E5484D;font-size:14px;margin-top:4px}
   .invsheet .invnum{text-align:right;font-weight:800;font-size:15px;color:#fff}
   .invsheet .invdate{text-align:right;margin-top:8px}
   .invsheet .invdate .l{font-weight:800;color:#fff}
   .invsheet .invdate .v{color:#D6D6D2;font-size:12.5px}
-  .invsheet .parties{display:flex;justify-content:space-between;gap:30px;margin:30px 0 22px;flex-wrap:wrap}
+  .invsheet .parties{display:flex;justify-content:space-between;gap:30px;margin:34px 0 20px;flex-wrap:wrap}
   .invsheet .party .lbl{color:#C8C8C4;font-size:13.5px;margin-bottom:5px}
   .invsheet .party .nm{font-weight:800;font-size:16.5px;color:#fff}
   .invsheet .party .ln{color:#E2E2DE;font-size:13px;white-space:pre-line}
-  .invsheet table{font-size:13px;margin-top:4px}
-  .invsheet th{background:#fff;color:#161616;font-weight:800;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:11px 12px;text-align:left;border:none}
+  .invsheet table{font-size:12px;margin-top:4px;width:100%;border-collapse:collapse}
+  .invsheet th{background:#fff;color:#161616;font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:10px 12px;text-align:left;border:none}
   .invsheet th:nth-child(2),.invsheet td:nth-child(2){text-align:center}
   .invsheet th:nth-child(3),.invsheet td:nth-child(3),.invsheet th:nth-child(4),.invsheet td:nth-child(4){text-align:right}
-  .invsheet td{border-bottom:1px solid rgba(255,255,255,.35);padding:12px;color:#EDEDEB}
+  .invsheet td{border-bottom:1px solid rgba(255,255,255,.35);padding:10px 12px;color:#EDEDEB;vertical-align:top}
   .invsheet tr.freeline td{color:#BDBDB9}
   .invsheet tr.freeline td:last-child{color:#7FD1A8;font-weight:800;letter-spacing:.04em}
   .invsheet .totbox{display:flex;justify-content:flex-end;margin-top:0}
   .invsheet .totbox i{font-style:normal;background:#fff;color:#161616;font-weight:800;font-size:16px;padding:11px 18px;display:flex;gap:36px}
   .invsheet .terms{margin-top:16px;color:#9A9A96;font-size:11.5px;white-space:pre-line}
-  .invsheet .bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-top:34px;flex-wrap:wrap}
+  .invsheet .bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-top:auto;padding-top:34px;flex-wrap:wrap}
   .invsheet .pay .h{font-weight:800;font-size:15px;color:#fff;margin-bottom:4px}
   .invsheet .pay .v{color:#D6D6D2;font-size:13px;white-space:pre-line}
   .invsheet .sig{text-align:center}
   .invsheet .sig img{height:72px;display:block;margin:0 auto 2px}
   .invsheet .sig .nm{font-weight:800;font-size:16px;color:#fff}
   .invsheet .sig .rl{color:#C8C8C4;font-size:12.5px}
-  .invsheet .footbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#0E0E0E;margin:28px -38px 0;padding:15px 38px;font-weight:700;font-size:12.5px;color:#fff}
+  .invsheet .footbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#0E0E0E;margin:28px -54px 0;padding:15px 54px;font-weight:700;font-size:12px;color:#fff}
   .missing{outline:2px solid var(--owed);outline-offset:1px;border-radius:4px}
 
   /* ── bottom tabs (spreadsheet style) ── */
@@ -347,11 +352,12 @@
   .tab.active{background:var(--bg);color:var(--accent);border-color:var(--line);border-top:2px solid var(--bg);margin-top:-2px}
   .tab .badge{position:absolute;top:4px;right:calc(50% - 22px);background:var(--urgent);color:#fff;font-size:9.5px;font-weight:800;min-width:15px;height:15px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 4px}
 
+  @page{size:letter;margin:0}
   @media print{
     body>*{display:none !important}
     body{padding:0;background:#fff}
     #printhost{display:block !important}
-    #printhost .invsheet{border:none;border-radius:0;padding:10mm 6mm}
+    #printhost .invsheet{border:none;border-radius:0;transform:none !important;width:816px;min-height:1056px}
   }
   #printhost{display:none}
 </style>
@@ -861,6 +867,14 @@ function migrate(){
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
   }
+  // patch 28 (2026-08-18): invoice numbers carry the year — ES-0710 would collide in 2027
+  if(!state.patch28){
+    state.patch28=true;
+    state.invoices.forEach(i=>{
+      const yy=(i.svcDate||i.issue||'2026-01-01').slice(2,4);
+      if(!new RegExp('-'+yy+'$').test(i.number))i.number=i.number+'-'+yy;
+    });
+  }
   // patch 27 (2026-08-18): the missing SF show, and Hoang's real billing entity
   if(!state.patch27){
     state.patch27=true;
@@ -1240,8 +1254,10 @@ function invNumberFor(client,svcDate){
   let code=(words.length>1?words.map(w=>w[0]).join(''):(words[0]||'INV'));
   code=code.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8)||'INV';
   const mmdd=svcDate?svcDate.slice(5,7)+svcDate.slice(8,10):'0000';
-  let n=code+'-'+mmdd,i=2;
-  while(state.invoices.some(x=>x.number===n))n=code+'-'+mmdd+'-'+(i++);
+  const yy=(svcDate||todayISO()).slice(2,4);
+  const base=code+'-'+mmdd+'-'+yy;
+  let n=base,i=2;
+  while(state.invoices.some(x=>x.number===n))n=base+'-'+(i++);
   return n;
 }
 function ensureInvoices(){
@@ -2264,11 +2280,22 @@ function invFromForm(){
     pay:$('iPay').value.trim(),note:$('iNote').value.trim()
   };
 }
+/* The sheet is always a full letter page; the preview just shrinks it to fit,
+   so what he sees on screen is exactly the proportions that come out of the PDF. */
+function fitSheet(host){
+  const sheet=host.querySelector('.invsheet');if(!sheet)return;
+  const s=Math.min(1,(host.clientWidth||816)/816);
+  sheet.style.transform='scale('+s+')';
+  sheet.style.transformOrigin='top left';
+  host.style.height=Math.ceil(sheet.offsetHeight*s)+'px';
+}
+window.addEventListener('resize',()=>{const h=$('invPreview');if(h&&h.firstChild)fitSheet(h)});
 function invFormChanged(){
   const inv=invById(editingInvId);if(!inv)return;
   const d=Object.assign({},inv,invFromForm());
   d.items=editingItems;
   $('invPreview').innerHTML=invoiceSheetHTML(d);
+  fitSheet($('invPreview'));
   $('iEmail').classList.toggle('missing',!d.email);
 }
 function fmtDateLong(iso){if(!iso)return'—';const[y,m,d]=iso.split('-').map(Number);const dt=new Date(y,m-1,d);return d+' '+dt.toLocaleDateString('en-US',{month:'long'})+' '+y}
