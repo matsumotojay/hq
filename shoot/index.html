@@ -19,18 +19,13 @@
    font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
  .sheet{max-width:900px;margin:0 auto;padding:20px 26px 96px}
 
- /* sync bar */
- .bar{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:1px solid var(--rule);
-   display:flex;align-items:center;gap:12px;padding:10px 0;margin-bottom:26px;flex-wrap:wrap}
- .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
- .dot.on{background:var(--ok)} .dot.err{background:var(--accent)}
- .status{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;letter-spacing:.06em;
-   color:var(--muted)}
- .whobox{margin-left:auto;display:flex;align-items:center;gap:7px}
- .whobox label{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.13em;
-   text-transform:uppercase;color:var(--muted)}
- .whobox input{background:var(--panel);border:1px solid var(--rule);border-radius:3px;color:var(--ink);
-   padding:5px 9px;font:inherit;font-size:13.5px;width:120px}
+ .warn{background:color-mix(in srgb,var(--accent) 12%,var(--paper));border:1px solid var(--accent);
+   border-radius:4px;color:var(--ink);padding:10px 14px;margin:14px 0 20px;font-size:14.5px}
+ .toast{position:fixed;right:18px;bottom:18px;z-index:80;background:var(--ink);color:var(--paper);
+   font-family:ui-monospace,Menlo,monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;
+   padding:8px 14px;border-radius:4px;opacity:0;transform:translateY(6px);
+   transition:opacity .18s,transform .18s;pointer-events:none}
+ .toast.show{opacity:.94;transform:none}
 
  .mast{border-bottom:2px solid var(--ink);padding-bottom:20px}
  .slug{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.2em;
@@ -147,12 +142,9 @@
 </head>
 <body>
 <div class="sheet">
+ <div class="toast" id="toast"></div>
 
- <div class="bar">
-  <span class="dot" id="dot"></span><span class="status" id="status">connecting</span>
-  <span class="hint">everything here is editable</span>
-  <span class="whobox"><label for="who">You are</label><input id="who" placeholder="name"></span>
- </div>
+ <div class="warn" id="warn" hidden></div>
 
  <header class="mast">
   <p class="slug">Content shoot &middot; production brief</p>
@@ -226,11 +218,13 @@
 
  <section>
   <h2 class="sec">Reference docs</h2>
-  <ul class="refs"><li contenteditable data-k="refdocs">
-   <a href="https://docs.google.com/document/d/1e8LViafW5qCYlzCr1B-uQzjQLok3X3x2Imkg0s5LaY8/edit">Content ideas doc</a>
-   has all seven reel concepts plus the replacement options.
-   <a href="https://on.soundcloud.com/oftDKzNoyjuQ8z9DLi">Maximum Shela</a> is the track.
-   The visual reference for each reel is in the table above.</li></ul>
+  <ul class="refs" contenteditable data-k="refdocs">
+   <li><a href="https://docs.google.com/document/d/1e8LViafW5qCYlzCr1B-uQzjQLok3X3x2Imkg0s5LaY8/edit">Content ideas doc</a>
+    &nbsp;All seven reel concepts, plus the replacement options.</li>
+   <li><a href="https://on.soundcloud.com/oftDKzNoyjuQ8z9DLi">Maximum Shela</a>
+    &nbsp;The track, feat. Bass Ventura.</li>
+   <li>The visual reference for each reel is in the Ref column above.</li>
+  </ul>
  </section>
 
  <section>
@@ -317,7 +311,6 @@ import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection }
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const $ = id => document.getElementById(id);
-const dot = $('dot'), status = $('status');
 let db = null, ready = false;
 const cache = {};              // key -> value from cloud
 let localEdit = null;          // element currently being typed in
@@ -357,11 +350,22 @@ const SEED = {
 /* ---------- helpers ---------- */
 const uid = () => Math.random().toString(36).slice(2,9);
 const esc = s => (s||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function setStatus(t, cls){ status.textContent = t; dot.className = 'dot' + (cls?' '+cls:''); }
+let toastTimer;
+function toast(msg){
+  const el = $('toast'); if(!el) return;
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 1500);
+}
+function warn(msg){
+  const el = $('warn'); if(!el) return;
+  if(msg){ el.textContent = msg; el.hidden = false; } else { el.hidden = true; }
+}
 function save(key, val){
   cache[key] = val;
   if(!db){ localStorage.setItem('shoot:'+key, JSON.stringify(val)); return; }
-  setDoc(doc(db, COL, key), {v: JSON.stringify(val), t: Date.now()}).catch(e => setStatus('save failed','err'));
+  setDoc(doc(db, COL, key), {v: JSON.stringify(val), t: Date.now()})
+    .then(() => toast('saved'))
+    .catch(() => warn('Not saving to the shared copy yet. Your changes are on this device only.'));
 }
 function del(key){
   delete cache[key];
@@ -417,7 +421,7 @@ function renderList(name){
       <td class="act"><button class="x" data-del="${name}.${i}" title="remove">&times;</button></td></tr>`).join('');
   } else if(name === 'notes'){
     host.innerHTML = arr.length ? arr.map((it,i) => `<div class="note-item"><div>
-      <div class="note-head">${esc(it.who||'someone')} &middot; ${esc(it.when||'')}</div>
+      <div class="note-head">${fieldHTML(it.who, name+'.'+i+'.who','')} &middot; ${esc(it.when||'')}</div>
       <div class="note-body">${fieldHTML(it.text, name+'.'+i+'.text','')}</div></div>
       <button class="x" data-del="${name}.${i}" title="remove">&times;</button></div>`).join('')
       : '<p class="note-empty">Nothing yet. Add anything you think of.</p>';
@@ -452,7 +456,7 @@ document.addEventListener('click', e => {
     if(name === 'contacts') arr.push({name:'Name', role:'role', tel:'000-000-0000'});
     else if(name === 'reels') arr.push({n:String(arr.length+1).padStart(2,'0'), title:'New reel', desc:'What it is.', due:'TBC', hot:false, ref:''});
     else if(name === 'notes'){
-      const who = ($('who').value || '').trim() || 'someone';
+      const who = 'Name';
       const when = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
       arr.unshift({who, when, text:'', id:uid()});
     }
@@ -478,7 +482,7 @@ try {
   const app = initializeApp(CFG);
   db = getFirestore(app);
   signInAnonymously(getAuth(app)).then(() => {
-    setStatus('live', 'on');
+    warn('');
     onSnapshot(collection(db, COL), snap => {
       snap.docChanges().forEach(ch => {
         const k = ch.doc.id;
@@ -486,9 +490,9 @@ try {
         try { cache[k] = JSON.parse(ch.doc.data().v); } catch(e){}
       });
       if(!ready){ ready = true; seedIfEmpty(); } else renderAll();
-    }, err => setStatus('sync blocked', 'err'));
-  }).catch(() => { setStatus('offline, local only', 'err'); loadLocal(); });
-} catch(e){ setStatus('offline, local only', 'err'); loadLocal(); }
+    }, () => warn('Not saving to the shared copy yet. Your changes are on this device only.'));
+  }).catch(() => { warn('Working offline. Changes are saved on this device only.'); loadLocal(); });
+} catch(e){ warn('Working offline. Changes are saved on this device only.'); loadLocal(); }
 
 function loadLocal(){
   for(let i=0;i<localStorage.length;i++){
@@ -497,10 +501,8 @@ function loadLocal(){
   }
   ready = true; seedIfEmpty();
 }
-setTimeout(() => { if(!ready){ setStatus('offline, local only','err'); loadLocal(); } }, 6000);
+setTimeout(() => { if(!ready){ warn('Working offline. Changes are saved on this device only.'); loadLocal(); } }, 6000);
 
-$('who').value = localStorage.getItem('shoot:who') || '';
-$('who').addEventListener('input', e => localStorage.setItem('shoot:who', e.target.value));
 </script>
 </body>
 </html>
