@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="build" content="20260818-144152">
+<meta name="build" content="20260818-144724">
 <title>Maximum Shella: Shoot Brief</title>
 <style>
  :root{
@@ -217,7 +217,7 @@
    border-top:1px solid var(--line);box-shadow:0 -4px 26px rgba(0,0,0,.5)}
  .dock iframe{display:block;width:100%;height:120px;border:0}
  .dock.min iframe{display:none}
- .dtoggle{position:absolute;right:12px;top:-28px;background:var(--card);border:1px solid var(--line);
+ .dtoggle{position:absolute;right:12px;top:-26px;background:var(--card);border:1px solid var(--line);
    border-bottom:none;border-radius:6px 6px 0 0;color:var(--muted);cursor:pointer;
    font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
    padding:6px 13px}
@@ -264,9 +264,10 @@
    .c3 .tall{grid-row:auto}
    .collage{gap:5px;margin-bottom:14px}
    p{font-size:16px}
-   .dock iframe{height:110px}
-   body{padding-bottom:150px}
-   .newver,.toast{right:12px;bottom:172px}
+   .dock iframe{height:58px}
+   body{padding-bottom:92px}
+   .newver,.toast{bottom:112px}
+   .newver,.toast{right:12px}
  }
 </style>
 </head>
@@ -663,7 +664,7 @@ window.addEventListener('load', () => { pinTop(); [200,600,1200].forEach(t => se
 
 /* ---------- self-update check ---------- */
 (() => {
-  const BUILD = '20260818-144152';
+  const BUILD = '20260818-144724';
   const meta = document.querySelector('meta[name="build"]');
   if(meta) meta.content = BUILD;
 
@@ -708,13 +709,14 @@ window.addEventListener('load', () => { pinTop(); [200,600,1200].forEach(t => se
   let widget=null, playing=false;
 
   if(localStorage.getItem(MIN)==='1'){ dock.classList.add('min'); tog.textContent='Show player';
-    tog.setAttribute('aria-expanded','false'); document.body.style.paddingBottom='60px'; }
+    tog.setAttribute('aria-expanded','false'); document.body.style.paddingBottom='46px'; }
 
   tog.addEventListener('click', () => {
     const min = dock.classList.toggle('min');
     tog.textContent = min ? 'Show player' : 'Hide player';
     tog.setAttribute('aria-expanded', String(!min));
-    document.body.style.paddingBottom = min ? '60px' : '170px';
+    const full = window.innerWidth <= 640 ? '92px' : '170px';
+    document.body.style.paddingBottom = min ? '46px' : full;
     localStorage.setItem(MIN, min ? '1' : '0');
   });
 
@@ -728,21 +730,16 @@ window.addEventListener('load', () => { pinTop(); [200,600,1200].forEach(t => se
     const start = () => {
     widget=SC.Widget(frame);
     widget.bind(SC.Widget.Events.READY,()=>{
-      widget.setVolume(18);                                  // starts quiet
-      if(localStorage.getItem(KEY)!=='off') widget.play();   // browsers usually block this
+      widget.setVolume(18);                                  // quiet if they hit play
     });
-    widget.bind(SC.Widget.Events.PLAY, ()=>{ playing=true; localStorage.removeItem(KEY); });
-    widget.bind(SC.Widget.Events.PAUSE,()=>{ playing=false; localStorage.setItem(KEY,'off'); });
+    widget.bind(SC.Widget.Events.PLAY, ()=>{ playing=true; });
+    widget.bind(SC.Widget.Events.PAUSE,()=>{ playing=false; });
     };
     const waitForSrc = () => frame.src ? start() : setTimeout(waitForSrc, 200);
     waitForSrc();
   };
   document.head.appendChild(sc);
 
-  // browsers refuse audio before you interact, so start on the first click anywhere
-  const kick=()=>{ if(widget&&!playing&&localStorage.getItem(KEY)!=='off'){
-    widget.setVolume(18); widget.play(); } };
-  document.addEventListener('pointerdown', kick, {once:true});
 })();
 
 /* ---------- links inside editable regions still open ---------- */
@@ -842,7 +839,7 @@ setTimeout(() => { if(!ready){ warn('Working offline. Changes are saved on this 
 <div class="dock" id="dock">
  <button class="dtoggle" id="dtoggle" aria-expanded="true">Hide player</button>
  <iframe id="scframe" title="Maximum Shella" allow="autoplay" scrolling="no" frameborder="no"
-  data-src="https://w.soundcloud.com/player/?url=https%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F2259032957&secret_token=s-ZvcfEAvGGnR&color=%23B32438&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&show_artwork=true&visual=false"></iframe>
+  data-src="https://w.soundcloud.com/player/?url=https%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F2259032957&secret_token=s-ZvcfEAvGGnR&color=%23B32438&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&show_artwork=true&visual=false"></iframe>
 </div>
 </body>
 </html>
