@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="build" content="20260818-145254">
+<meta name="build" content="20260818-150416">
 <title>Maximum Shella: Shoot Brief</title>
 <style>
  :root{
@@ -705,12 +705,23 @@ document.addEventListener('click', e => {
 /* ---------- always open at the top ---------- */
 if('scrollRestoration' in history) history.scrollRestoration = 'manual';
 function pinTop(){ if(!location.hash) window.scrollTo(0, 0); }
+function pinHard(){ pinTop(); [60,200,450,900,1500,2200].forEach(t => setTimeout(pinTop, t)); }
 document.addEventListener('DOMContentLoaded', pinTop);
-window.addEventListener('load', () => { pinTop(); [200,600,1200].forEach(t => setTimeout(pinTop, t)); });
+window.addEventListener('load', pinHard);
+// iOS Safari restores a tab's old scroll position on reopen and on back/forward cache
+window.addEventListener('pageshow', pinHard);
+// and once more if the tab was in the background when it restored
+document.addEventListener('visibilitychange', () => { if(!document.hidden && !location.hash) pinTop(); });
+// after a self-update reload, land at the top and tidy the ?v= off the URL
+if(sessionStorage.getItem('shoot:top') === '1'){
+  sessionStorage.removeItem('shoot:top');
+  pinHard();
+  if(location.search) history.replaceState(null, '', location.pathname);
+}
 
 /* ---------- self-update check ---------- */
 (() => {
-  const BUILD = '20260818-145254';
+  const BUILD = '20260818-150416';
   const meta = document.querySelector('meta[name="build"]');
   if(meta) meta.content = BUILD;
 
