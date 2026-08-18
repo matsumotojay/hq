@@ -263,6 +263,23 @@
   .status.draft{background:var(--owed-soft);color:var(--owed)}
   .status.sent{background:var(--accent-soft);color:var(--accent-ink)}
   .status.paid{background:var(--good-soft);color:var(--good)}
+  .status.overdue{background:var(--urgent-soft);color:var(--urgent)}
+
+  /* ── collections desk ────────────────── */
+  .collect{padding:14px 16px;margin-bottom:10px;border-left:3px solid var(--owed)}
+  .collect.waiting{border-left-color:var(--accent)}
+  .collect.late{border-left-color:var(--urgent)}
+  .collect .chead{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .collect .cname{font-size:15.5px;font-weight:700}
+  .collect .camt{margin-left:auto;font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .collect .cline{display:flex;gap:10px;align-items:baseline;font-size:13px;color:var(--ink2);padding:5px 0;border-top:1px solid var(--line);margin-top:7px}
+  .collect .cline .n{font-weight:600;color:var(--ink)}
+  .collect .cline .d{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .collect .cmail{display:flex;gap:7px;align-items:center;margin-top:10px}
+  .collect .cmail input{font-size:13px;padding:5px 9px}
+  .collect .cact{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+  .collect .cwhy{font-size:12.5px;color:var(--ink3);margin-top:7px}
+  .collect .cwhy b{color:var(--urgent)}
 
   /* ── modal ───────────────────────────── */
   .overlay{position:fixed;inset:0;background:rgba(15,18,20,.45);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;z-index:50;overflow-y:auto}
@@ -348,6 +365,7 @@
 
   <!-- ═══════════ TODAY ═══════════ -->
   <section class="view active" id="view-today">
+    <div id="moneyNudge"></div>
     <div class="today-grid">
       <div>
         <div class="listhead">
@@ -440,7 +458,10 @@
 
   <!-- ═══════════ INVOICES ═══════════ -->
   <section class="view" id="view-invoices">
-    <div id="invNudges" style="margin-top:18px"></div>
+    <div class="monthstrip" id="collectStrip" style="margin-top:18px"></div>
+    <div class="listhead"><h2>Get paid</h2><span id="collectHint" style="font-size:12.5px;color:var(--ink3)"></span></div>
+    <div id="collectList"></div>
+    <div id="invNudges" style="margin-top:14px"></div>
     <h2>All invoices</h2>
     <div class="card tablewrap"><table id="invTable"></table></div>
     <p class="nonbiz">Invoices are numbered sequentially, itemized, dated, and default to Net 15 — standard freelance practice. Check the payment-methods line before first send.</p>
@@ -698,7 +719,8 @@ function seed(){
     ],
     invoices:[],
     wfund:[],
-    outreach:[]
+    outreach:[],
+    contacts:{}
   };
 }
 function load(){
@@ -713,6 +735,13 @@ function migrate(){
     if(e.cleared===undefined)e.cleared=!!e.paid;   // old paid gigs start already cleared
     if(e.invoiceDismissed===undefined)e.invoiceDismissed=false;
   });
+  /* collections: when an invoice actually went out, and every time it was chased.
+     No patch flag — these are plain defaults, safe to re-run on every device. */
+  state.invoices.forEach(i=>{
+    if(i.sentAt===undefined)i.sentAt=(i.status==='sent'||i.status==='paid')?i.issue:'';
+    if(!Array.isArray(i.chases))i.chases=[];
+  });
+  state.contacts=state.contacts||{};
   // patch 1 (2026-08-13): two Aug 7 gigs Jay never logged
   if(!state.patch1){
     state.patch1=true;
@@ -996,7 +1025,7 @@ function snapshotDocs(){
   state.invoices.forEach(i=>{m['i.'+i.id]=JSON.stringify(i)});
   (state.wfund||[]).forEach(w=>{m['w.'+w.id]=JSON.stringify(w)});
   (state.outreach||[]).forEach(o=>{m['o.'+o.id]=JSON.stringify(o)});
-  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq};
+  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{}};
   Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch')meta[k]=state[k]});
   m['meta']=JSON.stringify(meta);
   return m;
@@ -1032,6 +1061,7 @@ window.__adoptCloud=function(cloud){
     state.invoices=invoices.sort((a,b)=>String(a.number).localeCompare(String(b.number)));
     state.top3=meta.top3||[null,null,null];
     state.invSeq=meta.invSeq||0;
+    state.contacts=meta.contacts||state.contacts||{};
     /* The cloud is authoritative on which patches have actually LANDED. A flag set locally
        before adoption must not survive it — otherwise the patch is marked done while the
        data it wrote gets replaced by the cloud copy, and it never reaches any device. */
@@ -1125,7 +1155,7 @@ function ensureInvoices(){
           number:invNumberFor(e.client,svcDate),
           eventId:e.id,
           client:e.client||'',
-          email:'',addr:'',
+          email:contactFor(e.client||''),addr:'',
           desc:e.title.replace(/^[^—]*—\s*/,'').trim()||e.title,
           svcDate:e.date||'',
           qty:1,price:e.gross,amount:e.gross,
@@ -1134,6 +1164,7 @@ function ensureInvoices(){
           pay:BIZ.pay,
           note:BIZ.note,
           status:'draft',
+          sentAt:'',chases:[],
           fresh:true
         };
         state.invoices.push(inv);
@@ -1143,7 +1174,8 @@ function ensureInvoices(){
   });
   save();
 }
-function dueDate(inv){const days=inv.terms==='Net 30'?30:(inv.terms==='Net 15'?15:0);return addDays(inv.issue,days)}
+/* Net 15 starts the day it LEAVES — a draft sitting on your laptop was never "due". */
+function dueDate(inv){const days=inv.terms==='Net 30'?30:(inv.terms==='Net 15'?15:0);return addDays(inv.sentAt||inv.issue,days)}
 
 /* ─────────────────────── money math ─────────────────────── */
 function moneyByMonth(){
@@ -1477,8 +1509,9 @@ function togglePaid(id,checked){
   const e=eventById(id);if(!e)return;
   e.paid=checked;
   if(checked){e.cleared=false;if(e.invoiceId){const inv=invById(e.invoiceId);if(inv)inv.status='paid'}}
-  else{if(e.invoiceId){const inv=invById(e.invoiceId);if(inv&&inv.status==='paid')inv.status='draft'}}
+  else{if(e.invoiceId){const inv=invById(e.invoiceId);if(inv&&inv.status==='paid'){inv.status=inv.sentAt?'sent':'draft'}}}
   save();render();
+  if(checked)offerFundCut(net(e),e.client||e.title);
 }
 function clearPaid(){
   state.events.forEach(e=>{if(e.gig&&e.paid&&!e.cleared)e.cleared=true});
@@ -1772,34 +1805,266 @@ function sendMail(){
 }
 
 /* ─────────────────────── INVOICES render ─────────────────────── */
+
+/* ═══════════════════ COLLECTIONS DESK ═══════════════════
+   One card per client, not per invoice: Electrik Seoul's two shows are $1,700 in
+   ONE email, not two. A draft that never left the laptop is not "overdue" — the
+   Net-15 clock starts at sentAt, so the desk separates three different problems:
+   money you haven't billed, money you're waiting on, and money that's late.      */
+function contactFor(client){return (state.contacts||{})[client]||''}
+function setContact(client,email){
+  state.contacts=state.contacts||{};
+  email=(email||'').trim();
+  if(email)state.contacts[client]=email; else delete state.contacts[client];
+  state.invoices.forEach(i=>{if(i.client===client&&i.status!=='paid')i.email=email});
+  save();render();
+}
+function daysFrom(iso){return Math.round((new Date(todayISO())-new Date(iso))/864e5)}
+function overdueDays(inv){
+  if(inv.status!=='sent'||!inv.sentAt)return 0;
+  return Math.max(0,daysFrom(dueDate(inv)));
+}
+function invsFor(client){return state.invoices.filter(i=>i.client===client&&i.status!=='paid')}
+function collectGroups(){
+  const map={};
+  state.invoices.forEach(i=>{
+    if(i.status==='paid')return;
+    const k=i.client||'(no client)';
+    if(!map[k])map[k]={client:k,invs:[],total:0};
+    map[k].invs.push(i);map[k].total+=(i.amount||0);
+  });
+  return Object.keys(map).map(k=>{
+    const g=map[k];
+    g.unsent=g.invs.filter(i=>i.status!=='sent');
+    g.sent=g.invs.filter(i=>i.status==='sent');
+    g.late=g.sent.filter(i=>overdueDays(i)>0);
+    g.overdue=g.sent.reduce((m,i)=>Math.max(m,overdueDays(i)),0);
+    g.lateAmt=g.late.reduce((t,i)=>t+(i.amount||0),0);
+    g.email=g.invs.map(i=>i.email).filter(Boolean)[0]||contactFor(g.client);
+    g.chased=g.sent.reduce((m,i)=>Math.max(m,(i.chases||[]).length),0);
+    g.lastChase=g.sent.map(i=>(i.chases||[]).slice(-1)[0]).filter(Boolean).sort().pop()||'';
+    return g;
+  }).sort((a,b)=>(b.overdue-a.overdue)||(b.unsent.length-a.unsent.length)||(b.total-a.total));
+}
+function collectTotals(){
+  let unsent=0,waiting=0,late=0;
+  state.invoices.forEach(i=>{
+    if(i.status==='paid')return;
+    const a=i.amount||0;
+    if(i.status!=='sent')unsent+=a;
+    else if(overdueDays(i)>0)late+=a; else waiting+=a;
+  });
+  return {unsent,waiting,late,all:unsent+waiting+late};
+}
+
+/* ─── the emails ───────────────────────────────────────── */
+function invLine(i){
+  return i.number+' — '+i.desc+(i.svcDate?' ('+fmtDate(i.svcDate)+')':'')+' — '+fmt$(i.amount);
+}
+function sendGroupText(g){
+  const list=g.unsent.map(invLine).join('\n');
+  const one=g.unsent.length===1;
+  const tot=g.unsent.reduce((t,i)=>t+(i.amount||0),0);
+  return 'Hi '+g.client+',\n\n'
+    +'Here '+(one?'is the invoice':'are the invoices')+' for the work so far:\n\n'+list+'\n'
+    +(one?'':'\nTotal: '+fmt$(tot)+'\n')
+    +'\nPayment details are on '+(one?'the invoice':'each invoice')+' — Venmo or Zelle is easiest.\n'
+    +'\nThanks,\nJay\n\n'
+    +'────────────────\n\n'
+    +g.unsent.map(invoiceText).join('\n\n────────────────\n\n');
+}
+function chaseGroupText(g){
+  const inv=g.late.length?g.late:g.sent;
+  const list=inv.map(i=>invLine(i)+' — due '+fmtDate(dueDate(i))).join('\n');
+  const tot=inv.reduce((t,i)=>t+(i.amount||0),0);
+  const one=inv.length===1;
+  const n=g.overdue, round=g.chased;
+  let msg;
+  if(n<=0){
+    msg='Just making sure '+(one?'this landed':'these landed')+' — no rush, '+(one?'it is':'they are')+' not due yet.';
+  }else if(round===0){
+    msg='Quick nudge — '+(one?'this one is':'these are')+' '+n+' day'+(n===1?'':'s')+' past due. Happy to resend if '+(one?'it':'they')+' got buried.';
+  }else if(round===1){
+    msg='Following up again — still open at '+n+' days past due. Can you let me know when payment goes out?';
+  }else{
+    msg=(one?'This is':'These are')+' now '+n+' days past due and I haven’t seen payment. Can you give me a date this week?';
+  }
+  return 'Hi '+g.client+',\n\n'+msg+'\n\n'+list+'\n'
+    +(one?'':'\nTotal outstanding: '+fmt$(tot)+'\n')
+    +'\nThanks,\nJay';
+}
+function mailTo(email,subject,body){
+  location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+}
+function groupByName(c){return collectGroups().filter(g=>g.client===c)[0]}
+function needEmail(g){
+  if(g.email)return false;
+  toast('Add '+g.client+'’s email first');
+  const el=document.getElementById('em-'+cssId(g.client));if(el)el.focus();
+  return true;
+}
+function cssId(s){return String(s).replace(/[^A-Za-z0-9]/g,'_')}
+
+function sendGroup(client){
+  const g=groupByName(client);if(!g||needEmail(g))return;
+  const nums=g.unsent.map(i=>i.number).join(', ');
+  const tot=g.unsent.reduce((t,i)=>t+(i.amount||0),0);
+  mailTo(g.email,'Invoice'+(g.unsent.length===1?' ':'s ')+nums+' — '+BIZ.name+' — '+fmt$(tot),sendGroupText(g));
+  toast('Mail app opened — tap “Mark sent” once it’s away');
+}
+function copyGroup(client){
+  const g=groupByName(client);if(!g)return;
+  const txt=g.unsent.length?sendGroupText(g):chaseGroupText(g);
+  navigator.clipboard.writeText(txt).then(()=>toast('Copied — paste it anywhere'),()=>toast('Copy failed'));
+}
+function chaseGroup(client){
+  const g=groupByName(client);if(!g||needEmail(g))return;
+  const inv=g.late.length?g.late:g.sent;
+  const nums=inv.map(i=>i.number).join(', ');
+  const tot=inv.reduce((t,i)=>t+(i.amount||0),0);
+  mailTo(g.email,'Following up: '+nums+' — '+fmt$(tot),chaseGroupText(g));
+  inv.forEach(i=>{i.chases=(i.chases||[]).concat(todayISO())});
+  save();render();
+  toast('Logged as chased today');
+}
+function markGroupSent(client){
+  const g=groupByName(client);if(!g)return;
+  g.unsent.forEach(i=>{i.status='sent';i.sentAt=todayISO();i.fresh=false});
+  save();render();
+  toast('Marked sent — Net 15 clock starts today');
+}
+function markGroupPaid(client){
+  const g=groupByName(client);if(!g)return;
+  if(!confirm('Mark all '+fmt$(g.total)+' from '+client+' as paid?'))return;
+  const amt=g.total;
+  g.invs.forEach(i=>{
+    i.status='paid';i.fresh=false;
+    const e=eventById(i.eventId);
+    if(e){e.paid=true;e.cleared=false}
+  });
+  save();render();
+  offerFundCut(amt,client);
+}
+/* Jay's own rule: ~40% of every payment goes straight into the wedding account
+   the moment it lands. Asked here because this is the moment it lands. */
+const FUND_CUT=0.4;
+function offerFundCut(amount,label){
+  amount=parseFloat(amount)||0;
+  if(amount<=0){toast('Marked paid');return}
+  const cut=Math.round(amount*FUND_CUT);
+  if(!confirm(fmt$(amount)+' in from '+label+'.\n\nMove '+fmt$(cut)+' (40%) into the wedding fund?\n\nTransfer it for real in your bank app — this just logs it.'))
+    {toast('Marked paid');return}
+  state.wfund=state.wfund||[];
+  state.wfund.push({id:uid(),date:todayISO(),amount:cut,source:'40% of '+label,note:''});
+  state.wfund.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  save();render();
+  toast(fmt$(cut)+' logged — '+fmt$(fundSaved())+' saved of $20,000');
+}
+function unsendGroup(client){
+  const g=groupByName(client);if(!g)return;
+  g.sent.forEach(i=>{i.status='draft';i.sentAt=''});
+  save();render();
+}
+
+/* ─── the cards ────────────────────────────────────────── */
+function renderCollect(){
+  const host=$('collectList');if(!host)return;
+  const T=collectTotals();
+  $('collectStrip').innerHTML=
+     '<div class="card stat upc"><div class="lbl">Not sent yet</div><div class="val num">'+fmt$(T.unsent)+'</div><div class="sub">you control this</div></div>'
+    +'<div class="card stat"><div class="lbl">Waiting</div><div class="val num">'+fmt$(T.waiting)+'</div><div class="sub">sent, not due yet</div></div>'
+    +'<div class="card stat"><div class="lbl">Overdue</div><div class="val num" style="color:var(--urgent)">'+fmt$(T.late)+'</div><div class="sub">past Net 15</div></div>';
+  const groups=collectGroups();
+  $('collectHint').textContent=groups.length?fmt$(T.all)+' outstanding across '+groups.length+' client'+(groups.length===1?'':'s'):'';
+  if(!groups.length){
+    host.innerHTML='<div class="card" style="padding:16px;color:var(--ink3);font-size:13.5px">Nothing outstanding — every invoice is paid.</div>';
+    return;
+  }
+  host.innerHTML=groups.map(g=>{
+    const cls=g.overdue>0?'late':(g.unsent.length?'':'waiting');
+    const id=cssId(g.client);
+    let h='<div class="card collect '+cls+'">'
+      +'<div class="chead"><span class="cname">'+esc(g.client)+'</span>'
+      +(g.overdue>0?'<span class="status overdue">'+g.overdue+'d overdue</span>':'')
+      +(g.unsent.length?'<span class="status draft">'+g.unsent.length+' not sent</span>':'')
+      +(g.sent.length&&g.overdue<=0?'<span class="status sent">sent</span>':'')
+      +'<span class="camt num">'+fmt$(g.total)+'</span></div>';
+    g.invs.forEach(i=>{
+      const od=overdueDays(i);
+      const when=i.status==='sent'
+        ? (od>0?'<b style="color:var(--urgent)">'+od+'d late</b>':'due '+fmtDate(dueDate(i)))
+        : 'not sent';
+      h+='<div class="cline"><span class="n">'+esc(i.number)+'</span><span class="d">'+esc(i.desc||'—')+(i.svcDate?' · '+fmtDate(i.svcDate):'')+'</span>'
+        +'<span>'+when+'</span><span class="num" style="font-weight:700;color:var(--ink)">'+fmt$(i.amount)+'</span>'
+        +'<button class="btn small" onclick="openInvoice(\''+i.id+'\')">Open</button></div>';
+    });
+    h+='<div class="cmail"><span style="font-size:12.5px;color:var(--ink3);flex:none">✉</span>'
+      +'<input id="em-'+id+'" type="email" placeholder="client email — needed to send" value="'+esc(g.email)+'" '
+      +'onchange="setContact('+JSON.stringify(g.client).replace(/"/g,'&quot;')+',this.value)">'
+      +(g.email?'<span class="chip good" style="flex:none">saved</span>':'')+'</div>';
+    const q=JSON.stringify(g.client).replace(/"/g,'&quot;');
+    h+='<div class="cact">';
+    if(g.unsent.length){
+      h+='<button class="btn primary small" onclick="sendGroup('+q+')">✉ Send '+(g.unsent.length>1?'all '+g.unsent.length:'invoice')+'</button>'
+        +'<button class="btn small" onclick="copyGroup('+q+')">Copy</button>'
+        +'<button class="btn small" onclick="markGroupSent('+q+')">Mark sent ✓</button>';
+    }else if(g.sent.length){
+      h+='<button class="btn '+(g.overdue>0?'primary ':'')+'small" onclick="chaseGroup('+q+')">✉ '+(g.overdue>0?'Send follow-up':'Nudge')+'</button>'
+        +'<button class="btn small" onclick="copyGroup('+q+')">Copy</button>'
+        +'<button class="btn small" onclick="unsendGroup('+q+')">Not sent after all</button>';
+    }
+    h+='<button class="btn small" onclick="markGroupPaid('+q+')">Paid ✓</button></div>';
+    let why='';
+    if(g.unsent.length&&!g.email)why='No email on file — that’s the only thing between you and '+fmt$(g.total)+'.';
+    else if(g.unsent.length)why='Drafted '+daysFrom(g.unsent[0].issue)+' days ago, never sent.';
+    else if(g.overdue>0)why='<b>'+g.overdue+' days past due.</b>'+(g.chased?' Chased '+g.chased+'× — last '+fmtDate(g.lastChase)+'.':' Never chased.');
+    else if(g.sent.length)why='Sent '+daysFrom(g.sent[0].sentAt)+' days ago. Due '+fmtDate(dueDate(g.sent[0]))+'.';
+    if(why)h+='<div class="cwhy">'+why+'</div>';
+    return h+'</div>';
+  }).join('');
+}
+
+function renderMoneyNudge(){
+  const host=$('moneyNudge');if(!host)return;
+  const T=collectTotals();
+  let h='';
+  if(T.late>0){
+    h+='<div class="card nudge" style="border-left-color:var(--urgent);margin-top:14px"><div class="msg">🔴 <b class="num">'+fmt$(T.late)+'</b> is past due. Nobody else is going to chase it.</div>'
+      +'<button class="btn primary small" onclick="showTab(\'invoices\')">Chase it</button></div>';
+  }
+  if(T.unsent>0){
+    h+='<div class="card nudge" style="margin-top:'+(h?'0':'14px')+'"><div class="msg">💸 <b class="num">'+fmt$(T.unsent)+'</b> is sitting in invoices you haven’t sent. Fastest money you’ve got.</div>'
+      +'<button class="btn primary small" onclick="showTab(\'invoices\')">Send them</button></div>';
+  }
+  host.innerHTML=h;
+}
+
 function renderInvoices(){
   const drafts=state.invoices.filter(i=>i.status==='draft');
+  const lateCount=state.invoices.filter(i=>overdueDays(i)>0).length;
   const badge=$('invBadge');
-  badge.style.display=drafts.length?'flex':'none';
-  badge.textContent=drafts.length;
-  // nudges
+  badge.style.display=(drafts.length+lateCount)?'flex':'none';
+  badge.textContent=drafts.length+lateCount;
+  // nudges — the drafts themselves live in the collections cards above
   const nudges=$('invNudges');
   let html='';
-  drafts.forEach(inv=>{
-    html+='<div class="card nudge"><div class="msg">🎬 <b>Gig wrapped — invoice ready:</b> '+esc(inv.client)+' · '+esc(inv.desc)+' · <b class="num">'+fmt$(inv.amount)+'</b></div>'
-      +'<button class="btn small" onclick="invQuickPaid(\''+inv.id+'\')" title="Already got paid — no invoice needed">Paid ✓</button>'
-      +'<button class="btn primary small" onclick="openInvoice(\''+inv.id+'\')">Review & send</button></div>';
-  });
   // TBD gigs that already passed
   state.events.filter(e=>e.gig&&!e.paid&&!(e.gross>0)&&e.date&&e.date<=todayISO()).forEach(e=>{
     html+='<div class="card nudge"><div class="msg">💬 <b>'+esc(e.client)+'</b> gig passed but has no rate yet — add the amount and I’ll draft the invoice.</div>'
       +'<button class="btn small" onclick="openEventModal(\''+e.id+'\')">Add amount</button></div>';
   });
-  nudges.innerHTML=html||'<p style="color:var(--ink3);font-size:13.5px;margin-top:4px">No invoices waiting. New drafts appear here automatically the moment a paid gig’s date passes.</p>';
+  nudges.innerHTML=html;
   // table
   const rows=[...state.invoices].sort((a,b)=>b.number.localeCompare(a.number));
-  $('invTable').innerHTML='<tr><th>Invoice</th><th>Client</th><th>Service</th><th class="r">Amount</th><th>Due</th><th>Status</th><th></th></tr>'
-    +(rows.length?rows.map(i=>'<tr><td><button class="btn small" onclick="openInvoice(\''+i.id+'\')">'+i.number+'</button></td>'
+  $('invTable').innerHTML='<tr><th>Invoice</th><th>Client</th><th>Service</th><th class="r">Amount</th><th>Sent</th><th>Due</th><th>Status</th><th></th></tr>'
+    +(rows.length?rows.map(i=>{const od=overdueDays(i);return '<tr><td><button class="btn small" onclick="openInvoice(\''+i.id+'\')">'+i.number+'</button></td>'
       +'<td><b>'+esc(i.client)+'</b></td><td>'+esc(i.desc)+'</td><td class="r num">'+fmt$(i.amount)+'</td>'
-      +'<td>'+fmtDate(dueDate(i))+'</td><td><span class="status '+i.status+'">'+i.status+'</span></td>'
+      +'<td>'+(i.sentAt?fmtDate(i.sentAt):'<span style="color:var(--ink3)">—</span>')+'</td>'
+      +'<td>'+(i.status==='draft'?'<span style="color:var(--ink3)">on send</span>':fmtDate(dueDate(i)))+'</td>'
+      +'<td>'+(od>0?'<span class="status overdue">'+od+'d late</span>':'<span class="status '+i.status+'">'+i.status+'</span>')+'</td>'
       +'<td style="white-space:nowrap">'+(i.status!=='paid'?'<button class="btn small" onclick="invQuickPaid(\''+i.id+'\')">Paid ✓</button> ':'')
-      +'<button class="iconbtn" title="Delete invoice" onclick="deleteInvoiceById(\''+i.id+'\')">🗑</button></td></tr>').join('')
-      :'<tr><td colspan="7" style="color:var(--ink3)">None yet.</td></tr>');
+      +'<button class="iconbtn" title="Delete invoice" onclick="deleteInvoiceById(\''+i.id+'\')">🗑</button></td></tr>'}).join('')
+      :'<tr><td colspan="8" style="color:var(--ink3)">None yet.</td></tr>');
 }
 
 function invQuickPaid(id){
@@ -1808,6 +2073,7 @@ function invQuickPaid(id){
   const e=eventById(inv.eventId);
   if(e){e.paid=true;e.cleared=false}
   save();render();
+  offerFundCut(inv.amount,inv.client||inv.number);
 }
 function deleteInvoiceById(id){
   const inv=invById(id);if(!inv)return;
@@ -1878,6 +2144,7 @@ function invoiceSheetHTML(inv){
 function saveInvoice(){
   const inv=invById(editingInvId);if(!inv)return;
   Object.assign(inv,invFromForm());
+  if(inv.client&&inv.email){state.contacts=state.contacts||{};state.contacts[inv.client]=inv.email}
   const e=eventById(inv.eventId);
   if(e&&inv.amount!=null){e.gross=inv.amount}
   save();render();invFormChanged();
@@ -1917,11 +2184,13 @@ function markInvoice(status){
   const inv=invById(editingInvId);if(!inv)return;
   saveInvoice();
   inv.status=status;
+  if(status==='sent'&&!inv.sentAt)inv.sentAt=todayISO();
   if(status==='paid'){
     const e=eventById(inv.eventId);
     if(e){e.paid=true;e.cleared=false}
   }
   save();closeOverlays();render();
+  if(status==='paid')offerFundCut(inv.amount,inv.client||inv.number);
 }
 
 /* ─────────────────────── misc ─────────────────────── */
@@ -1931,7 +2200,7 @@ document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeOverlays()});
 
 function render(){
   $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  renderToday();renderCalendar();renderMoney();renderFund();renderOutreach();renderInvoices();
+  renderToday();renderCalendar();renderMoney();renderFund();renderOutreach();renderCollect();renderInvoices();renderMoneyNudge();
 }
 
 load();
