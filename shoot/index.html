@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="build" content="20260818-142742">
+<meta name="build" content="20260818-143356">
 <title>Maximum Shella: Shoot Brief</title>
 <style>
  :root{
@@ -16,7 +16,7 @@
  body{margin:0;background:var(--bg);color:var(--ink);
    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
    font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased;padding-bottom:170px}
- .sheet{max-width:900px;margin:0 auto;padding:0 22px 60px}
+ .sheet{max-width:1060px;margin:0 auto;padding:0 30px 70px}
  a{color:var(--accent)}
 
  /* ---- jump nav ---- */
@@ -30,33 +30,33 @@
  .jump a.here{color:#fff;background:var(--accent);border-color:var(--accent)}
 
  /* ---- masthead ---- */
- .mast{position:relative;padding:16px 0 14px}
- .cover{float:right;width:104px;height:104px;object-fit:cover;border-radius:6px;margin:0 0 10px 18px;
+ .mast{position:relative;padding:30px 0 26px}
+ .cover{float:right;width:150px;height:150px;object-fit:cover;border-radius:8px;margin:0 0 16px 26px;
    box-shadow:0 6px 26px rgba(0,0,0,.5)}
  .slug{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;letter-spacing:.2em;
    text-transform:uppercase;color:var(--accent);margin:0 0 9px}
- h1{font-size:clamp(32px,5.4vw,46px);line-height:1;font-weight:700;letter-spacing:-.03em;margin:0 0 9px}
- .byline{color:var(--ink2);margin:0;font-size:15.5px;max-width:52ch;line-height:1.5}
+ h1{font-size:clamp(34px,5vw,56px);line-height:1;font-weight:700;letter-spacing:-.03em;margin:0 0 13px}
+ .byline{color:var(--ink2);margin:0;font-size:17px;max-width:54ch;line-height:1.55}
 
  /* ---- call sheet strip ---- */
  .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
-   border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0 0 16px}
+   border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0 0 26px}
  @media(max-width:760px){.facts{grid-template-columns:repeat(2,1fr)}}
- .f{background:var(--card);padding:10px 13px}
+ .f{background:var(--card);padding:16px 20px}
  .f dt{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;letter-spacing:.15em;
    text-transform:uppercase;color:var(--muted);margin:0 0 3px}
- .f dd{margin:0;font-size:15.5px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3}
- .f dd em{display:block;font-style:normal;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:1px}
+ .f dd{margin:0;font-size:18px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3}
+ .f dd em{display:block;font-style:normal;font-weight:400;font-size:13.5px;color:var(--muted);margin-top:3px}
 
  /* ---- sections as cards, each with its own colour key ---- */
- section{background:var(--card);border:1px solid var(--line);border-radius:12px;
-   padding:0 0 17px;margin:0 0 12px;overflow:hidden;position:relative}
+ section{background:var(--card);border:1px solid var(--line);border-radius:14px;
+   padding:0 0 26px;margin:0 0 20px;overflow:hidden;position:relative}
  section:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--muted)}
- h2.sec{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;letter-spacing:.18em;
-   text-transform:uppercase;color:var(--ink);margin:0 0 13px;font-weight:600;
-   padding:12px 20px 11px;border-bottom:1px solid var(--line2);background:var(--card2)}
- section>p,section>ul,section>div,section>figure,section>h3,section>button{margin-left:22px;margin-right:22px}
- p{margin:0 0 11px;max-width:66ch;color:var(--ink2)}
+ h2.sec{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.18em;
+   text-transform:uppercase;color:var(--ink);margin:0 0 20px;font-weight:600;
+   padding:16px 28px 14px;border-bottom:1px solid var(--line2);background:var(--card2)}
+ section>p,section>ul,section>div,section>figure,section>h3,section>button{margin-left:28px;margin-right:28px}
+ p{margin:0 0 14px;max-width:68ch;color:var(--ink2)}
  p strong{color:var(--ink);font-weight:600}
  .subhead{font-size:17px;font-weight:700;margin:0 0 10px;color:var(--ink)}
 
@@ -73,9 +73,9 @@
  #sec-locations:before{background:var(--accent)}
 
  /* ---- lists ---- */
- .rowlist{list-style:none;margin:0 22px;padding:0}
- .rowlist li{display:grid;grid-template-columns:180px 1fr 30px;gap:12px;padding:9px 0;
-   border-top:1px solid var(--line2);font-size:15px;color:var(--ink2);align-items:start}
+ .rowlist{list-style:none;margin:0 28px;padding:0}
+ .rowlist li{display:grid;grid-template-columns:200px 1fr 30px;gap:18px;padding:13px 0;
+   border-top:1px solid var(--line2);font-size:15.5px;color:var(--ink2);align-items:start}
  .rowlist li:first-child{border-top:none}
  .rowlist b{color:var(--ink);font-weight:600}
  .people .tel{font-family:ui-monospace,Menlo,monospace;font-size:15px;white-space:nowrap;color:var(--ink)}
@@ -92,7 +92,7 @@
  .add:hover{border-color:var(--accent);color:var(--accent)}
 
  /* ---- deliverables table ---- */
- .scroll{overflow-x:auto;margin:0 22px}
+ .scroll{overflow-x:auto;margin:0 28px}
  table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:560px}
  th{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.14em;
    text-transform:uppercase;color:var(--muted);text-align:left;padding:0 14px 10px 0;
@@ -125,8 +125,8 @@
  .rowlist li.tight>.x{align-self:center}
 
  /* ---- reference docs ---- */
- .refs{list-style:none;margin:0 22px;padding:0}
- .refs li{padding:9px 0;border-top:1px solid var(--line2);font-size:14.5px;color:var(--muted)}
+ .refs{list-style:none;margin:0 28px;padding:0}
+ .refs li{padding:12px 0;border-top:1px solid var(--line2);font-size:15px;color:var(--muted)}
  .refs li:first-child{border-top:none}
  .refs a{font-weight:600}
 
@@ -135,7 +135,7 @@
    border-color:color-mix(in srgb,var(--amber) 26%,var(--line))}
  #sec-notes h2.sec{background:rgba(232,163,61,.09);border-bottom-color:rgba(232,163,61,.22);color:var(--amber)}
  .composer{border:1px solid rgba(232,163,61,.3);border-radius:8px;background:rgba(232,163,61,.05);
-   margin:0 22px 20px;overflow:hidden}
+   margin:0 28px 22px;overflow:hidden}
  .composer:focus-within{border-color:var(--amber)}
  .cbody{padding:15px 17px;min-height:84px;font-size:16px;color:var(--ink);outline:none;
    background:repeating-linear-gradient(to bottom,transparent 0,transparent 27px,rgba(232,163,61,.10) 27px,rgba(232,163,61,.10) 28px)}
@@ -147,7 +147,7 @@
  .post{background:var(--amber);color:#1a1206;border:none;border-radius:5px;padding:9px 17px;cursor:pointer;
    font:inherit;font-size:14px;font-weight:700;white-space:nowrap}
  .post:hover{filter:brightness(1.08)}
- .notes{margin:0 22px}
+ .notes{margin:0 28px}
  .note-item{border-top:1px solid rgba(232,163,61,.18);padding:15px 0;display:grid;
    grid-template-columns:1fr 30px;gap:10px}
  .note-item:first-child{border-top:none}
@@ -157,27 +157,27 @@
  .note-empty{color:var(--muted);font-size:15px;font-style:italic}
 
  /* ---- map ---- */
- .mapfig{margin:0 22px 18px;padding:0}
+ .mapfig{margin:0 28px 20px;padding:0}
  .mapwrap{position:relative;border-radius:8px;overflow:hidden;background:var(--line2)}
  .mapwrap img{display:block;width:100%;height:auto}
  .mapwrap svg{position:absolute;inset:0;width:100%;height:100%}
  .mapfig figcaption{font-size:13px;color:var(--muted);padding-top:10px;
    font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
- .maplink{margin:0 22px 16px}
+ .maplink{margin:0 28px 18px}
  .maplink a{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--accent);color:var(--accent);
    text-decoration:none;border-radius:6px;padding:10px 16px;font-size:14.5px;font-weight:650}
  .maplink a:after{content:"\2197"}
  .maplink a:hover{background:var(--accent);color:#fff}
  .total{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;color:var(--ink2);
-   border-top:1px solid var(--line2);padding-top:14px;margin:0 22px}
+   border-top:1px solid var(--line2);padding-top:16px;margin:0 28px}
  .total b{color:var(--accent)}
 
  /* ---- locations ---- */
- .loc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:0 0 12px}
- .lochead{display:grid;grid-template-columns:58px 1fr;gap:0 16px;align-items:start;margin-bottom:18px}
- .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:clamp(28px,4.6vw,40px);line-height:.86;
+ .loc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 28px;margin:0 0 20px}
+ .lochead{display:grid;grid-template-columns:70px 1fr;gap:0 20px;align-items:start;margin-bottom:22px}
+ .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:clamp(30px,4.4vw,46px);line-height:.86;
    color:var(--accent);font-weight:500;letter-spacing:-.04em}
- .loc h3{font-size:clamp(20px,3vw,25px);line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-.018em}
+ .loc h3{font-size:clamp(21px,2.8vw,28px);line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-.018em}
  .meta{margin:0;font-size:13px;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
  .meta a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
  .meta a:hover{color:var(--accent);border-color:var(--accent)}
@@ -185,8 +185,8 @@
  .collage{display:grid;gap:6px;margin:0 0 18px}
  .collage img{display:block;width:100%;height:100%;object-fit:cover}
  .collage>div{overflow:hidden;background:var(--line2);border-radius:6px;min-height:0}
- .c2{grid-template-columns:1fr 1fr;grid-auto-rows:235px}
- .c3{grid-template-columns:1.4fr 1fr;grid-template-rows:138px 138px}
+ .c2{grid-template-columns:1fr 1fr;grid-auto-rows:310px}
+ .c3{grid-template-columns:1.4fr 1fr;grid-template-rows:182px 182px}
  .c3 .tall{grid-row:span 2}
  .note{border-top:1px solid var(--line2);padding-top:13px;margin:2px 0 0;max-width:66ch;
    font-size:14.5px;color:var(--muted)}
@@ -640,16 +640,13 @@ document.addEventListener('click', e => {
 /* ---------- boot ---------- */
 /* ---------- always open at the top ---------- */
 if('scrollRestoration' in history) history.scrollRestoration = 'manual';
-window.addEventListener('load', () => {
-  if(location.hash) return;                       // a jump-link click is deliberate
-  window.scrollTo(0, 0);
-  // the SoundCloud iframe can pull focus as it loads, so pin it once more after
-  setTimeout(() => { if(!location.hash && window.scrollY < 400) window.scrollTo(0, 0); }, 700);
-});
+function pinTop(){ if(!location.hash) window.scrollTo(0, 0); }
+document.addEventListener('DOMContentLoaded', pinTop);
+window.addEventListener('load', () => { pinTop(); [200,600,1200].forEach(t => setTimeout(pinTop, t)); });
 
 /* ---------- self-update check ---------- */
 (() => {
-  const BUILD = '20260818-142742';
+  const BUILD = '20260818-143356';
   const meta = document.querySelector('meta[name="build"]');
   if(meta) meta.content = BUILD;
 
@@ -704,10 +701,14 @@ window.addEventListener('load', () => {
     localStorage.setItem(MIN, min ? '1' : '0');
   });
 
+  // attach the player only after the page has settled, so it cannot drag the scroll position
+  setTimeout(() => { if(frame.dataset.src && !frame.src){ frame.src = frame.dataset.src; } }, 900);
+
   const sc=document.createElement('script');
   sc.src='https://w.soundcloud.com/player/api.js';
   sc.onload=()=>{
     if(!window.SC) return;
+    const start = () => {
     widget=SC.Widget(frame);
     widget.bind(SC.Widget.Events.READY,()=>{
       widget.setVolume(18);                                  // starts quiet
@@ -715,6 +716,9 @@ window.addEventListener('load', () => {
     });
     widget.bind(SC.Widget.Events.PLAY, ()=>{ playing=true; localStorage.removeItem(KEY); });
     widget.bind(SC.Widget.Events.PAUSE,()=>{ playing=false; localStorage.setItem(KEY,'off'); });
+    };
+    const waitForSrc = () => frame.src ? start() : setTimeout(waitForSrc, 200);
+    waitForSrc();
   };
   document.head.appendChild(sc);
 
@@ -821,7 +825,7 @@ setTimeout(() => { if(!ready){ warn('Working offline. Changes are saved on this 
 <div class="dock" id="dock">
  <button class="dtoggle" id="dtoggle" aria-expanded="true">Hide player</button>
  <iframe id="scframe" title="Maximum Shella" allow="autoplay" scrolling="no" frameborder="no"
-  src="https://w.soundcloud.com/player/?url=https%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F2259032957&secret_token=s-ZvcfEAvGGnR&color=%23B32438&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&show_artwork=true&visual=false"></iframe>
+  data-src="https://w.soundcloud.com/player/?url=https%3A%2F%2Fapi.soundcloud.com%2Ftracks%2F2259032957&secret_token=s-ZvcfEAvGGnR&color=%23B32438&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&show_artwork=true&visual=false"></iframe>
 </div>
 </body>
 </html>
