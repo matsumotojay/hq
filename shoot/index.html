@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="build" content="20260818-150416">
+<meta name="build" content="20260818-150942">
 <title>Maximum Shella: Shoot Brief</title>
 <style>
  :root{
@@ -229,47 +229,65 @@
  /* ---- desktop: lay it out as a dashboard, not a column ---- */
  @media(min-width:1000px){
    .sheet{max-width:1240px;display:grid;grid-template-columns:repeat(12,1fr);
-     column-gap:20px;row-gap:20px;align-items:start;padding:0 30px 80px}
+     column-gap:20px;row-gap:20px;align-items:stretch;padding:0 30px 80px}
    .sheet>*{margin:0}
-   .jump{grid-column:1/-1;margin:0 -30px 4px}
+   .jump{grid-column:1/-1;margin:0 -30px 4px;align-self:start}
    .mast{grid-column:1/-1}
    .facts{grid-column:1/-1;margin:0}
    #sec-contacts{grid-column:1/span 4}
    #sec-overview{grid-column:5/span 8}
-   #sec-reels{grid-column:1/-1}
-   #sec-ideas{grid-column:1/span 7}
-   #sec-notes{grid-column:8/span 5}
+   #sec-reels{grid-column:1/span 8}
+   #sec-ideas{grid-column:9/span 4}
+   #sec-notes{grid-column:1/span 6}
+   #sec-refs{grid-column:7/span 6}
    #sec-locations{grid-column:1/-1}
-   #sec-locintro{grid-column:1/-1;padding-bottom:4px}
+   #sec-locintro{grid-column:1/-1;padding-bottom:6px}
    .loc{grid-column:span 6}
-   #sec-refs{grid-column:1/span 6}
-   #sec-gear{grid-column:7/span 6}
-   .end{grid-column:1/-1}
+   .loc:last-of-type{grid-column:1/-1}
+   #sec-gear{grid-column:1/-1}
+   .end{grid-column:1/-1;align-self:start}
    .toast,.newver{grid-column:1}
 
-   /* small cards get tighter chrome so they do not look half empty */
-   #sec-contacts,#sec-notes,#sec-refs,#sec-gear,#sec-ideas{padding-bottom:18px}
-   #sec-contacts h2.sec,#sec-notes h2.sec,#sec-refs h2.sec,#sec-gear h2.sec{
-     padding:13px 22px 11px;margin-bottom:12px}
-   #sec-contacts .rowlist,#sec-refs .refs,#sec-gear .rowlist,#sec-gear>h3,
-   #sec-notes .composer,#sec-notes .notes,#sec-notes>p{margin-left:22px;margin-right:22px}
-   #sec-contacts .rowlist li{padding:9px 0;font-size:14.5px}
+   /* smaller cards, tighter chrome */
+   section{padding-bottom:20px}
+   h2.sec{padding:13px 22px 11px;margin-bottom:14px}
+   section>p,section>ul,section>div,section>figure,section>h3,section>button,
+   .rowlist,.refs,.notes,.composer,.mapfig,.maplink,.total,.scroll{margin-left:22px;margin-right:22px}
+   .rowlist li{grid-template-columns:170px 1fr 30px;gap:14px;padding:10px 0;font-size:14.5px}
+   .refs li{padding:10px 0;font-size:14.5px}
    #sec-contacts .people .tel{font-size:14px}
-   #sec-contacts .add{margin-top:12px;padding:6px 11px}
-   #sec-notes .cbody{min-height:64px}
+   .add{margin-top:12px;padding:6px 11px}
+   #sec-notes .cbody{min-height:62px}
 
-   /* two locations across: keep the pictures the hero */
-   .loc .c2{grid-auto-rows:210px}
-   .loc .c3{grid-template-rows:126px 126px}
-   .loc{padding:22px}
-   .loc .lochead{grid-template-columns:52px 1fr;gap:0 14px;margin-bottom:16px}
-   .loc .num{font-size:32px}
-   .loc h3{font-size:21px}
+   /* deliverables: compact rows so the tallest card stops driving the page */
+   #sec-reels td{padding:10px 12px 10px 0}
+   #sec-reels .rt{font-size:14.5px}
+   #sec-reels .rdesc{font-size:13.5px;line-height:1.5;margin-bottom:5px}
+   #sec-reels .rref{font-size:12.5px}
+   #sec-reels .due{font-size:10.5px;padding:2px 7px}
+   #sec-reels td.n{font-size:12px;width:30px}
+
+   /* locations two across */
+   .loc{padding:20px 22px}
+   .loc .c2{grid-auto-rows:200px}
+   .loc .c3{grid-template-rows:120px 120px}
+   .loc:last-of-type .c2{grid-auto-rows:280px}
+   .loc .lochead{grid-template-columns:48px 1fr;gap:0 12px;margin-bottom:14px}
+   .loc .num{font-size:30px}
+   .loc h3{font-size:20px}
    .loctext{max-width:none}
+
+   /* gear + editing runs as two columns inside one wide card */
+   #sec-gear .geargrid{display:grid;grid-template-columns:1fr 1fr;gap:0 30px;margin:0 22px}
+   #sec-gear .geargrid>div{min-width:0}
+   #sec-gear .geargrid .rowlist,#sec-gear .geargrid .refs,
+   #sec-gear .geargrid p,#sec-gear .geargrid h3,#sec-gear .geargrid button{margin-left:0;margin-right:0}
  }
  @media(min-width:1000px) and (max-width:1140px){
    #sec-contacts{grid-column:1/span 5}
    #sec-overview{grid-column:6/span 7}
+   #sec-reels{grid-column:1/span 7}
+   #sec-ideas{grid-column:8/span 5}
  }
 
  /* ---- mobile ---- */
@@ -327,8 +345,8 @@
   <a href="#sec-reels">Deliverables</a>
   <a href="#sec-ideas">Ideas</a>
   <a href="#sec-notes">Notes</a>
-  <a href="#sec-locations">Locations</a>
   <a href="#sec-refs">Reference docs</a>
+  <a href="#sec-locations">Locations</a>
   <a href="#sec-gear">Gear</a>
  </nav>
 
@@ -394,6 +412,17 @@
    </div>
   </div>
   <div class="notes" id="list-notes"></div>
+ </section>
+
+  <section id="sec-refs">
+  <h2 class="sec">Reference docs</h2>
+  <ul class="refs" contenteditable data-k="refdocs">
+   <li><a href="https://docs.google.com/document/d/1e8LViafW5qCYlzCr1B-uQzjQLok3X3x2Imkg0s5LaY8/edit">Content ideas doc</a>
+    &nbsp;All seven reel concepts, plus the replacement options.</li>
+   <li><a href="https://on.soundcloud.com/oftDKzNoyjuQ8z9DLi">Maximum Shella</a>
+    &nbsp;The track, feat. Bass Ventura.</li>
+   <li>The visual reference for each reel is in the Ref column above.</li>
+  </ul>
  </section>
 
  <section id="sec-locations">
@@ -468,22 +497,13 @@
   </div>
  </article>
 
-  <section id="sec-refs">
-  <h2 class="sec">Reference docs</h2>
-  <ul class="refs" contenteditable data-k="refdocs">
-   <li><a href="https://docs.google.com/document/d/1e8LViafW5qCYlzCr1B-uQzjQLok3X3x2Imkg0s5LaY8/edit">Content ideas doc</a>
-    &nbsp;All seven reel concepts, plus the replacement options.</li>
-   <li><a href="https://on.soundcloud.com/oftDKzNoyjuQ8z9DLi">Maximum Shella</a>
-    &nbsp;The track, feat. Bass Ventura.</li>
-   <li>The visual reference for each reel is in the Ref column above.</li>
-  </ul>
- </section>
-
  <section id="sec-gear">
   <h2 class="sec">For Jay &middot; gear and editing</h2>
+  <div class="geargrid"><div>
   <h3 class="subhead">Equipment</h3>
   <ul class="rowlist" id="list-kit"></ul>
   <button class="add" data-add="kit">+ add equipment</button>
+  </div><div>
   <h3 class="subhead">Editing</h3>
   <p contenteditable data-k="edit.intro">Styles you flagged that you want in the edit. Splitting them by what I have to capture on the night versus what I can add afterwards, because two of these cannot be faked later.</p>
   <ul class="rowlist" id="list-edits"></ul>
@@ -491,6 +511,7 @@
   <ul class="refs" style="margin-top:16px"><li contenteditable data-k="edit.refs">Editing style refs:
    <a href="https://www.instagram.com/reel/DYxbiDIhfDj/">one</a> &middot;
    <a href="https://www.instagram.com/reel/DZKHmhtsU4T/">two</a></li></ul>
+  </div></div>
  </section>
 
  <p class="end">Each location links through to its spot on the map.</p>
@@ -721,7 +742,7 @@ if(sessionStorage.getItem('shoot:top') === '1'){
 
 /* ---------- self-update check ---------- */
 (() => {
-  const BUILD = '20260818-150416';
+  const BUILD = '20260818-150942';
   const meta = document.querySelector('meta[name="build"]');
   if(meta) meta.content = BUILD;
 
