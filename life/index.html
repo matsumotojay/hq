@@ -305,8 +305,17 @@
 
   /* invoice sheet */
   .invlayout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px}
+  .invlayout>*{min-width:0}
   @media (max-width:860px){.invlayout{grid-template-columns:minmax(0,1fr)}}
   #invPreview{min-width:0;overflow:hidden}
+  .attachbox{border:1px solid var(--line);border-radius:9px;background:var(--surface2);padding:10px 12px;margin-top:4px}
+  .attachhead{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:9px}
+  .attachhead .fn{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--ink2)}
+  .attachthumb{min-width:0;overflow:hidden;border-radius:6px}
+  .attachthumb+.attachthumb{margin-top:10px}
+  .cmnote{font-size:12.5px;color:var(--ink3);margin-top:8px;line-height:1.45}
+  .cminc{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:9px}
+  .cminc input{width:16px;height:16px;accent-color:var(--accent);flex:none;cursor:pointer}
   /* invoice sheet — MATSU dark letterhead */
   .sheetscale{overflow:hidden}
   .invsheet{width:816px;min-height:1056px;display:flex;flex-direction:column;
@@ -358,6 +367,7 @@
     body{padding:0;background:#fff}
     #printhost{display:block !important}
     #printhost .invsheet{border:none;border-radius:0;transform:none !important;width:816px;min-height:1056px}
+    #printhost .invsheet+.invsheet{break-before:page;page-break-before:always}
   }
   #printhost{display:none}
 </style>
@@ -608,6 +618,42 @@
         </div>
       </div>
       <div id="invPreview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ COMPOSE MODAL ═══════════ -->
+<div class="overlay" id="mailOverlay">
+  <div class="modal wide">
+    <h3 id="cmTitle">Send invoice</h3>
+    <div class="invlayout">
+      <div>
+        <div class="fieldrow">
+          <div class="field"><label>To</label><input id="cmTo" type="email" placeholder="client@email.com"></div>
+          <div class="field"><label>Cc <span style="font-weight:400;color:var(--ink3)">(optional)</span></label><input id="cmCc" type="email" placeholder="yourself, manager…"></div>
+        </div>
+        <div class="field"><label>From</label><input id="cmFrom" disabled></div>
+        <div class="field"><label>Subject</label><input id="cmSubj"></div>
+        <div class="field"><label>Message</label><textarea id="cmBody" rows="9"></textarea></div>
+        <label class="cminc"><input type="checkbox" id="cmInclude" checked onchange="cmChanged()"><span>Paste the invoice details into the email body too</span></label>
+        <div class="modalfoot" style="justify-content:flex-start">
+          <button class="btn primary" onclick="openInGmail()">✉ Open in Gmail</button>
+          <button class="btn" onclick="composeSavePDF()">⬇ Save PDF</button>
+          <button class="btn" onclick="composeCopy()">Copy message</button>
+        </div>
+        <div class="modalfoot" style="justify-content:flex-start;margin-top:6px">
+          <button class="btn" onclick="composeMarkSent()">I sent it — mark sent ✓</button>
+          <span class="spacer"></span>
+          <button class="btn" onclick="closeOverlays()">Close</button>
+        </div>
+        <p class="cmnote">Gmail can’t carry a file through a link, so: <b>Save PDF</b> first, then <b>Open in Gmail</b> and drop the file in. Nothing sends from here — you review it in Gmail and hit send yourself.</p>
+      </div>
+      <div>
+        <div class="attachbox">
+          <div class="attachhead">📎 <span id="cmFiles" class="fn"></span></div>
+          <div id="cmThumbs"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1975,7 +2021,16 @@ function collectTotals(){
 
 /* ─── the emails ───────────────────────────────────────── */
 function invLine(i){
-  return i.number+' — '+i.desc+(i.svcDate?' ('+fmtDate(i.svcDate)+')':'')+' — '+fmt$(i.amount);
+  const its=invItems(i);
+  if(its.length>1)return i.number+' — '+its.length+' items — '+fmt$(i.amount);
+  return i.number+' — '+(i.desc||its[0].desc||'work')+(i.svcDate?' ('+fmtDate(i.svcDate)+')':'')+' — '+fmt$(i.amount);
+}
+/* Read the label off the items every time — a stored desc goes stale the
+   moment a line is edited. */
+function invLabel(inv){
+  const its=invItems(inv);
+  const t=its.map(it=>it.desc).filter(Boolean).join(' · ');
+  return t||inv.desc||'—';
 }
 function sendGroupText(g){
   const list=g.unsent.map(invLine).join('\n');
@@ -1985,9 +2040,68 @@ function sendGroupText(g){
     +'Here '+(one?'is the invoice':'are the invoices')+' for the work so far:\n\n'+list+'\n'
     +(one?'':'\nTotal: '+fmt$(tot)+'\n')
     +'\nPayment details are on '+(one?'the invoice':'each invoice')+' — Venmo or Zelle is easiest.\n'
-    +'\nThanks,\nJay\n\n'
-    +'────────────────\n\n'
-    +g.unsent.map(invoiceText).join('\n\n────────────────\n\n');
+    +'\nThanks,\nJay';
+}
+
+/* ─── compose window ────────────────────────────────────────────────
+   Nothing is sent from the tracker. This assembles the mail, shows the
+   invoice that goes with it, and hands the whole thing to Gmail so the
+   last look and the send button are his.                              */
+let composeCtx=null;
+function openCompose(ctx){
+  composeCtx=ctx;
+  $('cmTitle').textContent=ctx.title;
+  $('cmTo').value=ctx.to||'';
+  $('cmCc').value=state.mailcc||'';
+  $('cmFrom').value=BIZ.email;
+  $('cmSubj').value=ctx.subject||'';
+  $('cmBody').value=ctx.body||'';
+  $('cmInclude').checked=true;
+  $('cmFiles').textContent=ctx.invoices.map(i=>i.number+'.pdf').join('  ');
+  $('cmThumbs').innerHTML=ctx.invoices.map(i=>'<div class="attachthumb">'+invoiceSheetHTML(i)+'</div>').join('');
+  closeOverlays();
+  $('mailOverlay').classList.add('open');   /* must be visible before it can be measured */
+  document.querySelectorAll('#cmThumbs .attachthumb').forEach(fitSheet);
+}
+function cmChanged(){}
+function composeBody(){
+  let b=$('cmBody').value;
+  if($('cmInclude').checked&&composeCtx.invoices.length)
+    b+='\n\n────────────────\n\n'+composeCtx.invoices.map(invoiceText).join('\n\n────────────────\n\n');
+  return b;
+}
+function gmailUrl(){
+  const cc=$('cmCc').value.trim();
+  return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
+    +'&to='+encodeURIComponent($('cmTo').value.trim())
+    +(cc?'&cc='+encodeURIComponent(cc):'')
+    +'&su='+encodeURIComponent($('cmSubj').value)
+    +'&body='+encodeURIComponent(composeBody());
+}
+function openInGmail(){
+  const to=$('cmTo').value.trim();
+  if(!to){toast('Add the To address first');$('cmTo').focus();return}
+  if(composeCtx.client)setContact(composeCtx.client,to);
+  state.mailcc=$('cmCc').value.trim();save();
+  window.open(gmailUrl(),'_blank','noopener');
+  toast('Gmail opened — attach the PDF, then send');
+}
+function composeCopy(){
+  navigator.clipboard.writeText(composeBody()).then(()=>toast('Message copied'),()=>toast('Copy failed'));
+}
+function composeSavePDF(){
+  $('printhost').innerHTML=composeCtx.invoices.map(i=>invoiceSheetHTML(i)).join('');
+  window.print();
+}
+function composeMarkSent(){
+  if(composeCtx.kind==='chase'){
+    composeCtx.invoices.forEach(i=>{i.chases=(i.chases||[]).concat(todayISO())});
+    save();render();toast('Logged as chased today');
+  }else{
+    composeCtx.invoices.forEach(i=>{if(i.status!=='sent'){i.status='sent';i.sentAt=todayISO();i.fresh=false}});
+    save();render();toast('Marked sent — Net 15 clock starts today');
+  }
+  closeOverlays();
 }
 function chaseGroupText(g){
   const inv=g.late.length?g.late:g.sent;
@@ -2013,20 +2127,16 @@ function mailTo(email,subject,body){
   location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
 }
 function groupByName(c){return collectGroups().filter(g=>g.client===c)[0]}
-function needEmail(g){
-  if(g.email)return false;
-  toast('Add '+g.client+'’s email first');
-  const el=document.getElementById('em-'+cssId(g.client));if(el)el.focus();
-  return true;
-}
 function cssId(s){return String(s).replace(/[^A-Za-z0-9]/g,'_')}
 
 function sendGroup(client){
-  const g=groupByName(client);if(!g||needEmail(g))return;
+  const g=groupByName(client);if(!g)return;
   const nums=g.unsent.map(i=>i.number).join(', ');
   const tot=g.unsent.reduce((t,i)=>t+(i.amount||0),0);
-  mailTo(g.email,'Invoice'+(g.unsent.length===1?' ':'s ')+nums+' — '+BIZ.name+' — '+fmt$(tot),sendGroupText(g));
-  toast('Mail app opened — tap “Mark sent” once it’s away');
+  openCompose({kind:'send',client:g.client,to:g.email,invoices:g.unsent,
+    title:'Send '+(g.unsent.length>1?g.unsent.length+' invoices':'invoice '+nums)+' — '+g.client,
+    subject:'Invoice'+(g.unsent.length===1?' ':'s ')+nums+' — '+BIZ.name+' — '+fmt$(tot),
+    body:sendGroupText(g)});
 }
 function copyGroup(client){
   const g=groupByName(client);if(!g)return;
@@ -2034,14 +2144,14 @@ function copyGroup(client){
   navigator.clipboard.writeText(txt).then(()=>toast('Copied — paste it anywhere'),()=>toast('Copy failed'));
 }
 function chaseGroup(client){
-  const g=groupByName(client);if(!g||needEmail(g))return;
+  const g=groupByName(client);if(!g)return;
   const inv=g.late.length?g.late:g.sent;
   const nums=inv.map(i=>i.number).join(', ');
   const tot=inv.reduce((t,i)=>t+(i.amount||0),0);
-  mailTo(g.email,'Following up: '+nums+' — '+fmt$(tot),chaseGroupText(g));
-  inv.forEach(i=>{i.chases=(i.chases||[]).concat(todayISO())});
-  save();render();
-  toast('Logged as chased today');
+  openCompose({kind:'chase',client:g.client,to:g.email,invoices:inv,
+    title:'Follow up — '+g.client,
+    subject:'Following up: '+nums+' — '+fmt$(tot),
+    body:chaseGroupText(g)});
 }
 function markGroupSent(client){
   const g=groupByName(client);if(!g)return;
@@ -2133,7 +2243,7 @@ function renderCollect(){
       const when=i.status==='sent'
         ? (od>0?'<b style="color:var(--urgent)">'+od+'d late</b>':'due '+fmtDate(dueDate(i)))
         : 'not sent';
-      h+='<div class="cline"><span class="n">'+esc(i.number)+'</span><span class="d">'+esc(i.desc||'—')+(i.svcDate?' · '+fmtDate(i.svcDate):'')+'</span>'
+      h+='<div class="cline"><span class="n">'+esc(i.number)+'</span><span class="d">'+esc(invLabel(i))+(i.svcDate?' · '+fmtDate(i.svcDate):'')+'</span>'
         +'<span>'+when+'</span><span class="num" style="font-weight:700;color:var(--ink)">'+fmt$(i.amount)+'</span>'
         +'<button class="btn small" onclick="openInvoice(\''+i.id+'\')">Open</button></div>';
     });
@@ -2198,7 +2308,7 @@ function renderInvoices(){
   const rows=[...state.invoices].sort((a,b)=>b.number.localeCompare(a.number));
   $('invTable').innerHTML='<tr><th>Invoice</th><th>Client</th><th>Service</th><th class="r">Amount</th><th>Sent</th><th>Due</th><th>Status</th><th></th></tr>'
     +(rows.length?rows.map(i=>{const od=overdueDays(i);return '<tr><td><button class="btn small" onclick="openInvoice(\''+i.id+'\')">'+i.number+'</button></td>'
-      +'<td><b>'+esc(i.client)+'</b></td><td>'+esc(i.desc)+'</td><td class="r num">'+fmt$(i.amount)+'</td>'
+      +'<td><b>'+esc(i.client)+'</b></td><td>'+esc(invLabel(i))+'</td><td class="r num">'+fmt$(i.amount)+'</td>'
       +'<td>'+(i.sentAt?fmtDate(i.sentAt):'<span style="color:var(--ink3)">—</span>')+'</td>'
       +'<td>'+(i.status==='draft'?'<span style="color:var(--ink3)">on send</span>':fmtDate(dueDate(i)))+'</td>'
       +'<td>'+(od>0?'<span class="status overdue">'+od+'d late</span>':'<span class="status '+i.status+'">'+i.status+'</span>')+'</td>'
@@ -2360,9 +2470,11 @@ function copyInvoice(){
 function emailInvoice(){
   saveInvoice();
   const inv=invById(editingInvId);
-  if(!inv.email){alert('Add the client’s email first (highlighted field).');$('iEmail').focus();return}
-  const sub='Invoice '+inv.number+' — '+BIZ.name+' — '+fmt$(inv.amount);
-  location.href='mailto:'+encodeURIComponent(inv.email)+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(invoiceText(inv));
+  openCompose({kind:'send',client:inv.client,to:inv.email,invoices:[inv],
+    title:'Send invoice '+inv.number+' — '+inv.client,
+    subject:'Invoice '+inv.number+' — '+BIZ.name+' — '+fmt$(inv.amount),
+    body:'Hi '+inv.client+',\n\nHere is the invoice for '+(inv.desc||'the work')+'.\n\n'
+      +'Payment details are on the invoice — Venmo or Zelle is easiest.\n\nThanks,\nJay'});
 }
 function printInvoice(){
   saveInvoice();
