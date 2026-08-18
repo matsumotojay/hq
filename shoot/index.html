@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="build" content="20260818-150942">
+<meta name="build" content="20260818-151431">
 <title>Maximum Shella: Shoot Brief</title>
 <style>
  :root{
@@ -109,6 +109,17 @@
    border:1px solid var(--line);border-radius:4px;padding:2px 8px;white-space:nowrap}
  .due.hot{color:var(--accent);border-color:var(--accent)}
  .rdesc{margin-bottom:7px}
+ .tick{flex:none;width:21px;height:21px;border:1.5px solid var(--line);border-radius:5px;background:transparent;
+   cursor:pointer;color:#08210f;font-size:12px;line-height:1;display:grid;place-items:center;padding:0;
+   font-weight:800;transition:background .12s,border-color .12s}
+ .tick:hover{border-color:var(--green)}
+ .tick.on{background:var(--green);border-color:var(--green)}
+ tr.done{background:rgba(91,185,140,.07)}
+ tr.done .rt{text-decoration:line-through;text-decoration-color:var(--green);color:var(--muted)}
+ tr.done .rdesc,tr.done .rref,tr.done .due{opacity:.45}
+ tr.done td.n{color:var(--green)}
+ .count{float:right;font-size:10px;letter-spacing:.12em;color:var(--muted);font-weight:500;
+   text-transform:none}
  .rref{font-size:13.5px}
  .rcell{padding-right:10px}
  /* compact, expandable rows for gear + editing */
@@ -236,8 +247,8 @@
    .facts{grid-column:1/-1;margin:0}
    #sec-contacts{grid-column:1/span 4}
    #sec-overview{grid-column:5/span 8}
-   #sec-reels{grid-column:1/span 8}
-   #sec-ideas{grid-column:9/span 4}
+   #sec-reels{grid-column:1/span 7}
+   #sec-ideas{grid-column:8/span 5}
    #sec-notes{grid-column:1/span 6}
    #sec-refs{grid-column:7/span 6}
    #sec-locations{grid-column:1/-1}
@@ -258,6 +269,12 @@
    #sec-contacts .people .tel{font-size:14px}
    .add{margin-top:12px;padding:6px 11px}
    #sec-notes .cbody{min-height:62px}
+
+   /* alternate ideas sits in a narrow column: stack name over description */
+   #sec-ideas .rowlist li{grid-template-columns:1fr 30px;gap:3px 10px;padding:12px 0}
+   #sec-ideas .rowlist li>b{grid-column:1;grid-row:1}
+   #sec-ideas .rowlist li>span{grid-column:1;grid-row:2;font-size:14px;line-height:1.55}
+   #sec-ideas .rowlist li>.x{grid-column:2;grid-row:1;justify-self:end}
 
    /* deliverables: compact rows so the tallest card stops driving the page */
    #sec-reels td{padding:10px 12px 10px 0}
@@ -381,7 +398,7 @@
  </section>
 
  <section id="sec-reels">
-  <h2 class="sec">Deliverables</h2>
+  <h2 class="sec">Deliverables <span class="count" id="reelcount"></span></h2>
   <div class="scroll">
    <table><thead><tr><th></th><th>Reel</th><th>Due</th><th>Ref</th><th></th></tr></thead>
    <tbody id="list-reels"></tbody></table>
@@ -634,15 +651,20 @@ function renderList(name){
       <span class="tel">${fieldHTML(it.tel, name+'.'+i+'.tel','')}</span>
       <button class="x" data-del="${name}.${i}" title="remove">&times;</button></li>`).join('');
   } else if(name === 'reels'){
-    host.innerHTML = arr.map((it,i) => `<tr>
+    host.innerHTML = arr.map((it,i) => `<tr class="${it.done?'done':''}">
       <td class="n">${fieldHTML(it.n, name+'.'+i+'.n','')}</td>
       <td class="rcell">
-        <div class="rtop"><span class="rt">${fieldHTML(it.title, name+'.'+i+'.title','')}</span>
+        <div class="rtop"><button class="tick ${it.done?'on':''}" data-tick="${name}.${i}"
+            aria-pressed="${it.done?'true':'false'}" title="Mark as shot">${it.done?'\u2713':''}</button>
+          <span class="rt">${fieldHTML(it.title, name+'.'+i+'.title','')}</span>
           <span class="due ${it.hot?'hot':''}">due ${fieldHTML(it.due, name+'.'+i+'.due','')}</span></div>
         <div class="rdesc">${fieldHTML(it.desc, name+'.'+i+'.desc','')}</div>
         <div class="rref">${fieldHTML(it.ref, name+'.'+i+'.ref','')}</div>
       </td>
       <td class="act"><button class="x" data-del="${name}.${i}" title="remove">&times;</button></td></tr>`).join('');
+    const done = arr.filter(x=>x.done).length;
+    const c = $('reelcount');
+    if(c) c.textContent = done ? `${done} of ${arr.length} shot` : `${arr.length} reels`;
   } else if(name === 'notes'){
     host.innerHTML = arr.length ? arr.map((it,i) => `<div class="note-item"><div>
       <div class="note-head">${fieldHTML(it.who, name+'.'+i+'.who','')} &middot; ${esc(it.when||'')}</div>
@@ -708,6 +730,15 @@ document.addEventListener('focusout', e => {
 });
 
 document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tick]');
+  if(t){
+    const [name, idx] = t.dataset.tick.split('.');
+    const arr = getList(name); if(!arr || !arr[idx]) return;
+    arr[idx].done = !arr[idx].done;
+    setList(name, arr);
+    toast(arr[idx].done ? 'shot' : 'unmarked');
+    return;
+  }
   const d = e.target.closest('[data-del]');
   if(d){ const [name, idx] = d.dataset.del.split('.');
     const arr = getList(name); if(!arr) return;
@@ -742,7 +773,7 @@ if(sessionStorage.getItem('shoot:top') === '1'){
 
 /* ---------- self-update check ---------- */
 (() => {
-  const BUILD = '20260818-150942';
+  const BUILD = '20260818-151431';
   const meta = document.querySelector('meta[name="build"]');
   if(meta) meta.content = BUILD;
 
