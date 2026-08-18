@@ -2032,16 +2032,35 @@ function invLabel(inv){
   const t=its.map(it=>it.desc).filter(Boolean).join(' · ');
   return t||inv.desc||'—';
 }
-function sendGroupText(g){
-  const list=g.unsent.map(invLine).join('\n');
-  const one=g.unsent.length===1;
-  const tot=g.unsent.reduce((t,i)=>t+(i.amount||0),0);
-  return 'Hi '+g.client+',\n\n'
-    +'Here '+(one?'is the invoice':'are the invoices')+' for the work so far:\n\n'+list+'\n'
-    +(one?'':'\nTotal: '+fmt$(tot)+'\n')
-    +'\nPayment details are on '+(one?'the invoice':'each invoice')+' — Venmo or Zelle is easiest.\n'
-    +'\nThanks,\nJay';
+/* Subject carries the brand and the invoice number — never the amount.
+   What he charges is between him and the invoice, not the inbox preview. */
+function invSubject(invs){
+  return 'Matsu - Media Invoice'+(invs.length>1?'s':'')+' ('+invs.map(i=>i.number).join(', ')+')';
 }
+/* "the shoot" reads better than a full line-item description */
+function shootLabel(invs){
+  const items=invs.reduce((a,i)=>a.concat(invItems(i).filter(it=>!it.paid&&!lineFree(it))),[]);
+  if(items.length===1){
+    const d=(items[0].desc||'').split(' — ')[0].split(' (')[0].trim();
+    if(d)return /^the /i.test(d)?d:'the '+d;
+  }
+  return 'the recent shoots';
+}
+/* You greet the person, not the legal entity — "Hi Hoang," not "Hi Hoang Entertainment Inc.," */
+function greetName(c){
+  let n=String(c||'').replace(/\s*\(.*?\)\s*/g,' ').trim();
+  if(/\b(inc|llc|ltd|corp|co|company|entertainment|productions|studios|group)\b\.?/i.test(n))
+    n=n.split(/\s+/)[0];
+  return n||c;
+}
+function sendMessageText(client,invs){
+  const one=invs.length===1;
+  return 'Hi '+greetName(client)+',\n\n'
+    +'Thanks again for hiring me for '+shootLabel(invs)+'.\n\n'
+    +'See attached invoice'+(one?'':'s')+' for my services. Please let me know if you have any questions or concerns.\n\n'
+    +'Thank you,\nJay';
+}
+function sendGroupText(g){return sendMessageText(g.client,g.unsent)}
 
 /* ─── compose window ────────────────────────────────────────────────
    Nothing is sent from the tracker. This assembles the mail, shows the
@@ -2119,7 +2138,7 @@ function chaseGroupText(g){
   }else{
     msg=(one?'This is':'These are')+' now '+n+' days past due and I haven’t seen payment. Can you give me a date this week?';
   }
-  return 'Hi '+g.client+',\n\n'+msg+'\n\n'+list+'\n'
+  return 'Hi '+greetName(g.client)+',\n\n'+msg+'\n\n'+list+'\n'
     +(one?'':'\nTotal outstanding: '+fmt$(tot)+'\n')
     +'\nThanks,\nJay';
 }
@@ -2135,7 +2154,7 @@ function sendGroup(client){
   const tot=g.unsent.reduce((t,i)=>t+(i.amount||0),0);
   openCompose({kind:'send',client:g.client,to:g.email,invoices:g.unsent,
     title:'Send '+(g.unsent.length>1?g.unsent.length+' invoices':'invoice '+nums)+' — '+g.client,
-    subject:'Invoice'+(g.unsent.length===1?' ':'s ')+nums+' — '+BIZ.name+' — '+fmt$(tot),
+    subject:invSubject(g.unsent),
     body:sendGroupText(g)});
 }
 function copyGroup(client){
@@ -2150,7 +2169,7 @@ function chaseGroup(client){
   const tot=inv.reduce((t,i)=>t+(i.amount||0),0);
   openCompose({kind:'chase',client:g.client,to:g.email,invoices:inv,
     title:'Follow up — '+g.client,
-    subject:'Following up: '+nums+' — '+fmt$(tot),
+    subject:'Following up - '+invSubject(inv),
     body:chaseGroupText(g)});
 }
 function markGroupSent(client){
@@ -2472,9 +2491,8 @@ function emailInvoice(){
   const inv=invById(editingInvId);
   openCompose({kind:'send',client:inv.client,to:inv.email,invoices:[inv],
     title:'Send invoice '+inv.number+' — '+inv.client,
-    subject:'Invoice '+inv.number+' — '+BIZ.name+' — '+fmt$(inv.amount),
-    body:'Hi '+inv.client+',\n\nHere is the invoice for '+(inv.desc||'the work')+'.\n\n'
-      +'Payment details are on the invoice — Venmo or Zelle is easiest.\n\nThanks,\nJay'});
+    subject:invSubject([inv]),
+    body:sendMessageText(inv.client,[inv])});
 }
 function printInvoice(){
   saveInvoice();
