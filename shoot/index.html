@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="build" content="20260818-143356">
+<meta name="build" content="20260818-144152">
 <title>Maximum Shella: Shoot Brief</title>
 <style>
  :root{
@@ -116,7 +116,10 @@
  .rowlist li.tight:first-child{border-top:none}
  .rowlist li.tight details{padding:9px 0}
  .rowlist li.tight summary{cursor:pointer;color:var(--ink);font-weight:600;font-size:15px;
-   list-style:none;display:flex;align-items:center;gap:8px}
+   list-style:none;display:flex;align-items:center;gap:8px;-webkit-tap-highlight-color:transparent}
+ .ename{padding:2px 4px;border-radius:4px;margin-left:-4px}
+ .rowlist li.tight details[open] .ename{cursor:text}
+ .rowlist li.tight details[open] .ename:hover{background:rgba(255,77,99,.09)}
  .rowlist li.tight summary::-webkit-details-marker{display:none}
  .rowlist li.tight summary:before{content:"\25B8";color:var(--muted);font-size:11px;transition:transform .15s;
    display:inline-block}
@@ -580,7 +583,7 @@ function renderList(name){
       : '<p class="note-empty">Nothing yet. Add anything you think of.</p>';
   } else if(name === 'kit' || name === 'edits'){
     host.innerHTML = arr.map((it,i) => `<li class="tight">
-      <details><summary>${fieldHTML(it.name, name+'.'+i+'.name','')}</summary>
+      <details><summary><span class="ename" data-list-field="${name}.${i}.name">${it.name||''}</span></summary>
        <div class="dets">${fieldHTML(it.desc, name+'.'+i+'.desc','')}</div></details>
       <button class="x" data-del="${name}.${i}" title="remove">&times;</button></li>`).join('');
   } else {
@@ -600,6 +603,22 @@ document.addEventListener('input', e => {
   clearTimeout(saveTimer[path]);
   saveTimer[path] = setTimeout(() => save(LIST_KEY(name), arr), 1400);
 });
+document.addEventListener('click', e => {
+  const sp = e.target.closest && e.target.closest('.ename');
+  if(!sp) return;
+  const det = sp.closest('details');
+  if(det && !det.open) return;                 // first tap: just let it expand
+  if(sp.getAttribute('contenteditable') === 'true') return;   // already editing
+  e.preventDefault();                          // second tap: edit rather than collapse
+  sp.setAttribute('contenteditable','true');
+  sp.focus();
+  const rng = document.createRange(); rng.selectNodeContents(sp);
+  const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rng);
+});
+document.addEventListener('focusout', e => {
+  if(e.target.classList && e.target.classList.contains('ename')) e.target.removeAttribute('contenteditable');
+});
+
 document.addEventListener('focusin', e => {
   const path = e.target.dataset && e.target.dataset.listField;
   if(!path) return;
@@ -621,8 +640,6 @@ document.addEventListener('focusout', e => {
 });
 
 document.addEventListener('click', e => {
-  // typing in a summary shouldn't toggle it open/closed
-  if(e.target.dataset && e.target.dataset.listField && e.target.closest('summary')){ e.preventDefault(); }
   const d = e.target.closest('[data-del]');
   if(d){ const [name, idx] = d.dataset.del.split('.');
     const arr = getList(name); if(!arr) return;
@@ -646,7 +663,7 @@ window.addEventListener('load', () => { pinTop(); [200,600,1200].forEach(t => se
 
 /* ---------- self-update check ---------- */
 (() => {
-  const BUILD = '20260818-143356';
+  const BUILD = '20260818-144152';
   const meta = document.querySelector('meta[name="build"]');
   if(meta) meta.content = BUILD;
 
