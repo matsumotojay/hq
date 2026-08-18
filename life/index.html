@@ -851,6 +851,37 @@ function migrate(){
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
   }
+  // patch 25 (2026-08-18): shoot brief link on the calendar, locations sent, Dean parked
+  if(!state.patch25){
+    state.patch25=true;
+    /* the shoot-day event carries the dashboard so it's one tap from the calendar */
+    const sh=state.events.find(e=>e.client==='Chelsea (HERSHE)'&&e.date==='2026-08-28');
+    if(sh){
+      if(sh.details.indexOf('maximumshella')<0)
+        sh.details='📋 SHOOT DASHBOARD: https://matsumotojay.github.io/hq/maximumshella/\n\n'+sh.details;
+      sh.details=sh.details.replace('LOCATION: alley, and potentially skyline — still to lock.',
+        'LOCATION: options sent to Chelsea Aug 18 — waiting on her pick (alley / skyline).');
+    }
+    /* the rate is the part HE owes; the location is now on her */
+    const cr=state.tasks.find(t=>t.id==='d74wzizq')||state.tasks.find(t=>t.title.indexOf('Lost Lands rate')>-1);
+    if(cr){
+      cr.notes=cr.notes.replace(/\n3\) Lock the exact alley\/skyline location with her before the 28th\./,'')
+        .replace('STILL OPEN:','STILL OPEN (locations sent Aug 18 — her call now):');
+    }
+    if(!state.tasks.some(t=>t.title.indexOf('location options')>-1)){
+      state.tasks.unshift({id:uid(),title:'Chelsea — waiting on her pick from the location options',tag:'Waiting',
+        notes:'Sent her the shoot location options Aug 18, no reply yet. Needs to be settled before Fri Aug 28, 7:30 PM — and you are in Vietnam Aug 20–27, so chase it from there if she goes quiet.\nShoot brief: https://matsumotojay.github.io/hq/maximumshella/',
+        due:'2026-08-26',status:'open',completedAt:null});
+    }
+    /* Dean: Sony never gave him parts prices, so there is no quote and no date */
+    const dn=state.tasks.find(t=>t.title.indexOf('Dean')>-1&&t.status==='open');
+    if(dn){
+      dn.title='Dean’s — camera repair quote (he’ll call)';
+      dn.tag='Waiting';
+      dn.due='';
+      dn.notes='Called Aug 18: Sony still hasn’t given him parts prices, so he has no quote — and no date for when he will. Back burner. Nothing to do until he calls.';
+    }
+  }
   // patch 24 (2026-08-17): seed the outreach pipeline from real lineups + Jay's own client history
   if(!state.patch24){
     state.patch24=true;
