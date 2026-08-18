@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Maximum Shela: Shoot Brief</title>
+<title>Maximum Shella: Shoot Brief</title>
 <style>
  :root{
    --paper:#F6F7F8; --panel:#FFFFFF; --ink:#15171C; --ink2:#3D434F;
@@ -35,6 +35,21 @@
  .subhead{font-size:17px;font-weight:700;margin:0 0 10px;letter-spacing:-.01em;color:var(--ink)}
  .warn{background:color-mix(in srgb,var(--accent) 12%,var(--paper));border:1px solid var(--accent);
    border-radius:4px;color:var(--ink);padding:10px 14px;margin:14px 0 20px;font-size:14.5px}
+ body{padding-bottom:170px}
+ .mast{position:relative}
+ .cover{float:right;width:132px;height:132px;object-fit:cover;border-radius:4px;margin:0 0 14px 22px;
+   box-shadow:0 2px 14px rgba(0,0,0,.22)}
+ @media(max-width:560px){.cover{width:88px;height:88px;margin-left:16px}}
+ .dock{position:fixed;left:0;right:0;bottom:0;z-index:90;background:var(--panel);
+   border-top:1px solid var(--rule);box-shadow:0 -3px 22px rgba(0,0,0,.16)}
+ .dock iframe{display:block;width:100%;height:120px;border:0}
+ .dock.min iframe{display:none}
+ .dtoggle{position:absolute;right:12px;top:-27px;background:var(--panel);border:1px solid var(--rule);
+   border-bottom:none;border-radius:4px 4px 0 0;color:var(--muted);cursor:pointer;
+   font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+   padding:5px 12px}
+ .dtoggle:hover{color:var(--accent)}
+ .dock.min{background:transparent;border-top:none;box-shadow:none}
  .toast{position:fixed;right:18px;bottom:18px;z-index:80;background:var(--ink);color:var(--paper);
    font-family:ui-monospace,Menlo,monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;
    padding:8px 14px;border-radius:4px;opacity:0;transform:translateY(6px);
@@ -82,9 +97,11 @@
  .people .tel{font-family:ui-monospace,Menlo,monospace;font-size:15px;white-space:nowrap;color:var(--ink2)}
  .people .role{color:var(--muted);font-weight:400;font-size:14px}
 
- .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;
-   border-radius:3px;opacity:0}
- li:hover .x,tr:hover .x{opacity:1}
+ .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;
+   border-radius:3px;opacity:.35;transition:opacity .12s,color .12s}
+ li:hover .x,tr:hover .x,.note-item:hover .x{opacity:1}
+ .x:focus-visible{opacity:1;outline:2px solid var(--accent)}
+ @media(hover:none){.x{opacity:.7}}
  .x:hover{color:var(--accent);background:var(--rule2)}
  .add{background:none;border:1px dashed var(--rule);color:var(--muted);cursor:pointer;
    font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
@@ -114,6 +131,11 @@
  .mapwrap svg{position:absolute;inset:0;width:100%;height:100%}
  .mapfig figcaption{font-size:13px;color:var(--muted);padding-top:9px;
    font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+ .maplink{margin:0 0 16px}
+ .maplink a{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--accent);color:var(--accent);
+   text-decoration:none;border-radius:4px;padding:9px 15px;font-size:14.5px;font-weight:600}
+ .maplink a:after{content:"\2197";font-size:15px}
+ .maplink a:hover{background:var(--accent);color:#fff}
  .total{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;color:var(--ink);
    border-top:1px solid var(--rule);padding-top:12px;max-width:68ch}
  .total b{color:var(--accent)}
@@ -173,20 +195,23 @@
 <div class="sheet">
  <div class="toast" id="toast"></div>
 
+
  <nav class="jump" id="jump">
-  <a href="#sec-reels">Reels</a>
-  <a href="#sec-map">Locations</a>
+  <a href="#sec-reels">Deliverables</a>
+  <a href="#sec-locations">Locations</a>
   <a href="#sec-notes">Notes</a>
-  <a href="#sec-gear">Gear</a>
   <a href="#sec-ideas">Ideas</a>
+  <a href="#sec-gear">Gear</a>
+  <a href="#sec-refs">Reference docs</a>
   <a href="#sec-contacts">Contacts</a>
  </nav>
 
  <div class="warn" id="warn" hidden></div>
 
  <header class="mast">
+  <img class="cover" src="img/cover.jpg" alt="Maximum Shella cover art">
   <p class="slug">Content shoot &middot; production brief</p>
-  <h1 contenteditable data-k="title">Maximum Shela</h1>
+  <h1 contenteditable data-k="title">Maximum Shella</h1>
   <p class="byline" contenteditable data-k="byline">Seven reels for Chelsea's single with Bass Ventura. Locations are at the bottom.</p>
  </header>
 
@@ -264,25 +289,26 @@
   <ul class="refs" contenteditable data-k="refdocs">
    <li><a href="https://docs.google.com/document/d/1e8LViafW5qCYlzCr1B-uQzjQLok3X3x2Imkg0s5LaY8/edit">Content ideas doc</a>
     &nbsp;All seven reel concepts, plus the replacement options.</li>
-   <li><a href="https://on.soundcloud.com/oftDKzNoyjuQ8z9DLi">Maximum Shela</a>
+   <li><a href="https://on.soundcloud.com/oftDKzNoyjuQ8z9DLi">Maximum Shella</a>
     &nbsp;The track, feat. Bass Ventura.</li>
    <li>The visual reference for each reel is in the Ref column above.</li>
   </ul>
  </section>
 
- <section id="sec-map">
+ <section id="sec-locations">
   <h2 class="sec">The map</h2>
   <p contenteditable data-k="map.intro">All five pinned with the drive times between them. The four downtown ones are basically on top of each other. LACMA sits way out west, so I dashed that line to whichever of the others it is closest to.</p>
   <figure class="mapfig">
    <div class="mapwrap"><img src="img/map.jpg" alt="Map of the five locations"><svg viewBox="0 0 1266 686" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><line x1="91.1" y1="271.1" x2="922.7" y2="380.4" stroke="#FF5069" stroke-width="3" stroke-linecap="round" stroke-dasharray="9 7" opacity=".95"/><line x1="971.0" y1="236.2" x2="1036.3" y2="250.4" stroke="#FF5069" stroke-width="3" stroke-linecap="round" opacity=".95"/><line x1="1036.3" y1="250.4" x2="922.7" y2="380.4" stroke="#FF5069" stroke-width="3" stroke-linecap="round" opacity=".95"/><line x1="922.7" y1="380.4" x2="1046.1" y2="438.0" stroke="#FF5069" stroke-width="3" stroke-linecap="round" opacity=".95"/><g><circle cx="971.0" cy="236.2" r="15" fill="#0B0D11" fill-opacity=".92" stroke="#FF5069" stroke-width="2"/><text x="971.0" y="241.4" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">01</text></g><g><circle cx="1036.3" cy="250.4" r="15" fill="#0B0D11" fill-opacity=".92" stroke="#FF5069" stroke-width="2"/><text x="1036.3" y="255.6" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">02</text></g><g><circle cx="1046.1" cy="438.0" r="15" fill="#0B0D11" fill-opacity=".92" stroke="#FF5069" stroke-width="2"/><text x="1046.1" y="443.2" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">03</text></g><g><circle cx="922.7" cy="380.4" r="15" fill="#0B0D11" fill-opacity=".92" stroke="#FF5069" stroke-width="2"/><text x="922.7" y="385.6" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">04</text></g><g><circle cx="91.1" cy="271.1" r="15" fill="#0B0D11" fill-opacity=".92" stroke="#FF5069" stroke-width="2"/><text x="91.1" y="276.3" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700">05</text></g><text x="971.0" y="210.2" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" stroke="#0B0D11" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">Centennial</text><text x="1088.3" y="256.4" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" stroke="#0B0D11" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">Central Plaza</text><text x="1090.1" y="444.0" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" stroke="#0B0D11" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">Hewitt</text><text x="860.7" y="385.4" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" stroke="#0B0D11" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">Lower Grand</text><text x="91.1" y="245.1" text-anchor="middle" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" stroke="#0B0D11" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">LACMA</text><g><rect x="433.0" y="299.0" width="146.0" height="26" rx="3" fill="#0B0D11" fill-opacity=".88" stroke="#FF5069" stroke-width="1.2"/><text x="506.0" y="317.0" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14.5" font-weight="600">23 min / 8.7 mi</text></g><g><rect x="934.2" y="187.0" width="137.6" height="26" rx="3" fill="#0B0D11" fill-opacity=".88" stroke="#FF5069" stroke-width="1.2"/><text x="1003.0" y="205.0" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14.5" font-weight="600">4 min / 0.9 mi</text></g><g><rect x="989.2" y="305.0" width="137.6" height="26" rx="3" fill="#0B0D11" fill-opacity=".88" stroke="#FF5069" stroke-width="1.2"/><text x="1058.0" y="323.0" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14.5" font-weight="600">7 min / 1.6 mi</text></g><g><rect x="871.2" y="433.0" width="137.6" height="26" rx="3" fill="#0B0D11" fill-opacity=".88" stroke="#FF5069" stroke-width="1.2"/><text x="940.0" y="451.0" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="14.5" font-weight="600">8 min / 1.4 mi</text></g></svg></div>
    <figcaption>Drive times at current traffic. Centennial to Central Plaza is a 12 minute walk if we leave the car.</figcaption>
   </figure>
+  <p class="maplink"><a href="https://maps.app.goo.gl/ykRrVZKE9Jd8f3tAA" target="_blank" rel="noopener">Open all five in Google Maps</a></p>
   <p class="total" contenteditable data-k="map.total">All four downtown come to about <b>19 minutes</b> of driving in the order shown. Centennial has to go first because of the light. Add LACMA and we are looking at closer to <b>45 minutes</b> in the car.</p>
  </section>
 
- <section id="sec-locations" style="border-bottom:none;padding-bottom:8px">
+ <section style="border-bottom:none;padding-bottom:8px">
   <h2 class="sec">Location options</h2>
-  <p contenteditable data-k="loc.intro">Five spots I think could work. Tell me which ones you like and I will sort out the route.</p>
+  <p contenteditable data-k="loc.intro">Five spots I think could work. Tell me which ones you like and I will sort out the route. All five are saved together in <a href="https://maps.app.goo.gl/ykRrVZKE9Jd8f3tAA">this Google Maps list</a> if you want to look around them yourself.</p>
  </section>
 
  <article class="loc">
@@ -526,6 +552,45 @@ document.addEventListener('click', e => {
 });
 
 /* ---------- boot ---------- */
+/* ---------- track player ---------- */
+(() => {
+  const KEY='shoot:audio', MIN='shoot:dockmin';
+  const frame=document.getElementById('scframe'), dock=document.getElementById('dock'),
+        tog=document.getElementById('dtoggle');
+  if(!frame||!dock) return;
+  let widget=null, playing=false;
+
+  if(localStorage.getItem(MIN)==='1'){ dock.classList.add('min'); tog.textContent='Show player';
+    tog.setAttribute('aria-expanded','false'); document.body.style.paddingBottom='60px'; }
+
+  tog.addEventListener('click', () => {
+    const min = dock.classList.toggle('min');
+    tog.textContent = min ? 'Show player' : 'Hide player';
+    tog.setAttribute('aria-expanded', String(!min));
+    document.body.style.paddingBottom = min ? '60px' : '170px';
+    localStorage.setItem(MIN, min ? '1' : '0');
+  });
+
+  const sc=document.createElement('script');
+  sc.src='https://w.soundcloud.com/player/api.js';
+  sc.onload=()=>{
+    if(!window.SC) return;
+    widget=SC.Widget(frame);
+    widget.bind(SC.Widget.Events.READY,()=>{
+      widget.setVolume(18);                                  // starts quiet
+      if(localStorage.getItem(KEY)!=='off') widget.play();   // browsers usually block this
+    });
+    widget.bind(SC.Widget.Events.PLAY, ()=>{ playing=true; localStorage.removeItem(KEY); });
+    widget.bind(SC.Widget.Events.PAUSE,()=>{ playing=false; localStorage.setItem(KEY,'off'); });
+  };
+  document.head.appendChild(sc);
+
+  // browsers refuse audio before you interact, so start on the first click anywhere
+  const kick=()=>{ if(widget&&!playing&&localStorage.getItem(KEY)!=='off'){
+    widget.setVolume(18); widget.play(); } };
+  document.addEventListener('pointerdown', kick, {once:true});
+})();
+
 /* ---------- links inside editable regions still open ---------- */
 document.addEventListener('click', e => {
   const a = e.target.closest && e.target.closest('a[href]');
