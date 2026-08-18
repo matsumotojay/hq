@@ -136,6 +136,21 @@
    text-transform:uppercase;color:var(--accent);margin-bottom:5px}
  .note-body{color:var(--ink2);font-size:15.5px}
  .note-empty{color:var(--muted);font-size:15px;font-style:italic}
+ [contenteditable]:empty:before{content:attr(data-ph);color:var(--muted)}
+ .composer{border:1px solid var(--rule);border-radius:5px;background:var(--panel);margin:0 0 22px;
+   max-width:68ch;overflow:hidden}
+ .composer:focus-within{border-color:var(--accent)}
+ .cbody{padding:14px 16px;min-height:76px;font-size:15.5px;color:var(--ink);outline:none}
+ .cbody:hover,.cbody:focus{background:transparent;box-shadow:none}
+ .crow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--rule2);
+   background:var(--rule2)}
+ .crow input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--rule);border-radius:3px;
+   color:var(--ink);padding:7px 10px;font:inherit;font-size:14px}
+ .crow input:focus{outline:none;border-color:var(--accent)}
+ .post{background:var(--accent);color:#fff;border:none;border-radius:3px;padding:8px 16px;cursor:pointer;
+   font:inherit;font-size:14px;font-weight:600;white-space:nowrap}
+ .post:hover{filter:brightness(1.08)}
+ .post:disabled{opacity:.45;cursor:default;filter:none}
  .end{padding-top:26px;color:var(--muted);font-size:14px}
  a{color:var(--accent)}
 </style>
@@ -212,8 +227,14 @@
  <section>
   <h2 class="sec">Notes</h2>
   <p contenteditable data-k="notes.intro">Anything you think of, drop it here. I get it the moment you save.</p>
+  <div class="composer">
+   <div class="cbody" id="note-text" contenteditable data-ph="Write a note..."></div>
+   <div class="crow">
+    <input id="note-who" placeholder="Your name" autocomplete="name">
+    <button class="post" id="note-post">Add note</button>
+   </div>
+  </div>
   <div class="notes" id="list-notes"></div>
-  <button class="add" data-add="notes">+ add a note</button>
  </section>
 
  <section>
@@ -455,26 +476,46 @@ document.addEventListener('click', e => {
     const name = a.dataset.add; const arr = getList(name) || [];
     if(name === 'contacts') arr.push({name:'Name', role:'role', tel:'000-000-0000'});
     else if(name === 'reels') arr.push({n:String(arr.length+1).padStart(2,'0'), title:'New reel', desc:'What it is.', due:'TBC', hot:false, ref:''});
-    else if(name === 'notes'){
-      const who = 'Name';
-      const when = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      arr.unshift({who, when, text:'', id:uid()});
-    }
     else arr.push({name:'New item', desc:'Details.'});
     setList(name, arr);
-    const host = $('list-' + name);
-    const f = host && host.querySelector('[data-list-field]');
-    if(name === 'notes' && f) f.focus();
   }
 });
 
 /* ---------- boot ---------- */
+/* ---------- notes composer ---------- */
+function postNote(){
+  const body = $('note-text'), whoEl = $('note-who');
+  const text = body.innerHTML.trim();
+  if(!text || !body.textContent.trim()){ body.focus(); return; }
+  const who = (whoEl.value || '').trim() || 'Anon';
+  localStorage.setItem('shoot:who', who);
+  const when = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const arr = getList('notes') || [];
+  arr.unshift({who, when, text, id:uid()});
+  setList('notes', arr);
+  body.innerHTML = '';
+  toast('note added');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const w = $('note-who'); if(w) w.value = localStorage.getItem('shoot:who') || '';
+});
+document.addEventListener('click', e => { if(e.target.id === 'note-post') postNote(); });
+document.addEventListener('keydown', e => {
+  if(e.target.id === 'note-text' && (e.metaKey||e.ctrlKey) && e.key === 'Enter'){ e.preventDefault(); postNote(); }
+});
+
 function renderAll(){ applyStatic(); ['contacts','kit','reels','alts','edits','notes'].forEach(renderList); }
 
 function seedIfEmpty(){
   Object.keys(SEED).forEach(name => {
     if(getList(name) === null) save(LIST_KEY(name), SEED[name]);
   });
+  // drop blank notes left behind by the old add-button flow
+  const n = getList('notes');
+  if(n && n.length){
+    const clean = n.filter(it => (it.text||'').replace(/<[^>]*>/g,'').trim().length);
+    if(clean.length !== n.length) save(LIST_KEY('notes'), clean);
+  }
   renderAll();
 }
 
