@@ -19,6 +19,20 @@
    font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
  .sheet{max-width:900px;margin:0 auto;padding:20px 26px 96px}
 
+ html{scroll-behavior:smooth}
+ section[id],article[id]{scroll-margin-top:64px}
+ .jump{position:sticky;top:0;z-index:60;display:flex;gap:2px;overflow-x:auto;
+   background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:saturate(160%) blur(10px);
+   border-bottom:1px solid var(--rule);margin:0 -26px 22px;padding:9px 26px;
+   scrollbar-width:none}
+ .jump::-webkit-scrollbar{display:none}
+ .jump a{flex:none;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+   letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;
+   padding:6px 11px;border-radius:3px;white-space:nowrap}
+ .jump a:hover{color:var(--ink);background:var(--rule2)}
+ .jump a.here{color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+ [contenteditable] a{cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+ .subhead{font-size:17px;font-weight:700;margin:0 0 10px;letter-spacing:-.01em;color:var(--ink)}
  .warn{background:color-mix(in srgb,var(--accent) 12%,var(--paper));border:1px solid var(--accent);
    border-radius:4px;color:var(--ink);padding:10px 14px;margin:14px 0 20px;font-size:14.5px}
  .toast{position:fixed;right:18px;bottom:18px;z-index:80;background:var(--ink);color:var(--paper);
@@ -159,6 +173,15 @@
 <div class="sheet">
  <div class="toast" id="toast"></div>
 
+ <nav class="jump" id="jump">
+  <a href="#sec-reels">Reels</a>
+  <a href="#sec-map">Locations</a>
+  <a href="#sec-notes">Notes</a>
+  <a href="#sec-gear">Gear</a>
+  <a href="#sec-ideas">Ideas</a>
+  <a href="#sec-contacts">Contacts</a>
+ </nav>
+
  <div class="warn" id="warn" hidden></div>
 
  <header class="mast">
@@ -174,7 +197,7 @@
   <div class="f"><dt>Rate</dt><dd contenteditable data-k="f.rate">$1,050<em>7 reels at $150</em></dd></div>
  </dl>
 
- <section>
+ <section id="sec-contacts">
   <h2 class="sec">Contacts</h2>
   <ul class="rowlist people" id="list-contacts"></ul>
   <button class="add" data-add="contacts">+ add contact</button>
@@ -188,13 +211,13 @@
   </div>
  </section>
 
- <section>
+ <section id="sec-gear">
   <h2 class="sec">Equipment</h2>
   <ul class="rowlist" id="list-kit"></ul>
   <button class="add" data-add="kit">+ add equipment</button>
  </section>
 
- <section>
+ <section id="sec-reels">
   <h2 class="sec">Deliverables</h2>
   <div class="scroll">
    <table><thead><tr><th></th><th>Reel</th><th>Due</th><th>Ref</th><th></th></tr></thead>
@@ -203,8 +226,9 @@
   <button class="add" data-add="reels">+ add reel</button>
  </section>
 
- <section>
-  <h2 class="sec">Alternate ideas</h2>
+ <section id="sec-ideas">
+  <h2 class="sec">Ideas and editing</h2>
+  <h3 class="subhead">Alternate ideas</h3>
   <p contenteditable data-k="alt.intro">A couple from the replacement list at the back of your doc that I would rather not lose.</p>
   <ul class="rowlist" id="list-alts"></ul>
   <button class="add" data-add="alts">+ add idea</button>
@@ -212,10 +236,8 @@
    <a href="https://www.instagram.com/p/DPUIDtcEw98/">one</a> &middot;
    <a href="https://www.instagram.com/p/DLhhgdqp7lf/">two</a>, the one that goes into rapping &middot;
    <a href="https://www.instagram.com/p/DLDLrSwAzby/">three</a>, intro zoom only</li></ul>
- </section>
 
- <section>
-  <h2 class="sec">Editing notes</h2>
+  <h3 class="subhead" style="margin-top:34px">Editing notes</h3>
   <p contenteditable data-k="edit.intro">Styles you flagged that you want in the edit. Splitting them by what I have to capture on the night versus what I can add afterwards, because two of these cannot be faked later.</p>
   <ul class="rowlist" id="list-edits"></ul>
   <button class="add" data-add="edits">+ add note</button>
@@ -224,7 +246,7 @@
    <a href="https://www.instagram.com/reel/DZKHmhtsU4T/">two</a></li></ul>
  </section>
 
- <section>
+ <section id="sec-notes">
   <h2 class="sec">Notes</h2>
   <p contenteditable data-k="notes.intro">Anything you think of, drop it here. I get it the moment you save.</p>
   <div class="composer">
@@ -237,7 +259,7 @@
   <div class="notes" id="list-notes"></div>
  </section>
 
- <section>
+ <section id="sec-refs">
   <h2 class="sec">Reference docs</h2>
   <ul class="refs" contenteditable data-k="refdocs">
    <li><a href="https://docs.google.com/document/d/1e8LViafW5qCYlzCr1B-uQzjQLok3X3x2Imkg0s5LaY8/edit">Content ideas doc</a>
@@ -248,7 +270,7 @@
   </ul>
  </section>
 
- <section>
+ <section id="sec-map">
   <h2 class="sec">The map</h2>
   <p contenteditable data-k="map.intro">All five pinned with the drive times between them. The four downtown ones are basically on top of each other. LACMA sits way out west, so I dashed that line to whichever of the others it is closest to.</p>
   <figure class="mapfig">
@@ -258,7 +280,7 @@
   <p class="total" contenteditable data-k="map.total">All four downtown come to about <b>19 minutes</b> of driving in the order shown. Centennial has to go first because of the light. Add LACMA and we are looking at closer to <b>45 minutes</b> in the car.</p>
  </section>
 
- <section style="border-bottom:none;padding-bottom:8px">
+ <section id="sec-locations" style="border-bottom:none;padding-bottom:8px">
   <h2 class="sec">Location options</h2>
   <p contenteditable data-k="loc.intro">Five spots I think could work. Tell me which ones you like and I will sort out the route.</p>
  </section>
@@ -335,6 +357,8 @@ const $ = id => document.getElementById(id);
 let db = null, ready = false;
 const cache = {};              // key -> value from cloud
 let localEdit = null;          // element currently being typed in
+let editingList = null;        // list name currently focused
+const pendingRender = new Set(); // lists that changed while being edited
 
 /* ---------- seed content (first load writes these) ---------- */
 const SEED = {
@@ -399,10 +423,12 @@ let saveTimer = {};
 document.querySelectorAll('[contenteditable][data-k]').forEach(el => {
   const k = 't.' + el.dataset.k;
   el.addEventListener('focus', () => { localEdit = el; });
-  el.addEventListener('blur',  () => { localEdit = null; });
+  el.addEventListener('blur',  () => {
+    clearTimeout(saveTimer[k]); save(k, el.innerHTML); localEdit = null;
+  });
   el.addEventListener('input', () => {
     clearTimeout(saveTimer[k]);
-    saveTimer[k] = setTimeout(() => save(k, el.innerHTML), 600);
+    saveTimer[k] = setTimeout(() => save(k, el.innerHTML), 1400);
   });
 });
 function applyStatic(){
@@ -428,6 +454,7 @@ function renderList(name){
   if(!arr) return;
   const host = $('list-' + name);
   if(!host) return;
+  if(editingList === name){ pendingRender.add(name); return; }  // don't yank the caret
   if(name === 'contacts'){
     host.innerHTML = arr.map((it,i) => `<li>
       <span>${fieldHTML(it.name, name+'.'+i+'.name','')} <span class="role">${fieldHTML(it.role, name+'.'+i+'.role','')}</span></span>
@@ -461,10 +488,27 @@ document.addEventListener('input', e => {
   const arr = getList(name); if(!arr || !arr[idx]) return;
   arr[idx][field] = e.target.innerHTML;
   clearTimeout(saveTimer[path]);
-  saveTimer[path] = setTimeout(() => save(LIST_KEY(name), arr), 600);
+  saveTimer[path] = setTimeout(() => save(LIST_KEY(name), arr), 1400);
 });
-document.addEventListener('focusin', e => { if(e.target.dataset && e.target.dataset.listField) localEdit = e.target; });
-document.addEventListener('focusout', e => { if(e.target.dataset && e.target.dataset.listField) localEdit = null; });
+document.addEventListener('focusin', e => {
+  const path = e.target.dataset && e.target.dataset.listField;
+  if(!path) return;
+  localEdit = e.target; editingList = path.split('.')[0];
+});
+document.addEventListener('focusout', e => {
+  const path = e.target.dataset && e.target.dataset.listField;
+  if(!path) return;
+  const name = path.split('.')[0];
+  // flush the pending save straight away so nothing is lost
+  const arr = getList(name);
+  if(arr){ clearTimeout(saveTimer[path]); save(LIST_KEY(name), arr); }
+  localEdit = null; editingList = null;
+  // catch up on anything that arrived while typing, once focus is gone
+  setTimeout(() => {
+    if(editingList === name) return;
+    if(pendingRender.has(name)){ pendingRender.delete(name); renderList(name); }
+  }, 150);
+});
 
 document.addEventListener('click', e => {
   const d = e.target.closest('[data-del]');
@@ -482,6 +526,37 @@ document.addEventListener('click', e => {
 });
 
 /* ---------- boot ---------- */
+/* ---------- links inside editable regions still open ---------- */
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href]');
+  if(!a) return;
+  if(!a.closest('[contenteditable]')) return;   // plain links already work
+  e.preventDefault();
+  window.open(a.href, '_blank', 'noopener');
+});
+/* keyboard: Enter on a focused link in an editable region opens it too */
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Enter') return;
+  const a = e.target.closest && e.target.closest('a[href]');
+  if(a && a.closest('[contenteditable]')){ e.preventDefault(); window.open(a.href,'_blank','noopener'); }
+});
+
+/* ---------- jump nav ---------- */
+(() => {
+  const links = [...document.querySelectorAll('.jump a')];
+  const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const targets = [...map.keys()].map(id => document.getElementById(id)).filter(Boolean);
+  if(!targets.length) return;
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if(!en.isIntersecting) return;
+      links.forEach(a => a.classList.remove('here'));
+      const a = map.get(en.target.id); if(a) a.classList.add('here');
+    });
+  }, {rootMargin:'-64px 0px -70% 0px', threshold:0});
+  targets.forEach(t => io.observe(t));
+})();
+
 /* ---------- notes composer ---------- */
 function postNote(){
   const body = $('note-text'), whoEl = $('note-who');
