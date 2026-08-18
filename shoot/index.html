@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="build" content="20260818-142607">
+<meta name="build" content="20260818-142742">
 <title>Maximum Shella: Shoot Brief</title>
 <style>
  :root{
@@ -30,33 +30,33 @@
  .jump a.here{color:#fff;background:var(--accent);border-color:var(--accent)}
 
  /* ---- masthead ---- */
- .mast{position:relative;padding:26px 0 24px}
- .cover{float:right;width:132px;height:132px;object-fit:cover;border-radius:6px;margin:0 0 14px 22px;
+ .mast{position:relative;padding:16px 0 14px}
+ .cover{float:right;width:104px;height:104px;object-fit:cover;border-radius:6px;margin:0 0 10px 18px;
    box-shadow:0 6px 26px rgba(0,0,0,.5)}
- .slug{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.2em;
-   text-transform:uppercase;color:var(--accent);margin:0 0 14px}
- h1{font-size:clamp(38px,6.6vw,58px);line-height:.98;font-weight:700;letter-spacing:-.033em;margin:0 0 12px}
- .byline{color:var(--ink2);margin:0;font-size:16.5px;max-width:52ch}
+ .slug{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;letter-spacing:.2em;
+   text-transform:uppercase;color:var(--accent);margin:0 0 9px}
+ h1{font-size:clamp(32px,5.4vw,46px);line-height:1;font-weight:700;letter-spacing:-.03em;margin:0 0 9px}
+ .byline{color:var(--ink2);margin:0;font-size:15.5px;max-width:52ch;line-height:1.5}
 
  /* ---- call sheet strip ---- */
  .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
-   border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0 0 30px}
+   border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0 0 16px}
  @media(max-width:760px){.facts{grid-template-columns:repeat(2,1fr)}}
- .f{background:var(--card);padding:15px 16px}
- .f dt{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.15em;
-   text-transform:uppercase;color:var(--muted);margin:0 0 6px}
- .f dd{margin:0;font-size:17px;font-weight:650;font-variant-numeric:tabular-nums}
- .f dd em{display:block;font-style:normal;font-weight:400;font-size:13.5px;color:var(--muted);margin-top:3px}
+ .f{background:var(--card);padding:10px 13px}
+ .f dt{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;letter-spacing:.15em;
+   text-transform:uppercase;color:var(--muted);margin:0 0 3px}
+ .f dd{margin:0;font-size:15.5px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.3}
+ .f dd em{display:block;font-style:normal;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:1px}
 
  /* ---- sections as cards, each with its own colour key ---- */
  section{background:var(--card);border:1px solid var(--line);border-radius:12px;
-   padding:0 0 24px;margin:0 0 18px;overflow:hidden;position:relative}
+   padding:0 0 17px;margin:0 0 12px;overflow:hidden;position:relative}
  section:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--muted)}
- h2.sec{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.18em;
-   text-transform:uppercase;color:var(--ink);margin:0 0 18px;font-weight:600;
-   padding:17px 22px 15px;border-bottom:1px solid var(--line2);background:var(--card2)}
+ h2.sec{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;letter-spacing:.18em;
+   text-transform:uppercase;color:var(--ink);margin:0 0 13px;font-weight:600;
+   padding:12px 20px 11px;border-bottom:1px solid var(--line2);background:var(--card2)}
  section>p,section>ul,section>div,section>figure,section>h3,section>button{margin-left:22px;margin-right:22px}
- p{margin:0 0 14px;max-width:66ch;color:var(--ink2)}
+ p{margin:0 0 11px;max-width:66ch;color:var(--ink2)}
  p strong{color:var(--ink);font-weight:600}
  .subhead{font-size:17px;font-weight:700;margin:0 0 10px;color:var(--ink)}
 
@@ -74,8 +74,8 @@
 
  /* ---- lists ---- */
  .rowlist{list-style:none;margin:0 22px;padding:0}
- .rowlist li{display:grid;grid-template-columns:180px 1fr 30px;gap:14px;padding:12px 0;
-   border-top:1px solid var(--line2);font-size:15.5px;color:var(--ink2);align-items:start}
+ .rowlist li{display:grid;grid-template-columns:180px 1fr 30px;gap:12px;padding:9px 0;
+   border-top:1px solid var(--line2);font-size:15px;color:var(--ink2);align-items:start}
  .rowlist li:first-child{border-top:none}
  .rowlist b{color:var(--ink);font-weight:600}
  .people .tel{font-family:ui-monospace,Menlo,monospace;font-size:15px;white-space:nowrap;color:var(--ink)}
@@ -126,7 +126,7 @@
 
  /* ---- reference docs ---- */
  .refs{list-style:none;margin:0 22px;padding:0}
- .refs li{padding:12px 0;border-top:1px solid var(--line2);font-size:15px;color:var(--muted)}
+ .refs li{padding:9px 0;border-top:1px solid var(--line2);font-size:14.5px;color:var(--muted)}
  .refs li:first-child{border-top:none}
  .refs a{font-weight:600}
 
@@ -173,7 +173,7 @@
  .total b{color:var(--accent)}
 
  /* ---- locations ---- */
- .loc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;margin:0 0 18px}
+ .loc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:0 0 12px}
  .lochead{display:grid;grid-template-columns:58px 1fr;gap:0 16px;align-items:start;margin-bottom:18px}
  .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:clamp(28px,4.6vw,40px);line-height:.86;
    color:var(--accent);font-weight:500;letter-spacing:-.04em}
@@ -185,8 +185,8 @@
  .collage{display:grid;gap:6px;margin:0 0 18px}
  .collage img{display:block;width:100%;height:100%;object-fit:cover}
  .collage>div{overflow:hidden;background:var(--line2);border-radius:6px;min-height:0}
- .c2{grid-template-columns:1fr 1fr;grid-auto-rows:280px}
- .c3{grid-template-columns:1.4fr 1fr;grid-template-rows:160px 160px}
+ .c2{grid-template-columns:1fr 1fr;grid-auto-rows:235px}
+ .c3{grid-template-columns:1.4fr 1fr;grid-template-rows:138px 138px}
  .c3 .tall{grid-row:span 2}
  .note{border-top:1px solid var(--line2);padding-top:13px;margin:2px 0 0;max-width:66ch;
    font-size:14.5px;color:var(--muted)}
@@ -228,16 +228,16 @@
    .sheet{padding:0 12px 60px}
    .jump{margin:0 -12px 18px;padding:10px 12px}
    .jump a{font-size:10.5px;padding:6px 11px;letter-spacing:.08em}
-   .mast{padding:18px 0 18px}
-   h1{font-size:33px}
-   .cover{width:80px;height:80px;margin:0 0 10px 14px}
-   .byline{font-size:15.5px}
-   section{padding-bottom:20px;margin-bottom:14px}
-   h2.sec{padding:15px 16px 13px;margin-bottom:15px}
+   .mast{padding:10px 0 12px}
+   h1{font-size:29px}
+   .cover{width:68px;height:68px;margin:0 0 8px 12px}
+   .byline{font-size:15px}
+   section{padding-bottom:15px;margin-bottom:10px}
+   h2.sec{padding:11px 16px 10px;margin-bottom:11px}
    section>p,section>ul,section>div,section>figure,section>h3,section>button,
    .rowlist,.refs,.notes,.composer,.mapfig,.maplink,.total,.scroll{margin-left:16px;margin-right:16px}
-   .f{padding:13px 13px 13px 14px}
-   .rowlist li{grid-template-columns:1fr 30px;gap:3px 8px;padding:13px 0}
+   .f{padding:9px 11px 9px 12px}
+   .rowlist li{grid-template-columns:1fr 30px;gap:2px 8px;padding:10px 0}
    .rowlist li>b{grid-column:1;grid-row:1}
    .rowlist li>span{grid-column:1;grid-row:2}
    .rowlist li>.x{grid-column:2;grid-row:1;justify-self:end}
@@ -255,9 +255,9 @@
    td.n{position:absolute;left:0;top:15px;width:auto}
    td.rcell{padding-left:32px;padding-right:0}
    td.act{position:absolute;right:0;top:13px;width:auto;padding:0}
-   .loc{padding:16px;margin-bottom:14px}
+   .loc{padding:14px;margin-bottom:10px}
    .lochead{grid-template-columns:42px 1fr;gap:0 12px;margin-bottom:14px}
-   .c2,.c3{grid-template-columns:1fr;grid-template-rows:none;grid-auto-rows:185px}
+   .c2,.c3{grid-template-columns:1fr;grid-template-rows:none;grid-auto-rows:165px}
    .c3 .tall{grid-row:auto}
    .collage{gap:5px;margin-bottom:14px}
    p{font-size:16px}
@@ -638,9 +638,18 @@ document.addEventListener('click', e => {
 });
 
 /* ---------- boot ---------- */
+/* ---------- always open at the top ---------- */
+if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.addEventListener('load', () => {
+  if(location.hash) return;                       // a jump-link click is deliberate
+  window.scrollTo(0, 0);
+  // the SoundCloud iframe can pull focus as it loads, so pin it once more after
+  setTimeout(() => { if(!location.hash && window.scrollY < 400) window.scrollTo(0, 0); }, 700);
+});
+
 /* ---------- self-update check ---------- */
 (() => {
-  const BUILD = '20260818-142607';
+  const BUILD = '20260818-142742';
   const meta = document.querySelector('meta[name="build"]');
   if(meta) meta.content = BUILD;
 
@@ -659,7 +668,7 @@ document.addEventListener('click', e => {
     const live = await fetchBuild();
     if(live && live !== BUILD){
       sessionStorage.setItem('shoot:reloaded', live);
-      location.replace(location.pathname + '?v=' + live);
+      sessionStorage.setItem('shoot:top','1'); location.replace(location.pathname + '?v=' + live);
     }
   })();
 
@@ -671,7 +680,7 @@ document.addEventListener('click', e => {
     const b = document.createElement('button');
     b.id = 'newver'; b.className = 'newver';
     b.textContent = 'New version \u00b7 reload';
-    b.onclick = () => location.replace(location.pathname + '?v=' + live);
+    b.onclick = () => sessionStorage.setItem('shoot:top','1'); location.replace(location.pathname + '?v=' + live);
     document.body.appendChild(b);
   }, 45000);
 })();
