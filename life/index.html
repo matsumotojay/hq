@@ -639,7 +639,8 @@
         <div class="field"><label>Subject</label><input id="cmSubj"></div>
         <div class="field"><label>Message</label><textarea id="cmBody" rows="9"></textarea></div>
         <div class="modalfoot" style="justify-content:flex-start">
-          <button class="btn primary" onclick="openInGmail()">✉ Open in Gmail</button>
+          <button class="btn primary" onclick="previewInvoice()">📄 1. Preview the invoice</button>
+          <button class="btn" onclick="openInGmail()">✉ 2. Open in Gmail</button>
           <button class="btn" onclick="textInvoice()">💬 Text it</button>
         </div>
         <div class="modalfoot" style="justify-content:flex-start;margin-top:6px">
@@ -647,7 +648,7 @@
           <span class="spacer"></span>
           <button class="btn" onclick="closeOverlays()">Close</button>
         </div>
-        <p class="cmnote"><b>Open in Gmail</b> saves the invoice PDF first, then opens the draft — drag the file from Downloads into the message. Google won’t let a link attach a file, so that drag is the one manual step. Nothing sends from here.</p>
+        <p class="cmnote"><b>Preview</b> opens the invoice full size in its own window — check it there, and <b>Save as PDF</b> from that window when it looks right. Then <b>Open in Gmail</b> and drag the file in. Google won’t let a link attach a file, so that drag is the one manual step. Nothing sends from here.</p>
       </div>
       <div>
         <div class="attachbox">
@@ -2135,17 +2136,42 @@ function composeRemember(){
   if(composeCtx.client)saveContact(composeCtx.client,{email:$('cmTo').value.trim(),cc:$('cmCc').value.trim(),phone:$('cmPhone').value.trim()});
   state.mailcc=$('cmCc').value.trim();save();
 }
-function composeSavePDF(){
-  $('printhost').innerHTML=composeCtx.invoices.map(i=>invoiceSheetHTML(i)).join('');
-  window.print();
+/* Its own window, at true letter size, with nothing else on the page — this is
+   where he actually LOOKS at the invoice, and where the PDF gets made. */
+function previewInvoice(){
+  const css=[].map.call(document.querySelectorAll('style'),n=>n.textContent).join('\n');
+  const sheets=composeCtx.invoices.map(invoiceSheetHTML).join('');
+  const names=composeCtx.invoices.map(i=>i.number).join(', ');
+  const w=window.open('','_blank','width=880,height=1000');
+  if(!w){toast('Allow pop-ups to preview the invoice');return}
+  w.document.write('<!doctype html><meta charset="utf-8"><title>'+names+'</title>'
+    +'<style>'+css+'</style>'
+    +'<style>'
+    +'body{background:#2B2F32;padding:0 0 28px;display:flex;flex-direction:column;align-items:center;gap:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}'
+    +'.pvbar{position:sticky;top:0;z-index:5;width:100%;display:flex;align-items:center;gap:12px;'
+    +'padding:11px 18px;background:#16191B;color:#EDEDEB;font-size:13.5px;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.4)}'
+    +'.pvbar button{font:inherit;cursor:pointer;border:1px solid #3A4045;background:#22272A;color:#EDEDEB;padding:6px 13px;border-radius:8px}'
+    +'.pvbar button.go{background:#0E6B5C;border-color:#0E6B5C;color:#fff}'
+    +'.invsheet{transform:none !important;box-shadow:0 6px 26px rgba(0,0,0,.5)}'
+    +'@page{size:letter;margin:0}'
+    +'@media print{body{background:#fff;padding:0;display:block}body>*{display:block !important}'
+    +'.pvbar{display:none !important}.invsheet{box-shadow:none;border-radius:0}'
+    +'.invsheet+.invsheet{break-before:page;page-break-before:always}}'
+    +'</style>'
+    +'<div class="pvbar"><span>'+names+'</span><span style="flex:1"></span>'
+    +'<span style="font-weight:400;color:#A6ACB1">Print &rarr; Save as PDF, then attach it in Gmail</span>'
+    +'<button class="go" onclick="window.print()">Save as PDF</button>'
+    +'<button onclick="window.close()">Close</button></div>'
+    +sheets);
+  w.document.close();
+  w.focus();
 }
 function openInGmail(){
   const to=$('cmTo').value.trim();
   if(!to){toast('Add the To address first');$('cmTo').focus();return}
   composeRemember();
-  const url=gmailUrl();
-  composeSavePDF();                       /* the file is in Downloads before Gmail opens */
-  setTimeout(()=>{window.open(url,'_blank','noopener');toast('Drag the PDF in, then send')},400);
+  window.open(gmailUrl(),'_blank','noopener');
+  toast('Drag the PDF in, then send');
 }
 /* SMS can't carry a file either, so the text points at the email. */
 function smsText(){
