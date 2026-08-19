@@ -2019,27 +2019,32 @@ function artistAsked(n){
   const o=(state.outreach||[]).find(x=>norm(x.name)===norm(n));
   return !!(o&&(o.status==='emailed'||o.status==='replied'||o.status==='booked'));
 }
-/* One window per artist — a pitch cc'd to ten people is not a pitch. Chrome will
-   block the second onward until pop-ups are allowed for this site, so say so. */
+/* One artist = one personal email, but one browser tab total. Each compose loads
+   in the SAME named window; Gmail auto-saves it as a draft when the next loads.
+   The last stop is the Drafts folder, where each opens as Gmail's own small
+   bottom-corner compose box — review, fix the name, send, next. */
+const DRAFT_DWELL=4500;   /* ms Gmail gets to say "Draft saved" before we move on */
+function composeUrl(n,fest,from,to){
+  return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
+    +(artistEmail(n)?'&to='+encodeURIComponent(artistEmail(n)):'')
+    +'&su='+encodeURIComponent(fest+' \u2014 media, already on site')
+    +'&body='+encodeURIComponent(festPitch(n,fest,from,to));
+}
 function bulkDraft(fest,from,to){
   const names=[...selArtists];
   if(!names.length){toast('Pick some artists first');return}
-  const noEmail=names.filter(n=>!artistEmail(n));
-  let opened=0,blocked=0;
-  names.forEach(function(n,i){
-    setTimeout(function(){
-      const w=window.open(
-        'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
-        +(artistEmail(n)?'&to='+encodeURIComponent(artistEmail(n)):'')
-        +'&su='+encodeURIComponent(fest+' \u2014 media, already on site')
-        +'&body='+encodeURIComponent(festPitch(n,fest,from,to)),'_blank');
-      if(w)opened++; else blocked++;
-      if(i===names.length-1){
-        if(blocked)toast(blocked+' blocked — allow pop-ups for this site, then try again');
-        else toast(opened+' drafts open'+(noEmail.length?' · '+noEmail.length+' need an address':''));
-      }
-    },i*350);
+  const noEmail=names.filter(n=>!artistEmail(n)).length;
+  const w=window.open(composeUrl(names[0],fest,from,to),'jlt-gmail');
+  if(!w){toast('Chrome blocked the window — allow pop-ups for this site');return}
+  toast('Writing '+names.length+' drafts into Gmail — leave that tab alone until it lands on Drafts');
+  names.slice(1).forEach(function(n,i){
+    setTimeout(function(){window.open(composeUrl(n,fest,from,to),'jlt-gmail')},(i+1)*DRAFT_DWELL);
   });
+  setTimeout(function(){
+    window.open('https://mail.google.com/mail/u/0/#drafts','jlt-gmail');
+    toast(names.length+' drafts saved — open each from Drafts, check the name, send'
+      +(noEmail?' · '+noEmail+' still need an address':''));
+  },names.length*DRAFT_DWELL);
   setArtistStatus(names,'emailed');   /* drafted means asked — yellow until they reply */
 }
 /* One grid, every artist on the bill, colour-coded by where they stand.
