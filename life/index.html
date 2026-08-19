@@ -88,7 +88,13 @@
   .tasktitle{font-weight:600;font-size:14px}
   .taskrow.done .tasktitle{text-decoration:line-through;color:var(--ink3)}
   .taskmeta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:3px}
-  .tasknotes{font-size:12.5px;color:var(--ink2);margin-top:2px}
+  .tasknotes{font-size:12.5px;color:var(--ink2);margin:4px 0 0;padding:0;list-style:none}
+  .tasknotes li{position:relative;padding-left:13px;margin-bottom:3px;line-height:1.42}
+  .tasknotes li:last-child{margin-bottom:0}
+  .tasknotes li::before{content:"";position:absolute;left:3px;top:7px;width:4px;height:4px;border-radius:50%;background:var(--ink3)}
+  .tasknotes li a{color:var(--accent-ink);text-decoration:underline;overflow-wrap:anywhere}
+  .notesmore{font-size:11.5px;font-weight:700;color:var(--accent-ink);padding:3px 0 0;letter-spacing:.01em}
+  .notesmore:hover{text-decoration:underline}
   .duetag{font-size:11.5px;color:var(--ink3)}
   .duetag.overdue{color:var(--urgent);font-weight:600}
   .sendcomp{margin-top:6px}
@@ -186,6 +192,17 @@
   .nonbiz{font-size:12.5px;color:var(--ink3);margin:14px 0 30px}
   /* wedding fund */
   .fundcard{padding:16px 18px}
+  .billrow{display:flex;gap:12px;align-items:center;padding:11px 15px;border-bottom:1px solid var(--line)}
+  .billrow:last-child{border-bottom:none}
+  .billrow .b{flex:1;min-width:0}
+  .billrow .nm{font-weight:700;font-size:14px}
+  .billrow .sub{font-size:12px;color:var(--ink3);margin-top:1px}
+  .billrow .when{text-align:right;font-size:13px;color:var(--ink2);white-space:nowrap}
+  .billrow .when .dt{font-size:11.5px;color:var(--ink3)}
+  .billrow.soon{background:var(--owed-soft)}
+  .billrow.soon .when{color:var(--owed);font-weight:700}
+  .billrow.due{background:var(--urgent-soft)}
+  .billrow.due .when{color:var(--urgent);font-weight:700}
   .fundhead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
   .fundhead .big{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--accent)}
   .fundhead .of{font-size:13.5px;color:var(--ink2)}
@@ -459,6 +476,7 @@
     </div>
     <div class="card tablewrap"><table id="owedTable"></table></div>
     <h2>Wedding fund — Lake Toya</h2>
+    <div id="billsCard"></div>
     <div class="card fundcard" id="fundCard"></div>
 
     <h2>Collected</h2>
@@ -791,7 +809,8 @@ function seed(){
     invoices:[],
     wfund:[],
     outreach:[],
-    contacts:{}
+    contacts:{},
+    bills:[]
   };
 }
 function load(){
@@ -921,6 +940,17 @@ function migrate(){
     state.patch17=true;
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
+  }
+  // patch 30 (2026-08-18): the three bills that repeat every month
+  if(!state.patch30){
+    state.patch30=true;
+    state.bills=state.bills||[];
+    const bill=(name,day,lead,note)=>{
+      if(!state.bills.some(b=>b.name===name))state.bills.push({id:uid(),name,day,lead,note});
+    };
+    bill('Discover',1,2,'Pay it off in full');
+    bill('Amex Gold',5,4,'Heads-up lands on the 1st with Discover');
+    bill('Cal Coast HELOC',28,2,'');
   }
   // patch 29 (2026-08-18): contacts pulled out of Gmail + Google Contacts
   if(!state.patch29){
@@ -1201,7 +1231,7 @@ function snapshotDocs(){
   state.invoices.forEach(i=>{m['i.'+i.id]=JSON.stringify(i)});
   (state.wfund||[]).forEach(w=>{m['w.'+w.id]=JSON.stringify(w)});
   (state.outreach||[]).forEach(o=>{m['o.'+o.id]=JSON.stringify(o)});
-  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{}};
+  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{},bills:state.bills||[]};
   Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch')meta[k]=state[k]});
   m['meta']=JSON.stringify(meta);
   return m;
@@ -1238,6 +1268,7 @@ window.__adoptCloud=function(cloud){
     state.top3=meta.top3||[null,null,null];
     state.invSeq=meta.invSeq||0;
     state.contacts=meta.contacts||state.contacts||{};
+    state.bills=meta.bills||state.bills||[];
     /* The cloud is authoritative on which patches have actually LANDED. A flag set locally
        before adoption must not survive it — otherwise the patch is marked done while the
        data it wrote gets replaced by the cloud copy, and it never reaches any device. */
@@ -1457,6 +1488,37 @@ function renderToday(){
   });
 }
 
+/* Notes arrive as free text but read as a list. Three bullets is enough to know
+   what the task is; the rest is one tap away and stays collapsed until asked for. */
+const NOTE_PEEK=3;
+const notesOpen=new Set();
+function noteLines(t){
+  /* his notes separate facts two ways — newlines, and an inline middot */
+  return String(t.notes||'').split(/\n+|\s+\u00b7\s+/)
+    .map(function(l){return l.trim().replace(/^[-•]\s*/,'')}).filter(Boolean);
+}
+function linkify(str){
+  return esc(str).replace(/(https?:\/\/[^\s<]+)/g,function(u){
+    return '<a href="'+u+'" target="_blank" rel="noopener">'+(u.length>44?u.slice(0,44)+'…':u)+'</a>';
+  });
+}
+function notesHTML(t){
+  const lines=noteLines(t);
+  if(!lines.length)return '';
+  const open=notesOpen.has(t.id);
+  const shown=open?lines:lines.slice(0,NOTE_PEEK);
+  let h='<ul class="tasknotes">'+shown.map(function(l){return '<li>'+linkify(l)+'</li>'}).join('')+'</ul>';
+  if(lines.length>NOTE_PEEK)
+    h+='<button class="notesmore" onclick="toggleNotes(event,\''+t.id+'\')">'
+      +(open?'Hide':'+ '+(lines.length-NOTE_PEEK)+' more')+'</button>';
+  return h;
+}
+function toggleNotes(ev,id){
+  ev.stopPropagation();
+  if(notesOpen.has(id))notesOpen.delete(id); else notesOpen.add(id);
+  render();
+}
+
 function taskRowEl(t,{inSlot}){
   const row=document.createElement('div');
   row.className='taskrow'+(t.status==='done'?' done':'');
@@ -1473,7 +1535,7 @@ function taskRowEl(t,{inSlot}){
     +'<div class="taskmeta"><span class="chip '+tagClass(t.tag)+'">'+esc(t.tag)+'</span>'
     +(t.due?'<span class="duetag'+(overdue?' overdue':'')+'">'+(overdue?'overdue · ':'due ')+fmtDate(t.due)+'</span>':'')
     +'</div>'
-    +(t.notes?'<div class="tasknotes">'+esc(t.notes)+'</div>':'');
+    +notesHTML(t);
   if(t.status==='done'){
     const send=document.createElement('button');send.className='btn small sendcomp';send.textContent='Send to Completed ▸';
     send.onclick=()=>{t.status='archived';t.completedAt=todayISO();const i=state.top3.indexOf(t.id);if(i>-1)state.top3[i]=null;save();render()};
@@ -1713,6 +1775,35 @@ function clearPaid(){
   state.events.forEach(e=>{if(e.gig&&e.paid&&!e.cleared)e.cleared=true});
   save();render();
 }
+
+/* ─────────────────────── MONTHLY BILLS ─────────────────────── */
+/* Stored as a day-of-month, not a list of dates — a repeating bill that has to be
+   re-entered every month is a bill you eventually forget. */
+function billNext(day,from){
+  const t=from?new Date(from+'T12:00:00'):new Date();
+  const today=new Date(t.getFullYear(),t.getMonth(),t.getDate());
+  const mk=(y,m)=>new Date(y,m,Math.min(day,new Date(y,m+1,0).getDate()));
+  let d=mk(today.getFullYear(),today.getMonth());
+  if(d<today)d=mk(today.getFullYear(),today.getMonth()+1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function billDaysAway(b){return Math.round((new Date(billNext(b.day)+'T12:00:00')-new Date(todayISO()+'T12:00:00'))/864e5)}
+function billsSoon(){return (state.bills||[]).filter(b=>billDaysAway(b)<=(b.lead||0))}
+function renderBills(){
+  const host=$('billsCard');if(!host)return;
+  const bills=[...(state.bills||[])].sort((a,b)=>billDaysAway(a)-billDaysAway(b));
+  if(!bills.length){host.innerHTML='';return}
+  host.innerHTML='<div class="listhead"><h2>Monthly bills</h2></div>'
+    +'<div class="card">'+bills.map(b=>{
+      const n=billDaysAway(b), due=n<=0, soon=n<=(b.lead||0);
+      return '<div class="billrow'+(due?' due':(soon?' soon':''))+'">'
+        +'<div class="b"><div class="nm">'+esc(b.name)+'</div>'
+        +'<div class="sub">'+ordinal(b.day)+' of every month'+(b.note?' · '+esc(b.note):'')+'</div></div>'
+        +'<div class="when">'+(due?'<b>due today</b>':(n===1?'tomorrow':'in '+n+' days'))
+        +'<div class="dt">'+fmtDate(billNext(b.day))+'</div></div></div>';
+    }).join('')+'</div>';
+}
+function ordinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])}
 
 /* ─────────────────────── WEDDING FUND ─────────────────────── */
 const WGOAL=20000;                       /* Jay's share; Hikaru covers ~$10K of the ~$30.4K total */
@@ -2776,6 +2867,14 @@ function renderMoneyNudge(){
     h+='<div class="card nudge" style="border-left-color:var(--urgent);margin-top:14px"><div class="msg">🔴 <b class="num">'+fmt$(T.late)+'</b> is past due. Nobody else is going to chase it.</div>'
       +'<button class="btn primary small" onclick="showTab(\'invoices\')">Chase it</button></div>';
   }
+  const bills=billsSoon();
+  bills.forEach(function(b){
+    const n=billDaysAway(b), due=n<=0;
+    h+='<div class="card nudge" style="'+(due?'border-left-color:var(--urgent);':'')+'margin-top:'+(h?'0':'14px')+'">'
+      +'<div class="msg">'+(due?'🔴':'📅')+' <b>'+esc(b.name)+'</b> '
+      +(due?'is due today.':'is due '+fmtDate(billNext(b.day))+' — '+(n===1?'tomorrow':'in '+n+' days')+'. Pay it now so it’s not hanging over you.')
+      +'</div><button class="btn primary small" onclick="showTab(\'money\')">Money tab</button></div>';
+  });
   if(T.unsent>0){
     h+='<div class="card nudge" style="margin-top:'+(h?'0':'14px')+'"><div class="msg">💸 <b class="num">'+fmt$(T.unsent)+'</b> is sitting in invoices you haven’t sent. Fastest money you’ve got.</div>'
       +'<button class="btn primary small" onclick="showTab(\'invoices\')">Send them</button></div>';
@@ -2992,7 +3091,7 @@ document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeOverlays()});
 
 function render(){
   $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  renderToday();renderCalendar();renderMoney();renderFund();renderOutreach();renderCollect();renderInvoices();renderMoneyNudge();
+  renderToday();renderCalendar();renderMoney();renderBills();renderFund();renderOutreach();renderCollect();renderInvoices();renderMoneyNudge();
 }
 
 load();
