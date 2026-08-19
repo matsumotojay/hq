@@ -1051,7 +1051,7 @@ function migrate(){
     const L=state.lineups['Lost Lands 2026'];
     if(L&&!Array.isArray(L)){
       L.days={'2026-09-16':['Barely Alive','Calcium','Caspa','Chassi','Distinct Motive','Emorfik','Gardella','Hairitage','HerShe','Hydraulix','Izzy Vadim','Jaenga','Mad Dubz','Mile32','Mport','Muerte','Nikita the Wicked','Riot Ten','Smoakland','Usaybflow'],'2026-09-17':['AlienPark','Deadcrow','Dirt Monkey','FuntCase','Machaki','Mindset','Phrva','rSUN','RZRKT','Super Future','Zen Selekta']};
-      L.dayNote='Fri 18 – Sun 20 day splits are not published yet — Lost Lands drops those with set times closer to the date.';
+      L.dayNote='';
     }
   }
   // patch 33 (2026-08-19): the lineup artwork itself — names in a list lose the day-by-day layout
@@ -2056,11 +2056,18 @@ function artistStatus(name){
 function setArtistStatus(names,st){
   names.forEach(function(n){
     let o=outFor(n);
+    if(st==='new'){
+      if(!o)return;
+      /* a stub born from a stray click has nothing else on it — delete it outright */
+      if(!o.event&&!o.date&&!o.email&&!o.notes)state.outreach=state.outreach.filter(x=>x!==o);
+      else{o.status='todo';o.lastTouch=todayISO()}
+      return;
+    }
     if(!o){
       o={id:uid(),name:n,email:'',event:'',date:'',warm:'cold',status:'todo',notes:'',lastTouch:''};
       state.outreach.push(o);
     }
-    o.status=(st==='confirmed'?'replied':(st==='emailed'?'emailed':'todo'));
+    o.status=(st==='confirmed'?'replied':'emailed');
     o.lastTouch=todayISO();
   });
   selArtists.clear();
@@ -2092,6 +2099,7 @@ function artistPicker(fest,artists,from,to){
       +'<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">✉ Draft '+picked.length+'</button>'
       +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark emailed</button>'
       +'<button class="btn small" onclick="setArtistStatus('+q+',\'confirmed\')">Mark confirmed</button>'
+      +'<button class="btn small" onclick="setArtistStatus('+q+',\'new\')">Clear color</button>'
       +'<button class="btn small" onclick="clearArtists()">Clear</button></div>';
   }
   return h;
@@ -2311,16 +2319,19 @@ function renderLostLands(){
   const days=(LLL&&LLL.days)||{};
   const dayKeys=Object.keys(days).sort();
   if(dayKeys.length){
+    const early=new Set();dayKeys.forEach(d=>(days[d]||[]).forEach(n=>early.add(nkey(n))));
+    const main=line.filter(n=>!early.has(nkey(n)));
+    const groups=dayKeys.map(d=>({label:fmtDate(d),names:days[d]||[]}))
+      .concat(main.length?[{label:'Sep 18–20 · main festival',names:main}]:[]);
     h+='<div class="llsec">Day by day</div>';
-    dayKeys.forEach(function(d){
-      const names=days[d]||[];
-      h+='<details class="dayblock"><summary><b>'+fmtDate(d)+'</b> · '+names.length+' artists</summary>'
-        +'<div class="daylist">'+names.map(function(n){
+    groups.forEach(function(g){
+      h+='<details class="dayblock"><summary><b>'+g.label+'</b> · '+g.names.length+' artists</summary>'
+        +'<div class="daylist">'+g.names.map(function(n){
           const st=artistStatus(n);
           return '<span class="'+(st!=='new'?(st==='confirmed'?'kn':'ky'):'')+'">'+esc(n)+'</span>';
         }).join(' · ')+'</div></details>';
     });
-    if(LLL&&LLL.dayNote)h+='<div class="llsub">'+esc(LLL.dayNote)+'</div>';
+    h+='<div class="llsub">Sep 18–20 set times per day aren’t published yet — artists above minus the early-arrival nights.</div>';
   }
   h+=artistPicker('Lost Lands',line,LL.start,LL.end);
   host.innerHTML=h+'</div>';
