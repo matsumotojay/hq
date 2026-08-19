@@ -641,7 +641,6 @@
         <div class="cminc" id="cmFolder"></div>
         <div class="modalfoot" style="justify-content:flex-start">
           <button class="btn primary" onclick="previewInvoice()">📄 Preview &rarr; save &rarr; Gmail</button>
-          <button class="btn" onclick="openInGmail()">✉ Gmail only</button>
           <button class="btn" onclick="textInvoice()">💬 Text it</button>
         </div>
         <div class="modalfoot" style="justify-content:flex-start;margin-top:6px">
@@ -649,7 +648,7 @@
           <span class="spacer"></span>
           <button class="btn" onclick="closeOverlays()">Close</button>
         </div>
-        <p class="cmnote"><b>Preview</b> opens the invoice full size. Check it, hit <b>Continue</b> — the PDF is written straight into <b>Documents › Matsu Invoices</b> (Chrome asks for that folder once, then never again) and the Gmail draft opens. Google won’t let a link attach a file, so dragging it in is the last step; the invoice is also marked sent for you.</p>
+        <p class="cmnote"><b>Preview</b> opens the invoice full size. <b>Continue</b> saves the PDF into Documents › Matsu Invoices and marks it sent. Then <b>Open Gmail</b> brings up the draft alongside that folder, so the attachment is one drag away.</p>
       </div>
       <div>
         <div class="attachbox">
@@ -2402,10 +2401,9 @@ function previewInvoice(){
     +'.invsheet+.invsheet{break-before:page;page-break-before:always}}'
     +'</style>'
     +'<div class="pvbar"><span>'+names+'</span><span style="flex:1"></span>'
-    +'<span class="hint" style="font-weight:400;color:#A6ACB1">Check it over &mdash; Next saves the PDF, then opens the draft</span>'
-    +'<button class="go" onclick="nextStep()">Continue &rarr;</button>'
-    +'<button id="pvFolder" style="display:none" onclick="window.opener.openInvoiceFolder()">📁 Open folder</button>'
-    +'<button id="pvPath" style="display:none" onclick="window.opener.copyInvoicePath()">Copy path</button>'
+    +'<span class="hint" style="font-weight:400;color:#A6ACB1">Check it over &mdash; Continue saves the PDF</span>'
+    +'<button class="go" id="pvNext" onclick="nextStep()">Continue &rarr;</button>'
+    +'<button class="go" id="pvGmail" style="display:none" onclick="window.opener.openGmailAndFolder()">✉ Open Gmail</button>'
     +'<button onclick="window.close()">Close</button></div>'
     +sheets
     +'<script>function nextStep(){window.opener.previewNext()}<\/script>');
@@ -2420,7 +2418,7 @@ async function renderFolderChip(){
   if(!window.showDirectoryPicker){el.innerHTML='<span style="color:var(--ink3)">This browser can’t save into a folder — PDFs go to Downloads.</span>';return}
   const h=await idbGet('invdir');
   if(h&&await h.queryPermission({mode:'readwrite'})==='granted')
-    el.innerHTML='<span>📁 Saving to <b>'+esc(h.name)+'</b></span> <button class="btn small" onclick="pickInvoiceFolder()">Change</button>';
+    el.innerHTML='';                       /* set up already — say nothing */
   else
     el.innerHTML='<button class="btn small" onclick="pickInvoiceFolder()">📁 Choose the Matsu Invoices folder</button>'
       +'<span style="color:var(--ink3);font-size:12.5px">once — then every PDF lands there by itself</span>';
@@ -2445,28 +2443,24 @@ window.previewNext=async function(){
   }catch(e){console.warn(e);pvHint('Could not write the PDF \u2014 '+e.message);return}
   if(!where){pvHint('Cancelled \u2014 nothing saved.');return}
   const label=invs.length>1?invs.length+' PDFs':where.name;
-  pvHint('Saved '+label+' to '+where.folder+' \u2014 opening the draft\u2026');
-  window.open(gmailUrl(),'_blank');
-  setTimeout(()=>pvHint('Saved to '+where.folder+'. Drag '+label+' into the draft and send.'),500);
   lastSaved=where;
-  try{previewWin.document.getElementById('pvFolder').style.display='';
-      previewWin.document.getElementById('pvPath').style.display=''}catch(e){}
+  pvHint('Saved '+label+' to '+where.folder+' \u2014 open Gmail when you\u2019re ready');
+  try{const d=previewWin.document;
+      d.getElementById('pvNext').style.display='none';
+      d.getElementById('pvGmail').style.display=''}catch(e){}
   markComposeSent();
+};
+/* Gmail and the Finder window, side by side, so the drag is one gesture. */
+window.openGmailAndFolder=function(){
+  window.open(gmailUrl(),'_blank');
+  setTimeout(function(){location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Open Matsu Invoices')},500);
+  pvHint('Drag '+(lastSaved?lastSaved.name:'the PDF')+' from the folder into the draft, then send.');
 };
 /* Chrome can't open Finder. macOS Shortcuts can, and a link may launch one —
    so a one-line shortcut named below does the job the browser is not allowed to. */
 let lastSaved=null;
 const INVOICE_FOLDER='~/Documents/Matsu Invoices';
-window.openInvoiceFolder=function(){
-  location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Open Matsu Invoices');
-  toast('Asking Shortcuts to open the folder');
-};
-window.copyInvoicePath=function(){
-  const f=lastSaved?('/Users/matsu/Documents/Matsu Invoices/'+lastSaved.name):INVOICE_FOLDER;
-  navigator.clipboard.writeText(f).then(
-    ()=>toast('Path copied — in Gmail: Attach, then ⇧⌘G and paste'),
-    ()=>toast('Copy failed'));
-};
+
 function openInGmail(){
   const to=$('cmTo').value.trim();
   if(!to){toast('Add the To address first');$('cmTo').focus();return}
