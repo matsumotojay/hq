@@ -639,8 +639,8 @@
         <div class="field"><label>Subject</label><input id="cmSubj"></div>
         <div class="field"><label>Message</label><textarea id="cmBody" rows="9"></textarea></div>
         <div class="modalfoot" style="justify-content:flex-start">
-          <button class="btn primary" onclick="previewInvoice()">📄 1. Preview the invoice</button>
-          <button class="btn" onclick="openInGmail()">✉ 2. Open in Gmail</button>
+          <button class="btn primary" onclick="previewInvoice()">📄 Preview &rarr; save &rarr; Gmail</button>
+          <button class="btn" onclick="openInGmail()">✉ Gmail only</button>
           <button class="btn" onclick="textInvoice()">💬 Text it</button>
         </div>
         <div class="modalfoot" style="justify-content:flex-start;margin-top:6px">
@@ -648,7 +648,7 @@
           <span class="spacer"></span>
           <button class="btn" onclick="closeOverlays()">Close</button>
         </div>
-        <p class="cmnote"><b>Preview</b> opens the invoice full size in its own window — check it there, and <b>Save as PDF</b> from that window when it looks right. Then <b>Open in Gmail</b> and drag the file in. Google won’t let a link attach a file, so that drag is the one manual step. Nothing sends from here.</p>
+        <p class="cmnote"><b>Preview</b> opens the invoice full size in its own window. Read it over, hit <b>Next</b> — it saves the PDF (already named for the invoice; point the first save at Documents › Matsu Invoices and macOS keeps going there) and opens the Gmail draft. Drag the file in and send. Google won’t let a link attach a file, so that drag is the one step I can’t do for you.</p>
       </div>
       <div>
         <div class="attachbox">
@@ -2139,9 +2139,13 @@ function composeRemember(){
 /* Its own window, at true letter size, with nothing else on the page — this is
    where he actually LOOKS at the invoice, and where the PDF gets made. */
 function previewInvoice(){
+  const to=$('cmTo').value.trim();
+  if(!to){toast('Add the To address first');$('cmTo').focus();return}
+  composeRemember();
   const css=[].map.call(document.querySelectorAll('style'),n=>n.textContent).join('\n');
   const sheets=composeCtx.invoices.map(invoiceSheetHTML).join('');
   const names=composeCtx.invoices.map(i=>i.number).join(', ');
+  const gurl=gmailUrl();
   const w=window.open('','_blank','width=880,height=1000');
   if(!w){toast('Allow pop-ups to preview the invoice');return}
   w.document.write('<!doctype html><meta charset="utf-8"><title>'+names+'</title>'
@@ -2159,10 +2163,17 @@ function previewInvoice(){
     +'.invsheet+.invsheet{break-before:page;page-break-before:always}}'
     +'</style>'
     +'<div class="pvbar"><span>'+names+'</span><span style="flex:1"></span>'
-    +'<span style="font-weight:400;color:#A6ACB1">Print &rarr; Save as PDF, then attach it in Gmail</span>'
-    +'<button class="go" onclick="window.print()">Save as PDF</button>'
+    +'<span class="hint" style="font-weight:400;color:#A6ACB1">Check it over &mdash; Next saves the PDF, then opens the draft</span>'
+    +'<button class="go" onclick="nextStep()">Next &rarr;</button>'
     +'<button onclick="window.close()">Close</button></div>'
-    +sheets);
+    +sheets
+    +'<script>var GURL='+JSON.stringify(gurl)+';'
+    +'function nextStep(){'
+    +'  document.querySelector(".pvbar .hint").textContent="Save it into Documents \u203a Matsu Invoices \u2014 Gmail opens next";'
+    +'  window.print();'                       /* filename defaults to the invoice number */
+    +'  setTimeout(function(){window.open(GURL,"_blank");'
+    +'    document.querySelector(".pvbar .hint").textContent="Draft open \u2014 drag the PDF you just saved into it";},600);'
+    +'}<\/script>');
   w.document.close();
   w.focus();
 }
