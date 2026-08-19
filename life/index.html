@@ -1044,6 +1044,15 @@ function migrate(){
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
   }
+  // patch 35 (2026-08-19): Escape Halloween lineup is out — 85 artists, Oct 30–31, NOS Events Center
+  if(!state.patch35){
+    state.patch35=true;
+    state.lineups=state.lineups||{};
+    const cur=state.lineups['Escape Halloween 2026'];
+    if(!cur||(Array.isArray(cur)?!cur.length:!(cur.artists||[]).length)){
+      state.lineups['Escape Halloween 2026']={artists:['999999999','A Little Sound','AC Slater','Acyan','Adam Ten','Adventure Club','Alex Chapman B2B Zoe Gitter','All The Reason','Alok','Andruss B2B Juos','AniMe - No Boundaries','Avalon Emerson','Azyr','Benny Benassi','Bou','Cascada','Cat & Maomi','Cera Khin','Champion','Chrysalis','Clara Cuve','Cloonee','Coone B2B DJ Isaac','Cyclops','Dabin','Darren Styles','Dimitri Vegas & Like Mike','Disco Lines','Discovery Project','DJ Heartstring','DJ Tennis','Dr. Fresch','ero808','Excision','Frontliner (Journey Set)','Funk Assault','Galantis','Gammer','Getter','HerShe','Ian Asher','Ice Cube','Indira Paganotto','Jamie Jones B2B Franky Rizardo','Jon Casey','Joseph Capriati B2B Sosa','JOYRYDE (Sunset Set)','JSMN','k?d presents: Kill The Kid','Kai Wachi','Kana Hishiya','Kloud','Know Good','KREAM','Lady Faith B2B LNY TNZ','Level Up','Liquid Stranger','LUMI','Maddix','MALUGI','Mish','MODAL NODES','Morelia','MORTEN','Nervo','Nina Kraviz','OMNOM','PEDROZ','Pixie Dust','Richie Hawtin','Rommii','San Pacho','Sedef Adasi','Showtek (Hardstyle Set)','Silvie Loto','Steve Aoki','TELYKAST','Trancemaster Krause','Trym','VNSSA B2B ????','Yanamaste','YDG','Zedd'],posters:[]};
+    }
+  }
   // patch 34 (2026-08-19): early-arrival poster gives the day-by-day for Wed/Thu
   if(!state.patch34){
     state.patch34=true;
