@@ -261,13 +261,15 @@
   .nudge .msg b{font-weight:700}
   .status{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:5px}
   .status.draft{background:var(--owed-soft);color:var(--owed)}
-  .status.sent{background:var(--accent-soft);color:var(--accent-ink)}
+  .status.sent{background:var(--good-soft);color:var(--good)}
   .status.paid{background:var(--good-soft);color:var(--good)}
   .status.overdue{background:var(--urgent-soft);color:var(--urgent)}
 
   /* ── collections desk ────────────────── */
   .collect{padding:14px 16px;margin-bottom:10px;border-left:3px solid var(--owed)}
-  .collect.waiting{border-left-color:var(--accent)}
+  .collect.waiting{border-left-color:var(--good);background:linear-gradient(100deg,var(--good-soft) 0%,var(--surface) 55%)}
+  .collect.waiting .cname::after{content:" ✓";color:var(--good)}
+  tr.sentrow td{background:var(--good-soft)}
   .collect.late{border-left-color:var(--urgent)}
   .collect .chead{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
   .collect .cname{font-size:15.5px;font-weight:700}
@@ -2009,16 +2011,16 @@ function sendMail(){
    manager gets cc'd and the same person can be texted — old strings still read. */
 function contactRec(client){
   const c=(state.contacts||{})[client];
-  if(!c)return {email:'',cc:'',phone:''};
-  if(typeof c==='string')return {email:c,cc:'',phone:''};
-  return {email:c.email||'',cc:c.cc||'',phone:c.phone||''};
+  if(!c)return {email:'',cc:'',phone:'',note:''};
+  if(typeof c==='string')return {email:c,cc:'',phone:'',note:''};
+  return {email:c.email||'',cc:c.cc||'',phone:c.phone||'',note:c.note||''};
 }
 function contactFor(client){return contactRec(client).email}
 function saveContact(client,patch){
   state.contacts=state.contacts||{};
   const rec=Object.assign(contactRec(client),patch);
-  rec.email=(rec.email||'').trim();rec.cc=(rec.cc||'').trim();rec.phone=(rec.phone||'').trim();
-  if(!rec.email&&!rec.cc&&!rec.phone)delete state.contacts[client];
+  rec.email=(rec.email||'').trim();rec.cc=(rec.cc||'').trim();rec.phone=(rec.phone||'').trim();rec.note=(rec.note||'').trim();
+  if(!rec.email&&!rec.cc&&!rec.phone&&!rec.note)delete state.contacts[client];
   else state.contacts[client]=rec;
   state.invoices.forEach(i=>{if(i.client===client&&i.status!=='paid')i.email=rec.email});
   save();
@@ -2746,6 +2748,7 @@ function renderCollect(){
     else if(g.unsent.length)why='Drafted '+daysFrom(g.unsent[0].issue)+' days ago, never sent.';
     else if(g.overdue>0)why='<b>'+g.overdue+' days past due.</b>'+(g.chased?' Chased '+g.chased+'× — last '+fmtDate(g.lastChase)+'.':' Never chased.');
     else if(g.sent.length)why='Sent '+daysFrom(g.sent[0].sentAt)+' days ago. Due '+fmtDate(dueDate(g.sent[0]))+'.';
+    if(rec.note)why=(why?why+' ':'')+'<span style="color:var(--ink2)">'+esc(rec.note)+'</span>';
     if(why)h+='<div class="cwhy">'+why+'</div>';
     return h+'</div>';
   }).join('');
@@ -2784,7 +2787,7 @@ function renderInvoices(){
   // table
   const rows=[...state.invoices].sort((a,b)=>b.number.localeCompare(a.number));
   $('invTable').innerHTML='<tr><th>Invoice</th><th>Client</th><th>Service</th><th class="r">Amount</th><th>Sent</th><th>Due</th><th>Status</th><th></th></tr>'
-    +(rows.length?rows.map(i=>{const od=overdueDays(i);return '<tr><td><button class="btn small" onclick="openInvoice(\''+i.id+'\')">'+i.number+'</button></td>'
+    +(rows.length?rows.map(i=>{const od=overdueDays(i);return '<tr'+(i.status==='sent'&&od<=0?' class="sentrow"':'')+'><td><button class="btn small" onclick="openInvoice(\''+i.id+'\')">'+i.number+'</button></td>'
       +'<td><b>'+esc(i.client)+'</b></td><td>'+esc(invLabel(i))+'</td><td class="r num">'+fmt$(i.amount)+'</td>'
       +'<td>'+(i.sentAt?fmtDate(i.sentAt):'<span style="color:var(--ink3)">—</span>')+'</td>'
       +'<td>'+(i.status==='draft'?'<span style="color:var(--ink3)">on send</span>':fmtDate(dueDate(i)))+'</td>'
