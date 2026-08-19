@@ -2552,19 +2552,27 @@ function openInGmail(){
 /* The text is the backstop for clients who don't check email. An sms: link cannot
    carry a file, so a Shortcut drops the PDF on the clipboard and Messages accepts a
    paste as an attachment — draft assembled, he just hits send. */
-function smsText(){
-  return 'Hey '+greetName(composeCtx.client)+', I just sent over my invoice to your email. '
+function smsBody(client){
+  return 'Hey '+greetName(client)+', I just sent over my invoice to your email. '
     +'Please respond at your earliest convenience! I’ll attach a copy here too.\n\nThanks again,\nJay';
 }
-function textInvoice(){
-  const ph=telHref($('cmPhone').value);
-  if(!ph){toast('Add a phone number first');$('cmPhone').focus();return}
-  composeRemember();
+function smsText(){return smsBody(composeCtx.client)}
+/* Copy the PDF to the clipboard, then open Messages. Works from the card or the
+   compose window — the text follow-up has to stay reachable AFTER the email goes. */
+function openMessages(phone,client){
+  const ph=telHref(phone);
+  if(!ph){toast('No phone number for '+client+' yet');return}
   location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Copy Matsu Invoice');
   setTimeout(function(){
-    location.href='sms:'+ph+'&body='+encodeURIComponent(smsText());
-    toast('Messages open — press ⌘V to drop the PDF in, then send');
+    location.href='sms:'+ph+'&body='+encodeURIComponent(smsBody(client));
+    toast('Messages open — press ⌘V to attach the PDF, then send');
   },900);
+}
+function textClient(client){openMessages(contactRec(client).phone,client)}
+function textInvoice(){
+  if(!telHref($('cmPhone').value)){toast('Add a phone number first');$('cmPhone').focus();return}
+  composeRemember();
+  openMessages($('cmPhone').value,composeCtx.client);
 }
 function markComposeSent(){
   if(composeCtx.kind==='chase'){cmInvs().forEach(i=>{i.chases=(i.chases||[]).concat(todayISO())})}
@@ -2738,11 +2746,13 @@ function renderCollect(){
     h+='<div class="cact">';
     if(g.unsent.length){
       h+='<button class="btn primary small" onclick="sendGroup('+q+')">✉ Send '+(g.unsent.length>1?'all '+g.unsent.length:'invoice')+'</button>'
+        +(rec.phone?'<button class="btn small" onclick="textClient('+q+')">💬 Text</button>':'')
         +(g.unsent.length>1?'<button class="btn small" onclick="mergeGroup('+q+')" title="One itemized invoice instead of '+g.unsent.length+'">⇢ Combine into one</button>':'')
         +'<button class="btn small" onclick="copyGroup('+q+')">Copy</button>'
         +'<button class="btn small" onclick="markGroupSent('+q+')">Mark sent ✓</button>';
     }else if(g.sent.length){
-      h+='<button class="btn '+(g.overdue>0?'primary ':'')+'small" onclick="chaseGroup('+q+')">✉ '+(g.overdue>0?'Send follow-up':'Nudge')+'</button>'
+      h+=(rec.phone?'<button class="btn primary small" onclick="textClient('+q+')">💬 Send text</button>':'')
+        +'<button class="btn '+(g.overdue>0?'primary ':'')+'small" onclick="chaseGroup('+q+')">✉ '+(g.overdue>0?'Send follow-up':'Nudge')+'</button>'
         +'<button class="btn small" onclick="copyGroup('+q+')">Copy</button>'
         +'<button class="btn small" onclick="unsendGroup('+q+')">Not sent after all</button>';
     }
