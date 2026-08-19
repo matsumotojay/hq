@@ -2252,8 +2252,10 @@ async function invoicePDF(inv){
   text(BIZ.role,R,by,9.4,false,'#C8C8C4','right');
   text(BIZ.name,R,by-13,12,true,'#FFFFFF','right');
   if(sig){
+    /* clear the name's cap height, and sit centred over it like the HTML does */
     var sigH=46, sigW=sig.w*(sigH/sig.h);
-    ops.push('q '+sigW.toFixed(2)+' 0 0 '+sigH.toFixed(2)+' '+(R-sigW).toFixed(2)+' '+(H-(by-17)).toFixed(2)+' cm /Im1 Do Q');
+    var nameW=textW(BIZ.name,12,true), cx=R-nameW/2;
+    ops.push('q '+sigW.toFixed(2)+' 0 0 '+sigH.toFixed(2)+' '+(cx-sigW/2).toFixed(2)+' '+(H-(by-27)).toFixed(2)+' cm /Im1 Do Q');
   }
   var payLines=String(inv.pay||BIZ.pay).split('\n').filter(Boolean);
   var py=by-13-(payLines.length*11)-16;
@@ -2402,6 +2404,8 @@ function previewInvoice(){
     +'<div class="pvbar"><span>'+names+'</span><span style="flex:1"></span>'
     +'<span class="hint" style="font-weight:400;color:#A6ACB1">Check it over &mdash; Next saves the PDF, then opens the draft</span>'
     +'<button class="go" onclick="nextStep()">Continue &rarr;</button>'
+    +'<button id="pvFolder" style="display:none" onclick="window.opener.openInvoiceFolder()">📁 Open folder</button>'
+    +'<button id="pvPath" style="display:none" onclick="window.opener.copyInvoicePath()">Copy path</button>'
     +'<button onclick="window.close()">Close</button></div>'
     +sheets
     +'<script>function nextStep(){window.opener.previewNext()}<\/script>');
@@ -2444,7 +2448,24 @@ window.previewNext=async function(){
   pvHint('Saved '+label+' to '+where.folder+' \u2014 opening the draft\u2026');
   window.open(gmailUrl(),'_blank');
   setTimeout(()=>pvHint('Saved to '+where.folder+'. Drag '+label+' into the draft and send.'),500);
+  lastSaved=where;
+  try{previewWin.document.getElementById('pvFolder').style.display='';
+      previewWin.document.getElementById('pvPath').style.display=''}catch(e){}
   markComposeSent();
+};
+/* Chrome can't open Finder. macOS Shortcuts can, and a link may launch one —
+   so a one-line shortcut named below does the job the browser is not allowed to. */
+let lastSaved=null;
+const INVOICE_FOLDER='~/Documents/Matsu Invoices';
+window.openInvoiceFolder=function(){
+  location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Open Matsu Invoices');
+  toast('Asking Shortcuts to open the folder');
+};
+window.copyInvoicePath=function(){
+  const f=lastSaved?('/Users/matsu/Documents/Matsu Invoices/'+lastSaved.name):INVOICE_FOLDER;
+  navigator.clipboard.writeText(f).then(
+    ()=>toast('Path copied — in Gmail: Attach, then ⇧⌘G and paste'),
+    ()=>toast('Copy failed'));
 };
 function openInGmail(){
   const to=$('cmTo').value.trim();
