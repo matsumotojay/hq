@@ -88,7 +88,9 @@
   .tasktitle{font-weight:600;font-size:14px}
   .taskrow.done .tasktitle{text-decoration:line-through;color:var(--ink3)}
   .taskmeta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:3px}
-  .tasknotes{font-size:12.5px;color:var(--ink2);margin:4px 0 0;padding:0;list-style:none}
+  .tasknotes{font-size:12.5px;color:var(--ink2);margin:4px 0 0;padding:0;list-style:none;line-height:1.42}
+  /* exactly three lines, floor and ceiling, so every collapsed row is one height */
+  .tasknotes.clamped{height:4.26em;overflow:hidden}
   .tasknotes li{position:relative;padding-left:13px;margin-bottom:3px;line-height:1.42}
   .tasknotes li:last-child{margin-bottom:0}
   .tasknotes li::before{content:"";position:absolute;left:3px;top:7px;width:4px;height:4px;border-radius:50%;background:var(--ink3)}
@@ -1476,6 +1478,7 @@ function renderToday(){
   $('compCount').textContent=comp.length;
   const cl=$('completedList');cl.innerHTML='';
   let lastDate=null;
+  requestAnimationFrame(function(){trimNotes()});
   comp.forEach(t=>{
     const d=t.completedAt||'earlier';
     if(d!==lastDate){lastDate=d;const g=document.createElement('div');g.className='compgroup';g.textContent=d==='earlier'?'Earlier':fmtDate(d);cl.appendChild(g)}
@@ -1506,12 +1509,21 @@ function notesHTML(t){
   const lines=noteLines(t);
   if(!lines.length)return '';
   const open=notesOpen.has(t.id);
-  const shown=open?lines:lines.slice(0,NOTE_PEEK);
-  let h='<ul class="tasknotes">'+shown.map(function(l){return '<li>'+linkify(l)+'</li>'}).join('')+'</ul>';
-  if(lines.length>NOTE_PEEK)
-    h+='<button class="notesmore" onclick="toggleNotes(event,\''+t.id+'\')">'
-      +(open?'Hide':'+ '+(lines.length-NOTE_PEEK)+' more')+'</button>';
-  return h;
+  /* every bullet is always in the DOM — the clamp decides what is visible, so a
+     single long bullet takes the same three lines as five short ones */
+  return '<ul class="tasknotes'+(open?'':' clamped')+'">'
+    +lines.map(function(l){return '<li>'+linkify(l)+'</li>'}).join('')+'</ul>'
+    +'<button class="notesmore" hidden onclick="toggleNotes(event,\''+t.id+'\')">'
+    +(open?'Show less':'Show more')+'</button>';
+}
+/* Only measurement can tell whether three lines actually hid anything. */
+function trimNotes(root){
+  (root||document).querySelectorAll('.taskbody .tasknotes').forEach(function(ul){
+    const btn=ul.nextElementSibling;
+    if(!btn||!btn.classList.contains('notesmore'))return;
+    const clipped=ul.classList.contains('clamped')&&ul.scrollHeight>ul.clientHeight+2;
+    btn.hidden=!(clipped||!ul.classList.contains('clamped'));
+  });
 }
 function toggleNotes(ev,id){
   ev.stopPropagation();
