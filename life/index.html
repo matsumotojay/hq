@@ -2059,17 +2059,39 @@ function openPoster(i){
 
 /* One pitch, his angle: he is already paid to be there, so covering one more
    artist costs the artist almost nothing. */
+/* Festivals Jay has actually worked before — only these get the "shot it before" line. */
+function festSubject(name,fest){
+  return fest+' \u2014 '+name+' \u2014 media inquiry, already on site';
+}
+const SHOT_BEFORE=['lost lands'];
+function shotBefore(fest){
+  const f=String(fest||'').toLowerCase();
+  return SHOT_BEFORE.some(function(x){return f.indexOf(x)>-1});
+}
+/* Greeting is deliberately "Hello" — most of these land in a management inbox,
+   so addressing the artist by name reads wrong to whoever actually opens it. */
 function festPitch(name,fest,from,to){
-  return 'Hi '+name+',\n\n'
-    +'I\u2019m shooting '+fest+' this year \u2014 already credentialed and on site '
-    +fmtDate(from)+'\u2013'+fmtDate(to)+' for other artists, so adding your set is easy on my end '
-    +'and cheaper than flying someone out.\n\n'
-    +'Photo and video, same-night turnarounds if you need them. Recent music work: '+MUSIC_URL+'\n\n'
-    +'Happy to talk rate if you\u2019ve got coverage lined up already.\n\nThanks,\nJay\n'+BIZ.phone;
+  return 'Hello,\n\n'
+    +'My name is Jay Matsumoto \u2014 I\u2019m a photographer and videographer, and I\u2019m shooting '
+    +fest+' this year. I\u2019m already credentialed and on site '
+    +fmtDate(from)+'\u2013'+fmtDate(to)+', so there\u2019s nothing to arrange on the credential side.\n\n'
+    +(shotBefore(fest)?'I\u2019ve shot '+fest+' before, so I already know the site and how it runs.\n\n':'')
+    +'I have several artists booked across the weekend who are splitting my travel and lodging, '
+    +'which keeps the cost low \u2014 most artists come out around $100\u2013200 total, rather than '
+    +'covering flights and a hotel for a dedicated shooter.\n\n'
+    +'What I can cover for '+name+':\n'
+    +'\u2022 Photo \u2014 full set coverage, edited and delivered\n'
+    +'\u2022 Video \u2014 multicam clips cut for social\n'
+    +'\u2022 Video \u2014 full multicam set, up to an hour\n\n'
+    +'Happy to put together something specific to what you need.\n\n'
+    +'Thanks,\nJay Matsumoto\n\n'
+    +MUSIC_URL
+    +(INSTA_URL?'\n'+INSTA_URL:'');
 }
 const MUSIC_URL='https://www.jaymatsu.com/music';
+const INSTA_URL='';   /* set to the full profile URL and it appears under the site link */
 function draftArtist(name,email,fest,from,to){
-  const sub=fest+' \u2014 media, already on site';
+  const sub=festSubject(name,fest);
   const url='https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
     +(email?'&to='+encodeURIComponent(email):'')
     +'&su='+encodeURIComponent(sub)
@@ -2116,7 +2138,7 @@ const DRAFT_DWELL=800;   /* ms between pop-ups — just enough that Chrome doesn
 function composeUrl(n,fest,from,to){
   return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
     +(artistEmail(n)?'&to='+encodeURIComponent(artistEmail(n)):'')
-    +'&su='+encodeURIComponent(fest+' \u2014 media, already on site')
+    +'&su='+encodeURIComponent(festSubject(n,fest))
     +'&body='+encodeURIComponent(festPitch(n,fest,from,to));
 }
 function runDraftQueue(urls,noEmail){
