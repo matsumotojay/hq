@@ -2549,18 +2549,22 @@ function openInGmail(){
   toast('Drag the PDF in, then send');
 }
 /* SMS can't carry a file either, so the text points at the email. */
+/* The text is the backstop for clients who don't check email. An sms: link cannot
+   carry a file, so a Shortcut drops the PDF on the clipboard and Messages accepts a
+   paste as an attachment — draft assembled, he just hits send. */
 function smsText(){
-  const inv=cmInvs();
-  const nums=inv.map(i=>i.number).join(', ');
-  const tot=inv.reduce((t,i)=>t+(i.amount||0),0);
-  return 'Hi '+greetName(composeCtx.client)+' — '+(composeCtx.kind==='chase'?'following up on ':'just sent ')
-    +(inv.length>1?'invoices ':'invoice ')+nums+' ('+fmt$(tot)+') to your email. Thanks! — Jay';
+  return 'Hey '+greetName(composeCtx.client)+', I just sent over my invoice to your email. '
+    +'Please respond at your earliest convenience! I’ll attach a copy here too.\n\nThanks again,\nJay';
 }
 function textInvoice(){
   const ph=telHref($('cmPhone').value);
   if(!ph){toast('Add a phone number first');$('cmPhone').focus();return}
   composeRemember();
-  location.href='sms:'+ph+'&body='+encodeURIComponent(smsText());
+  location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Copy Matsu Invoice');
+  setTimeout(function(){
+    location.href='sms:'+ph+'&body='+encodeURIComponent(smsText());
+    toast('Messages open — press ⌘V to drop the PDF in, then send');
+  },900);
 }
 function markComposeSent(){
   if(composeCtx.kind==='chase'){cmInvs().forEach(i=>{i.chases=(i.chases||[]).concat(todayISO())})}
