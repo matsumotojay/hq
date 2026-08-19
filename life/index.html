@@ -285,6 +285,7 @@
   .dayblock[open] summary::before{content:"▾ "}
   .daylist{font-size:12.5px;color:var(--ink3);line-height:1.7;margin-top:5px}
   .daylist .kn{color:var(--good);font-weight:700}
+  .daylist .ky{color:var(--owed);font-weight:600}
   .bookgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:2px}
   .bookcube{background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
   .bookcube .bn{font-weight:700;font-size:13.5px}
@@ -296,6 +297,20 @@
   .artrow.pick.sel{background:var(--pers-soft);box-shadow:inset 0 0 0 2px var(--pers)}
   .artrow.pick.sel .b b{color:var(--pers)}
   .artrow.pick.done .b b{color:var(--good)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink3);margin:2px 0 4px}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .legend .sw{width:10px;height:10px;border-radius:3px;border:1px solid var(--line);display:inline-block}
+  .legend .sw.new{background:var(--surface2)}
+  .legend .sw.emailed{background:var(--owed-soft);border-color:var(--owed)}
+  .legend .sw.confirmed{background:var(--good-soft);border-color:var(--good)}
+  .legend .sw.sel{background:var(--pers);border-color:var(--pers)}
+  .pickgrid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .achip{font-size:12.5px;line-height:1.2;padding:6px 11px;border-radius:999px;border:1px solid var(--line);
+    background:var(--surface2);color:var(--ink2);cursor:pointer;user-select:none;transition:background .12s,color .12s,border-color .12s}
+  .achip:hover{background:var(--pers-soft);border-color:var(--pers);color:var(--pers)}
+  .achip.emailed{background:var(--owed-soft);border-color:var(--owed);color:var(--owed);font-weight:600}
+  .achip.confirmed{background:var(--good-soft);border-color:var(--good);color:var(--good);font-weight:700}
+  .achip.sel{background:var(--pers);border-color:var(--pers);color:#fff;font-weight:700}
   .pickbar{position:sticky;bottom:8px;display:flex;gap:8px;align-items:center;margin-top:8px;
     padding:9px 12px;border-radius:9px;background:var(--pers-soft);box-shadow:var(--shadow);font-size:13px}
   .artrow .b{flex:1;min-width:180px;font-size:13px;color:var(--ink)}
@@ -2025,12 +2040,61 @@ function bulkDraft(fest,from,to){
       }
     },i*350);
   });
+  setArtistStatus(names,'emailed');   /* drafted means asked — yellow until they reply */
+}
+/* One grid, every artist on the bill, colour-coded by where they stand.
+   Yellow = asked, green = confirmed. Selection is blue and transient. */
+function nkey(x){return String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
+function outFor(name){return (state.outreach||[]).find(o=>nkey(o.name)===nkey(name))}
+function artistStatus(name){
+  const o=outFor(name);
+  if(!o)return 'new';
+  if(o.status==='replied'||o.status==='booked')return 'confirmed';
+  if(o.status==='emailed')return 'emailed';
+  return 'new';
+}
+function setArtistStatus(names,st){
   names.forEach(function(n){
-    const o=(state.outreach||[]).find(x=>x.name===n);
-    if(o&&o.status==='todo'){o.status='emailed';o.lastTouch=todayISO()}
+    let o=outFor(n);
+    if(!o){
+      o={id:uid(),name:n,email:'',event:'',date:'',warm:'cold',status:'todo',notes:'',lastTouch:''};
+      state.outreach.push(o);
+    }
+    o.status=(st==='confirmed'?'replied':(st==='emailed'?'emailed':'todo'));
+    o.lastTouch=todayISO();
   });
   selArtists.clear();
   save();render();
+}
+function artistPicker(fest,artists,from,to){
+  if(!artists||!artists.length)return '';
+  const counts={new:0,emailed:0,confirmed:0};
+  artists.forEach(function(n){counts[artistStatus(n)]++});
+  const picked=artists.filter(n=>selArtists.has(n));
+  let h='<div class="llsec">Lineup — pick who to email</div>'
+    +'<div class="legend">'
+    +'<span><i class="sw new"></i>not contacted '+counts['new']+'</span>'
+    +'<span><i class="sw emailed"></i>emailed '+counts['emailed']+'</span>'
+    +'<span><i class="sw confirmed"></i>confirmed '+counts['confirmed']+'</span>'
+    +'<span><i class="sw sel"></i>selected</span></div>'
+    +'<div class="pickgrid">'
+    +artists.map(function(n){
+      const st=artistStatus(n), sel=selArtists.has(n), o=outFor(n);
+      return '<span class="achip '+st+(sel?' sel':'')+'" title="'+esc(o&&o.email?o.email:'no email on file yet')+'"'
+        +' onclick="toggleArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'+esc(n)+'</span>';
+    }).join('')
+    +'</div>';
+  if(picked.length){
+    const q=JSON.stringify(picked).replace(/"/g,'&quot;');
+    const noMail=picked.filter(n=>!(outFor(n)||{}).email).length;
+    h+='<div class="pickbar"><b>'+picked.length+' selected</b>'
+      +(noMail?'<span class="chip money">'+noMail+' without an email</span>':'')
+      +'<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">✉ Draft '+picked.length+'</button>'
+      +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark emailed</button>'
+      +'<button class="btn small" onclick="setArtistStatus('+q+',\'confirmed\')">Mark confirmed</button>'
+      +'<button class="btn small" onclick="clearArtists()">Clear</button></div>';
+  }
+  return h;
 }
 function markOutreached(name){
   const o=(state.outreach||[]).find(x=>x.name===name);
@@ -2243,88 +2307,22 @@ function renderLostLands(){
       +'</div>').join('')+'</div>'
     :'<div style="font-size:13px;color:var(--ink3)">Nothing booked yet.</div>';
 
-  h+='';
-  const _unused=leads.length?leads.map(function(l){
-    const age=daysFrom(l.posted);
-    return '<div class="lead '+(l.status||'new')+'"><div class="top">'
-      +'<span class="who">'+esc(l.poster)+'</span>'
-      +'<span class="when">posted '+fmtDate(l.posted)+' · '+age+'d ago · #'+esc(l.channel)+'</span>'
-      +(l.replies!=null?'<span class="chip '+(l.replies>=8?'urgent':'money')+'">'+l.replies+' replied</span>'
-                       :'<span class="chip">replies not shown</span>')
-      +(l.status==='emailed'?'<span class="chip good">emailed</span>':'')
-      +'</div>'
-      +'<div class="ask">'+esc(l.ask)+'</div>'
-      +(l.note?'<div class="why">'+esc(l.note)+'</div>':'')
-      +'<div class="acts">'
-      +(/@/.test(l.contact||'')
-          ?'<button class="btn primary small" onclick="emailLead(\''+l.id+'\')">✉ Email '+esc(l.poster)+'</button>'
-          :'<span class="chip">'+esc(l.contact||'no contact')+'</span>')
-      +'<button class="btn small" onclick="setLeadStatus(\''+l.id+'\',\'emailed\')">'+(l.status==='emailed'?'Not yet':'Mark reached out')+'</button>'
-      +'<button class="btn small" onclick="setLeadStatus(\''+l.id+'\',\'passed\')">'+(l.status==='passed'?'Un-pass':'Pass')+'</button>'
-      +'</div></div>';
-  }).join('')
-   :'<div style="font-size:13px;color:var(--ink3)">Nothing found yet — ask me to scan the Discord.</div>';
 
-  /* 208 names is a wall. The ones he already has a way in to are the list that matters. */
-  const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-  const history={};
-  state.events.forEach(e=>{if(e.client)history[norm(e.client)]=e.paid?'worked with':'booked'});
-  (state.outreach||[]).forEach(o=>{if(o.name&&!history[norm(o.name)])history[norm(o.name)]='in your pipeline'});
-  const known=line.filter(n=>history[norm(n)]);
-  const byName={};(state.outreach||[]).forEach(o=>{byName[norm(o.name)]=o});
   const days=(LLL&&LLL.days)||{};
-  const dayIdx={};Object.keys(days).forEach(d=>{(days[d]||[]).forEach(n=>{dayIdx[norm(n)]=d})});
-  const dayOf=n=>{
-    if(dayIdx[norm(n)])return dayIdx[norm(n)];
-    const o=byName[norm(n)];
-    return (o&&o.date&&o.date>=LL.start&&o.date<=LL.end)?o.date:'';
-  };
-  const asked=n=>{const o=byName[norm(n)];return o&&(o.status==='emailed'||o.status==='replied'||o.status==='booked')};
-  const rowFor=function(n){
-    const o=byName[norm(n)]||{}, d=dayOf(n), q=JSON.stringify(n).replace(/"/g,'&quot;');
-    const sel=selArtists.has(n), done=asked(n);
-    return '<div class="artrow pick'+(sel?' sel':'')+(done?' done':'')+'" onclick="toggleArtist('+q+')">'
-      +'<div class="b"><b>'+esc(n)+'</b>'
-      +(done?' <span class="chip good">emailed</span>':'')
-      +(d?'<span class="when"> · '+fmtDate(d)+'</span>':'<span class="when"> · day TBA</span>')
-      +(o.email?'':'<span class="when"> · no email yet</span>')+'</div>'
-      +'<div class="acts" onclick="event.stopPropagation()">'
-      +'<button class="btn small" onclick="draftArtist('+q+','
-        +JSON.stringify(o.email||'').replace(/"/g,'&quot;')+',\'Lost Lands\',\''+LL.start+'\',\''+LL.end+'\')">✉ Draft</button>'
-      +'<button class="btn small" onclick="markOutreached('+q+')">'
-      +(done?'Not yet':'Mark emailed')+'</button></div></div>';
-  };
   const dayKeys=Object.keys(days).sort();
   if(dayKeys.length){
     h+='<div class="llsec">Day by day</div>';
     dayKeys.forEach(function(d){
       const names=days[d]||[];
-      h+='<details class="dayblock"><summary><b>'+fmtDate(d)+'</b> · '+names.length+' artists'
-        +(names.some(n=>history[norm(n)])?' <span class="chip good">'+names.filter(n=>history[norm(n)]).length+' you know</span>':'')
-        +'</summary><div class="daylist">'
-        +names.map(function(n){return '<span class="'+(history[norm(n)]?'kn':'')+'">'+esc(n)+'</span>'}).join(' · ')
-        +'</div></details>';
+      h+='<details class="dayblock"><summary><b>'+fmtDate(d)+'</b> · '+names.length+' artists</summary>'
+        +'<div class="daylist">'+names.map(function(n){
+          const st=artistStatus(n);
+          return '<span class="'+(st!=='new'?(st==='confirmed'?'kn':'ky'):'')+'">'+esc(n)+'</span>';
+        }).join(' · ')+'</div></details>';
     });
     if(LLL&&LLL.dayNote)h+='<div class="llsub">'+esc(LLL.dayNote)+'</div>';
   }
-  const alreadyAsked=known.filter(asked), toAsk=known.filter(n=>!asked(n));
-  h+='<div class="llsec">Artists — '+line.length+' on the bill, '+known.length+' you have a way in to</div>';
-  if(alreadyAsked.length){
-    h+='<div class="llsub" style="margin:6px 0 2px"><b>Already emailed</b></div>'+alreadyAsked.map(rowFor).join('');
-  }
-  const picked=known.filter(n=>selArtists.has(n)).length;
-  h+='<div class="llsub" style="margin:8px 0 2px"><b>Worth emailing</b> — click names to select, then draft them all at once</div>';
-  if(picked)h+='<div class="pickbar"><b>'+picked+' selected</b>'
-    +'<button class="btn primary small" onclick="bulkDraft(\'Lost Lands\',\''+LL.start+'\',\''+LL.end+'\')">✉ Draft '+picked+' email'+(picked>1?'s':'')+'</button>'
-    +'<button class="btn small" onclick="clearArtists()">Clear</button></div>';
-  h+=toAsk.length?toAsk.map(rowFor).join('')
-    :'<div style="font-size:13px;color:var(--ink3)">Nobody left in this group.</div>';
-  if(line.length){
-    const rest=line.filter(n=>!history[norm(n)]);
-    h+='<details style="margin-top:8px"><summary style="cursor:pointer;font-size:12.5px;color:var(--accent-ink);font-weight:700">'
-      +'All '+line.length+' artists on the 2026 bill</summary>'
-      +'<div style="font-size:12.5px;color:var(--ink2);margin-top:6px;line-height:1.6">'+rest.map(esc).join(' · ')+'</div></details>';
-  }
+  h+=artistPicker('Lost Lands',line,LL.start,LL.end);
   host.innerHTML=h+'</div>';
 }
 
