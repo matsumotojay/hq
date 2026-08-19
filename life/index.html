@@ -258,6 +258,10 @@
   .lead.emailed{opacity:.72}
   .lead.passed{opacity:.45}
   .lead.passed .ask{text-decoration:line-through}
+  .leadgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;align-items:start}
+  .leadbox{padding:4px 14px 12px}
+  .lbhead{display:flex;align-items:baseline;gap:8px;font-weight:800;font-size:14.5px;padding:11px 0 2px}
+  .lbhead .ct{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--ink3)}
   .secthead{display:flex;align-items:baseline;gap:9px;margin:22px 0 8px}
   .secthead h2{margin:0}
   .secthead .ct{font-size:12px;color:var(--ink3)}
@@ -282,6 +286,13 @@
   .daylist{font-size:12.5px;color:var(--ink3);line-height:1.7;margin-top:5px}
   .daylist .kn{color:var(--good);font-weight:700}
   .artrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-top:1px solid var(--line)}
+  .artrow.pick{cursor:pointer;border-radius:7px;padding:6px 8px;transition:background .12s,box-shadow .12s}
+  .artrow.pick:hover{background:var(--pers-soft)}
+  .artrow.pick.sel{background:var(--pers-soft);box-shadow:inset 0 0 0 2px var(--pers)}
+  .artrow.pick.sel .b b{color:var(--pers)}
+  .artrow.pick.done .b b{color:var(--good)}
+  .pickbar{position:sticky;bottom:8px;display:flex;gap:8px;align-items:center;margin-top:8px;
+    padding:9px 12px;border-radius:9px;background:var(--pers-soft);box-shadow:var(--shadow);font-size:13px}
   .artrow .b{flex:1;min-width:180px;font-size:13px;color:var(--ink)}
   .artrow .when{font-size:11.5px;color:var(--ink3)}
   .artrow .acts{display:flex;gap:6px}
@@ -1970,6 +1981,51 @@ function draftArtist(name,email,fest,from,to){
   window.open(url,'_blank');
   if(!email)toast('No email on file — paste theirs into the To field');
 }
+/* Selection lives in memory, not state — it is a working set, not a record. */
+const selArtists=new Set();
+function toggleArtist(n){
+  if(selArtists.has(n))selArtists.delete(n); else selArtists.add(n);
+  render();
+}
+function clearArtists(){selArtists.clear();render()}
+function artistEmail(n){
+  const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const o=(state.outreach||[]).find(x=>norm(x.name)===norm(n));
+  return o&&o.email?o.email:'';
+}
+function artistAsked(n){
+  const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const o=(state.outreach||[]).find(x=>norm(x.name)===norm(n));
+  return !!(o&&(o.status==='emailed'||o.status==='replied'||o.status==='booked'));
+}
+/* One window per artist — a pitch cc'd to ten people is not a pitch. Chrome will
+   block the second onward until pop-ups are allowed for this site, so say so. */
+function bulkDraft(fest,from,to){
+  const names=[...selArtists];
+  if(!names.length){toast('Pick some artists first');return}
+  const noEmail=names.filter(n=>!artistEmail(n));
+  let opened=0,blocked=0;
+  names.forEach(function(n,i){
+    setTimeout(function(){
+      const w=window.open(
+        'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
+        +(artistEmail(n)?'&to='+encodeURIComponent(artistEmail(n)):'')
+        +'&su='+encodeURIComponent(fest+' \u2014 media, already on site')
+        +'&body='+encodeURIComponent(festPitch(n,fest,from,to)),'_blank');
+      if(w)opened++; else blocked++;
+      if(i===names.length-1){
+        if(blocked)toast(blocked+' blocked — allow pop-ups for this site, then try again');
+        else toast(opened+' drafts open'+(noEmail.length?' · '+noEmail.length+' need an address':''));
+      }
+    },i*350);
+  });
+  names.forEach(function(n){
+    const o=(state.outreach||[]).find(x=>x.name===n);
+    if(o&&o.status==='todo'){o.status='emailed';o.lastTouch=todayISO()}
+  });
+  selArtists.clear();
+  save();render();
+}
 function markOutreached(name){
   const o=(state.outreach||[]).find(x=>x.name===name);
   if(o){o.status=(o.status==='emailed'?'todo':'emailed');o.lastTouch=todayISO();save();render()}
@@ -1997,16 +2053,35 @@ function leadCardHTML(l){
     +'<button class="btn small" onclick="setLeadStatus(\''+l.id+'\',\'passed\')">'+(l.status==='passed'?'Un-pass':'Pass')+'</button>'
     +'</div></div>';
 }
+/* Split by festival so the box you open is the festival you're deciding about,
+   ordered by whichever lands first. */
+function festDateOf(name){
+  const key=String(name||'').replace(/\s*20\d\d$/,'');
+  const ds=(state.outreach||[]).filter(o=>new RegExp(key,'i').test((o.event||'')+' '+(o.name||'')))
+    .map(o=>o.date).filter(Boolean).sort();
+  return ds[0]||'9999-12-31';
+}
 function renderDiscordLeads(){
   const host=$('discordCard');if(!host)return;
-  const all=(state.leads||[]).slice().sort((a,b)=>(b.posted||'').localeCompare(a.posted||''));
-  const live=all.filter(l=>l.status!=='passed');
+  const all=state.leads||[];
+  if(!all.length){
+    host.innerHTML='<div class="secthead"><h2>📥 Discord leads</h2></div>'
+      +'<div class="card" style="padding:14px;font-size:13px;color:var(--ink3)">Nothing scanned yet — ask me to sweep the Discord.</div>';
+    return;
+  }
+  const g=groupBy(all,l=>l.event||'Unsorted');
+  const keys=Object.keys(g).sort((a,b)=>festDateOf(a).localeCompare(festDateOf(b)));
+  const open=all.filter(l=>l.status!=='passed').length;
   host.innerHTML='<div class="secthead"><h2>📥 Discord leads</h2>'
-    +'<span class="ct">'+live.length+' open'+(all.length>live.length?' · '+(all.length-live.length)+' passed':'')+' · No Travel Agency</span></div>'
-    +'<div class="card" style="padding:4px 16px 14px">'
-    +(all.length?all.map(leadCardHTML).join('')
-       :'<div style="font-size:13px;color:var(--ink3);padding:12px 0">Nothing scanned yet — ask me to sweep the Discord.</div>')
-    +'</div>';
+    +'<span class="ct">'+open+' open across '+keys.length+' festival'+(keys.length>1?'s':'')+' · No Travel Agency</span></div>'
+    +'<div class="leadgrid">'+keys.map(function(k){
+      const rows=g[k].slice().sort((a,b)=>(b.posted||'').localeCompare(a.posted||''));
+      const live=rows.filter(l=>l.status!=='passed').length;
+      const d=festDateOf(k);
+      return '<div class="card leadbox"><div class="lbhead">'+esc(k)
+        +'<span class="ct">'+(d<'9999'?fmtDate(d)+' · ':'')+live+' open</span></div>'
+        +rows.map(leadCardHTML).join('')+'</div>';
+    }).join('')+'</div>';
 }
 
 /* Festivals and clubs are different businesses — a festival is one date with many
@@ -2181,16 +2256,18 @@ function renderLostLands(){
   };
   const asked=n=>{const o=byName[norm(n)];return o&&(o.status==='emailed'||o.status==='replied'||o.status==='booked')};
   const rowFor=function(n){
-    const o=byName[norm(n)]||{}, d=dayOf(n);
-    return '<div class="artrow"><div class="b"><b>'+esc(n)+'</b>'
-      +' <span class="chip '+(asked(n)?'good':'')+'">'+esc(o.status||history[norm(n)]||'not contacted')+'</span>'
+    const o=byName[norm(n)]||{}, d=dayOf(n), q=JSON.stringify(n).replace(/"/g,'&quot;');
+    const sel=selArtists.has(n), done=asked(n);
+    return '<div class="artrow pick'+(sel?' sel':'')+(done?' done':'')+'" onclick="toggleArtist('+q+')">'
+      +'<div class="b"><b>'+esc(n)+'</b>'
+      +(done?' <span class="chip good">emailed</span>':'')
       +(d?'<span class="when"> · '+fmtDate(d)+'</span>':'<span class="when"> · day TBA</span>')
       +(o.email?'':'<span class="when"> · no email yet</span>')+'</div>'
-      +'<div class="acts">'
-      +'<button class="btn small primary" onclick="draftArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+','
+      +'<div class="acts" onclick="event.stopPropagation()">'
+      +'<button class="btn small" onclick="draftArtist('+q+','
         +JSON.stringify(o.email||'').replace(/"/g,'&quot;')+',\'Lost Lands\',\''+LL.start+'\',\''+LL.end+'\')">✉ Draft</button>'
-      +'<button class="btn small" onclick="markOutreached('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'
-      +(asked(n)?'Not yet':'Mark emailed')+'</button></div></div>';
+      +'<button class="btn small" onclick="markOutreached('+q+')">'
+      +(done?'Not yet':'Mark emailed')+'</button></div></div>';
   };
   const dayKeys=Object.keys(days).sort();
   if(dayKeys.length){
@@ -2210,7 +2287,11 @@ function renderLostLands(){
   if(alreadyAsked.length){
     h+='<div class="llsub" style="margin:6px 0 2px"><b>Already emailed</b></div>'+alreadyAsked.map(rowFor).join('');
   }
-  h+='<div class="llsub" style="margin:8px 0 2px"><b>Worth emailing</b></div>';
+  const picked=known.filter(n=>selArtists.has(n)).length;
+  h+='<div class="llsub" style="margin:8px 0 2px"><b>Worth emailing</b> — click names to select, then draft them all at once</div>';
+  if(picked)h+='<div class="pickbar"><b>'+picked+' selected</b>'
+    +'<button class="btn primary small" onclick="bulkDraft(\'Lost Lands\',\''+LL.start+'\',\''+LL.end+'\')">✉ Draft '+picked+' email'+(picked>1?'s':'')+'</button>'
+    +'<button class="btn small" onclick="clearArtists()">Clear</button></div>';
   h+=toAsk.length?toAsk.map(rowFor).join('')
     :'<div style="font-size:13px;color:var(--ink3)">Nobody left in this group.</div>';
   if(line.length){
