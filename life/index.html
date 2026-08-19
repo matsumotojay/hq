@@ -2327,7 +2327,7 @@ function renderLostLands(){
     const early=new Set();dayKeys.forEach(d=>(days[d]||[]).forEach(n=>early.add(nkey(n))));
     const main=line.filter(n=>!early.has(nkey(n)));
     const groups=dayKeys.map(d=>({label:fmtDate(d),names:days[d]||[]}))
-      .concat(main.length?[{label:'Sep 18–20 · main festival',names:main}]:[]);
+      .concat(main.length?[{label:'Main festival — day not announced (Sep 18–20)',names:main}]:[]);
     h+='<div class="llsec">Day by day</div>';
     groups.forEach(function(g){
       h+='<details class="dayblock"><summary><b>'+g.label+'</b> · '+g.names.length+' artists</summary>'
@@ -2336,7 +2336,7 @@ function renderLostLands(){
           return '<span class="'+(st!=='new'?(st==='confirmed'?'kn':'ky'):'')+'">'+esc(n)+'</span>';
         }).join(' · ')+'</div></details>';
     });
-    h+='<div class="llsub">Sep 18–20 set times per day aren’t published yet — artists above minus the early-arrival nights.</div>';
+    h+='<div class="llsub">Only Wed 16 and Thu 17 have per-day billing so far (from the early-arrival poster). Everyone else could play any of Fri–Sun — Lost Lands hasn’t published the day splits.</div>';
   }
   h+=artistPicker('Lost Lands',line,LL.start,LL.end);
   host.innerHTML=h+'</div>';
