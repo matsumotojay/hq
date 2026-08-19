@@ -242,6 +242,31 @@
   .outrow .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:3px}
   .outrow .em{font-size:12px;color:var(--ink2);overflow-wrap:anywhere}
   .outrow .em.missing{color:var(--owed);font-weight:600}
+  .llcard{padding:16px 18px;margin-bottom:14px;border-left:3px solid var(--accent)}
+  .llhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .llhead h3{font-size:16px;font-weight:800;letter-spacing:-.01em}
+  .llsub{font-size:12.5px;color:var(--ink3);margin-top:3px}
+  .llsec{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin:14px 0 6px}
+  .lead{border-top:1px solid var(--line);padding:10px 0}
+  .lead:last-child{padding-bottom:0}
+  .lead .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+  .lead .who{font-weight:700;font-size:14px}
+  .lead .when{font-size:11.5px;color:var(--ink3)}
+  .lead .ask{font-size:13px;color:var(--ink2);margin-top:3px}
+  .lead .why{font-size:12.5px;color:var(--accent-ink);margin-top:3px}
+  .lead .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .lead.emailed{opacity:.72}
+  .lead.passed{opacity:.45}
+  .lead.passed .ask{text-decoration:line-through}
+  .posters{display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
+  .poster{width:132px;cursor:zoom-in;margin:0}
+  .poster img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;background:var(--surface2)}
+  .poster figcaption{font-size:11.5px;color:var(--ink3);margin-top:4px;text-align:center}
+  .posterview .pvbox{max-width:min(96vw,1100px);width:100%;max-height:92vh;display:flex;flex-direction:column;gap:8px}
+  .posterview #pvImg{max-width:100%;max-height:82vh;object-fit:contain;border-radius:8px;cursor:zoom-in;align-self:center}
+  .posterview #pvImg.zoom{max-width:none;max-height:none;width:auto;cursor:zoom-out}
+  .posterview .pvbox{overflow:auto}
+  .pvbar2{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:13px;font-weight:600;flex:none}
   .st{font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 8px;border-radius:99px;cursor:pointer;border:1px solid transparent}
   .st.todo{background:var(--chip);color:var(--ink2)}
   .st.emailed{background:var(--owed-soft);color:var(--owed)}
@@ -489,6 +514,7 @@
   <!-- ═══════════ OUTREACH ═══════════ -->
   <section class="view" id="view-outreach">
     <div class="monthstrip" id="outStats" style="margin-top:18px"></div>
+    <div id="llCard"></div>
     <div class="calhead">
       <button class="btn small" onclick="outNav(-1)">‹</button>
       <h2 id="outCalTitle"></h2>
@@ -812,7 +838,9 @@ function seed(){
     wfund:[],
     outreach:[],
     contacts:{},
-    bills:[]
+    bills:[],
+    leads:[],
+    lineups:{}
   };
 }
 function load(){
@@ -834,6 +862,15 @@ function migrate(){
     if(!Array.isArray(i.chases))i.chases=[];
   });
   state.contacts=state.contacts||{};
+  /* an inserting patch can run twice when a cloud adopt lands mid-flight, so
+     collapse duplicate leads on every load rather than trusting the guard alone */
+  if(Array.isArray(state.leads)){
+    const seen={};
+    state.leads=state.leads.filter(function(l){
+      const k=(l.poster||'')+'|'+(l.event||'');
+      if(seen[k])return false; seen[k]=1; return true;
+    });
+  }
   // patch 1 (2026-08-13): two Aug 7 gigs Jay never logged
   if(!state.patch1){
     state.patch1=true;
@@ -942,6 +979,38 @@ function migrate(){
     state.patch17=true;
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
+  }
+  // patch 33 (2026-08-19): the lineup artwork itself — names in a list lose the day-by-day layout
+  if(!state.patch33){
+    state.patch33=true;
+    state.lineups=state.lineups||{};
+    const cur=state.lineups['Lost Lands 2026'];
+    const artists=Array.isArray(cur)?cur:((cur&&cur.artists)||[]);
+    state.lineups['Lost Lands 2026']={artists:artists,posters:[
+      {label:'Full lineup',url:'https://www.lostlandsfestival.com/wp-content/uploads/2026/05/Lost_Lands_2026_Lineup_4x5.jpg'},
+      {label:'Early entry — Wed & Thu',url:'https://www.lostlandsfestival.com/wp-content/uploads/2026/05/Lost_Lands_2026_Weds_Thurs_Lineup4_4x5.jpg'}
+    ]};
+  }
+  // patch 32 (2026-08-19): the Lost Lands 2026 lineup, so he can see who he already has an angle on
+  if(!state.patch32){
+    state.patch32=true;
+    state.lineups=state.lineups||{};
+    state.lineups['Lost Lands 2026']=['Excision','Adventure Club','ÆON:MODE','ALLEYCVT','ARMNHMR','ATLiens','Audiofreq','Barely Alive','Bear Grillz','Benda','Blossom','Boogie T','Borgore','Bou','Calcium','Canabliss','Caspa','Crankdat','Craze','Culture Shock','Cyclops','Delta Heavy','Dieselboy','Dion Timmer','Dirt Monkey','Dirtyphonics','Distinct Motive','Doctor P','Dr. Fresch','DRINKURWATER','Effin','Emorfik','Eptic','Space Laces','Flosstradamus','Flux Pavilion','FuntCase','Ganja White Night','Ghastly','GHENGAR','gladde paling','Grabbitz','Hairitage','Hedex','HEYZ','HOL!','Illenium','INFEKT','Ivy Lab','Jantsen','Jessica Audiffred','Jkyl & Hyde','Kai Wachi','Know Good','Kompany','Krewella','LAYZ','Level Up','Levity','Lil Texas','Liquid Stranger','LYNY','Mefjus','NGHTMRE','Oliverse','Passport','PhaseOne','Ravenscoon','Ray Volpe','Reaper','THE RESISTANCE','Riot Ten','Samplifire','Seven Lions','Sigma','SIPPY','SLANDER','Smoakland','SoDown','Stumpi','Subtronics','Sullivan King','Taiki Nulight','Trivecta','TRUTH','Virtual Riot','Wax Motif','Whethan','The Widdler','William Black','WonkyWilla','Wooli','YOOKiE','Zingara','Zomboy','$J','2DY4','AlienPark','All The Reason','Arlo','Au5','Austeria','AVELLO','BadKlaat','Basstripper','Bella Renee','Big Florida','Brainrack','Capochino','Casey Club','Champagne Drip','Chassi','Chozen','Codd Dubz','Crizzly','Crumb Pit','Crystal Skies','Darksiderz','Deadcrow','DirtySnatcha','Distant Matter','Dodge & Fuski','Dr. Ushuu','Dream Takers','Dubscribe','Finnuh','FUTURE EXIT','Gardella','Green Matter','HALIENE','HerShe','Hostage Situation','HURTBOX','HVDES','Hydraulix','Imanu','Ivory','Izadi','Izzy Vadim','Jaenga','Josh Teed','Killmatter','Kliptic','Klo','Lazrus','Leotrix','Lowcation','Luci','Lumasi','Machaki','Mad Dubz','MADGRRL','Mile32','Mindset','Modal Nodes','Mozey','Mport','Muerte','Myrias','MYTHM','Neotek','Neumonic','Nikita the Wicked','Nimda','Noetika','OG Nixin','Onara','Paper Skies','Pegboard Nerds','Phrva','Poni','Pretty Sweet','ProbCause','Prosecute','RemK','Richard Finger','Roi','rSUN','Ryns','RZRKT','Saint Miller','Seth David','Shlump','SISTO','Skilah','Space Wizard','SPORTMODE','SQISHI','Stoned Level','Subsonic','Super Future','Tisoki','Tokyo Machine','Twopercent','TYNAN','Usaybflow','VAMPA','VKTM','Warlord','Whales','Wiley','Wraz','Xotix','yetep','yvm3','Zen Selekta','ZERO (UK)','Zoey808'];
+  }
+  // patch 31 (2026-08-19): Lost Lands leads lifted out of the No Travel Discord
+  if(!state.patch31){
+    state.patch31=true;
+    state.leads=state.leads||[];
+    const lead=(o)=>{if(!state.leads.some(x=>x.poster===o.poster&&x.event===o.event))state.leads.push(Object.assign({id:uid(),event:'Lost Lands 2026',status:'new'},o))};
+    lead({poster:'Daniel',handle:'DHong24',posted:'2026-07-31',replies:10,channel:'available-gigs',
+      ask:'Photos/raws for two festivals — Lost Lands Sun 9/20 and North Coast 9/5. Wants someone already on site shooting those events for other artists.',
+      contact:'daniel@nextstepmgmt.com',
+      note:'This is the one written for you — Yetep plays 9/20 and you are already credentialed.'});
+    lead({poster:'Kevin',handle:'062kv',posted:'2026-07-22',replies:null,channel:'available-gigs',
+      ask:'Photo/video — Lost Lands Sep 18 (also had Shambhala in July).',contact:'DM on Discord',note:''});
+    lead({poster:'Nick',handle:'CreativeKonvo',posted:'2026-08-16',replies:null,channel:'questions',
+      ask:'Looking to split a hotel for Lost Lands.',contact:'DM on Discord',
+      note:'Not a gig — but it cuts into the $758.40 you have already sunk in this trip.'});
   }
   // patch 30 (2026-08-18): the three bills that repeat every month
   if(!state.patch30){
@@ -1233,7 +1302,8 @@ function snapshotDocs(){
   state.invoices.forEach(i=>{m['i.'+i.id]=JSON.stringify(i)});
   (state.wfund||[]).forEach(w=>{m['w.'+w.id]=JSON.stringify(w)});
   (state.outreach||[]).forEach(o=>{m['o.'+o.id]=JSON.stringify(o)});
-  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{},bills:state.bills||[]};
+  (state.leads||[]).forEach(l=>{m['l.'+l.id]=JSON.stringify(l)});
+  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{},bills:state.bills||[],lineups:state.lineups||{}};
   Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch')meta[k]=state[k]});
   m['meta']=JSON.stringify(meta);
   return m;
@@ -1249,7 +1319,7 @@ function pushDiff(){
 window.__pushAll=function(){lastPush={};pushDiff()};
 window.__adoptCloud=function(cloud){
   try{
-    const tasks=[],events=[],invoices=[],wfund=[],outreach=[];let meta=null;
+    const tasks=[],events=[],invoices=[],wfund=[],outreach=[],leads=[];let meta=null;
     for(const k in cloud){
       let v;try{v=JSON.parse(cloud[k])}catch(e){continue}
       if(k==='meta')meta=v;
@@ -1258,10 +1328,12 @@ window.__adoptCloud=function(cloud){
       else if(k.slice(0,2)==='i.')invoices.push(v);
       else if(k.slice(0,2)==='w.')wfund.push(v);
       else if(k.slice(0,2)==='o.')outreach.push(v);
+      else if(k.slice(0,2)==='l.')leads.push(v);
     }
     if(!meta)return;
     state.wfund=wfund.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     state.outreach=outreach;
+    state.leads=leads;
     const order=meta.taskOrder||[];
     tasks.sort((a,b)=>{let ia=order.indexOf(a.id),ib=order.indexOf(b.id);
       if(ia<0)ia=9999;if(ib<0)ib=9999;return ia-ib});
@@ -1271,6 +1343,7 @@ window.__adoptCloud=function(cloud){
     state.invSeq=meta.invSeq||0;
     state.contacts=meta.contacts||state.contacts||{};
     state.bills=meta.bills||state.bills||[];
+    state.lineups=meta.lineups||state.lineups||{};
     /* The cloud is authoritative on which patches have actually LANDED. A flag set locally
        before adoption must not survive it — otherwise the patch is marked done while the
        data it wrote gets replaced by the cloud copy, and it never reaches any device. */
@@ -1786,6 +1859,126 @@ function togglePaid(id,checked){
 function clearPaid(){
   state.events.forEach(e=>{if(e.gig&&e.paid&&!e.cleared)e.cleared=true});
   save();render();
+}
+
+/* ─────────────────────── LOST LANDS ─────────────────────────
+   The trip is already paid for, so anything booked on top of it is margin.
+   Leads are lifted out of Discord and kept here with the date they were posted
+   and how many people replied — a three-week-old post with ten replies is a
+   different proposition from yesterday's with none. */
+const LL={start:'2026-09-16',end:'2026-09-21',sunk:758.40};
+function leadsFor(ev){return (state.leads||[]).filter(l=>l.event===ev)
+  .sort((a,b)=>(b.posted||'').localeCompare(a.posted||''))}
+function setLeadStatus(id,st){
+  const l=(state.leads||[]).find(x=>x.id===id);if(!l)return;
+  l.status=(l.status===st?'new':st);
+  if(st==='emailed'&&l.status==='emailed')l.touched=todayISO();
+  save();render();
+}
+function emailLead(id){
+  const l=(state.leads||[]).find(x=>x.id===id);if(!l)return;
+  if(!/@/.test(l.contact||'')){toast('No email — reach out on Discord');return}
+  const sub='Media for Lost Lands — already on site';
+  const body='Hi '+l.poster+',\n\n'
+    +'Saw your post in No Travel. I\u2019m already shooting Lost Lands \u2014 credentialed and on site '
+    +fmtDate(LL.start)+'\u2013'+fmtDate(LL.end)+' for other artists, so covering yours is easy.\n\n'
+    +'Recent work: '+BIZ.site+'\n\nHappy to talk rate.\n\nThanks,\nJay\n'+BIZ.phone;
+  window.open('https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to='+encodeURIComponent(l.contact)
+    +'&su='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body),'_blank');
+  setLeadStatus(id,'emailed');
+}
+/* The poster carries the day-by-day layout that a list of names throws away. */
+function openPoster(i){
+  const LLL=(state.lineups||{})['Lost Lands 2026'];
+  const p=((LLL&&LLL.posters)||[])[i];if(!p)return;
+  let o=$('posterView');
+  if(!o){
+    o=document.createElement('div');o.id='posterView';o.className='overlay posterview';
+    o.innerHTML='<div class="pvbox"><img id="pvImg" alt=""><div class="pvbar2">'
+      +'<span id="pvCap"></span><span style="flex:1"></span>'
+      +'<a id="pvOpen" class="btn small" target="_blank" rel="noopener">Open original</a>'
+      +'<button class="btn small" onclick="closeOverlays()">Close</button></div></div>';
+    document.body.appendChild(o);
+    o.addEventListener('click',function(ev){if(ev.target===o)closeOverlays()});
+    o.querySelector('#pvImg').addEventListener('click',function(){this.classList.toggle('zoom')});
+  }
+  $('pvImg').src=p.url;$('pvImg').classList.remove('zoom');
+  $('pvCap').textContent=p.label;
+  $('pvOpen').href=p.url;
+  o.classList.add('open');
+}
+
+function renderLostLands(){
+  const host=$('llCard');if(!host)return;
+  const leads=leadsFor('Lost Lands 2026');
+  const LLL=(state.lineups||{})['Lost Lands 2026'];
+  const line=Array.isArray(LLL)?LLL:((LLL&&LLL.artists)||[]);
+  const posters=(LLL&&LLL.posters)||[];
+  const booked=state.events.filter(e=>e.gig&&e.date>=LL.start&&e.date<=LL.end&&e.client&&e.gross!==0);
+  const tbd=booked.filter(e=>!(e.gross>0)).length;
+  let h='<div class="card llcard"><div class="llhead"><h3>🎪 Lost Lands 2026</h3>'
+    +'<span class="chip accent">Sep 16–21 · Thornville OH</span></div>'
+    +'<div class="llsub">Flights and stay are booked — '+fmt$(LL.sunk)+' already sunk, so every extra artist you pick up is margin, not cost.</div>';
+  const noTime=booked.filter(e=>!e.start);
+  h+='<div class="llsec">Already booked</div>';
+  h+=booked.length?booked.map(e=>'<div style="font-size:13px;color:var(--ink2);padding:3px 0">'
+      +'<b style="color:var(--ink)">'+esc(e.client)+'</b> · '+fmtDate(e.date)+' · '
+      +(e.start?'<b style="color:var(--ink)">'+fmtTime(e.start)+(e.end?'–'+fmtTime(e.end):'')+'</b>'
+               :'<span class="chip urgent">set time unknown</span>')
+      +' · '+(e.gross>0?fmt$(e.gross):'<span class="chip money">rate TBD</span>')+'</div>').join('')
+    :'<div style="font-size:13px;color:var(--ink3)">Nothing booked yet.</div>';
+  if(noTime.length)
+    h+='<div class="llsub" style="margin-top:6px;color:var(--urgent)"><b>Get '
+      +noTime.map(e=>esc(greetName(e.client))).join(' and ')+'\u2019s set time'+(noTime.length>1?'s':'')
+      +' before you promise anyone else that week</b> — a second artist booked blind is how you end up double-booked at the same hour.</div>';
+  if(tbd)h+='<div class="llsub" style="margin-top:4px">'+tbd+' rate'+(tbd>1?'s':'')+' still unpriced — those decide whether the week profits.</div>';
+
+  h+='<div class="llsec">Leads from Discord · No Travel Agency</div>';
+  h+=leads.length?leads.map(function(l){
+    const age=daysFrom(l.posted);
+    return '<div class="lead '+(l.status||'new')+'"><div class="top">'
+      +'<span class="who">'+esc(l.poster)+'</span>'
+      +'<span class="when">posted '+fmtDate(l.posted)+' · '+age+'d ago · #'+esc(l.channel)+'</span>'
+      +(l.replies!=null?'<span class="chip '+(l.replies>=8?'urgent':'money')+'">'+l.replies+' replied</span>'
+                       :'<span class="chip">replies not shown</span>')
+      +(l.status==='emailed'?'<span class="chip good">emailed</span>':'')
+      +'</div>'
+      +'<div class="ask">'+esc(l.ask)+'</div>'
+      +(l.note?'<div class="why">'+esc(l.note)+'</div>':'')
+      +'<div class="acts">'
+      +(/@/.test(l.contact||'')
+          ?'<button class="btn primary small" onclick="emailLead(\''+l.id+'\')">✉ Email '+esc(l.poster)+'</button>'
+          :'<span class="chip">'+esc(l.contact||'no contact')+'</span>')
+      +'<button class="btn small" onclick="setLeadStatus(\''+l.id+'\',\'emailed\')">'+(l.status==='emailed'?'Not yet':'Mark reached out')+'</button>'
+      +'<button class="btn small" onclick="setLeadStatus(\''+l.id+'\',\'passed\')">'+(l.status==='passed'?'Un-pass':'Pass')+'</button>'
+      +'</div></div>';
+  }).join('')
+   :'<div style="font-size:13px;color:var(--ink3)">Nothing found yet — ask me to scan the Discord.</div>';
+
+  if(posters.length){
+    h+='<div class="llsec">Lineup poster'+(posters.length>1?'s':'')+'</div><div class="posters">'
+      +posters.map(function(p,i){return '<figure class="poster" onclick="openPoster('+i+')">'
+        +'<img src="'+esc(p.url)+'" alt="'+esc(p.label)+'" loading="lazy">'
+        +'<figcaption>'+esc(p.label)+'</figcaption></figure>'}).join('')
+      +'</div><div class="llsub">Tap to open, then tap again to zoom in and read the small print. No per-day posters published yet — I’ll add them when they drop.</div>';
+  }
+  /* 208 names is a wall. The ones he already has a way in to are the list that matters. */
+  const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const history={};
+  state.events.forEach(e=>{if(e.client)history[norm(e.client)]=e.paid?'worked with':'booked'});
+  (state.outreach||[]).forEach(o=>{if(o.name&&!history[norm(o.name)])history[norm(o.name)]='in your pipeline'});
+  const known=line.filter(n=>history[norm(n)]);
+  h+='<div class="llsec">Artists to reach out to — '+line.length+' playing</div>';
+  h+=known.length?known.map(n=>'<div style="font-size:13px;color:var(--ink2);padding:3px 0">'
+      +'<b style="color:var(--ink)">'+esc(n)+'</b> <span class="chip good">'+esc(history[norm(n)])+'</span></div>').join('')
+    :'<div style="font-size:13px;color:var(--ink3)">No overlap with anyone you know yet.</div>';
+  if(line.length){
+    const rest=line.filter(n=>!history[norm(n)]);
+    h+='<details style="margin-top:8px"><summary style="cursor:pointer;font-size:12.5px;color:var(--accent-ink);font-weight:700">'
+      +'All '+line.length+' artists on the 2026 bill</summary>'
+      +'<div style="font-size:12.5px;color:var(--ink2);margin-top:6px;line-height:1.6">'+rest.map(esc).join(' · ')+'</div></details>';
+  }
+  host.innerHTML=h+'</div>';
 }
 
 /* ─────────────────────── MONTHLY BILLS ─────────────────────── */
@@ -3103,7 +3296,7 @@ document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeOverlays()});
 
 function render(){
   $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  renderToday();renderCalendar();renderMoney();renderBills();renderFund();renderOutreach();renderCollect();renderInvoices();renderMoneyNudge();
+  renderToday();renderCalendar();renderMoney();renderBills();renderFund();renderLostLands();renderOutreach();renderCollect();renderInvoices();renderMoneyNudge();
 }
 
 load();
