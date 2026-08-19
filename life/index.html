@@ -285,6 +285,11 @@
   .dayblock[open] summary::before{content:"▾ "}
   .daylist{font-size:12.5px;color:var(--ink3);line-height:1.7;margin-top:5px}
   .daylist .kn{color:var(--good);font-weight:700}
+  .bookgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:2px}
+  .bookcube{background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .bookcube .bn{font-weight:700;font-size:13.5px}
+  .bookcube .bd{font-size:11.5px;color:var(--ink3);margin-top:2px}
+  .bookcube .bp{font-size:12.5px;font-weight:700;color:var(--good);margin-top:3px}
   .artrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:6px 0;border-top:1px solid var(--line)}
   .artrow.pick{cursor:pointer;border-radius:7px;padding:6px 8px;transition:background .12s,box-shadow .12s}
   .artrow.pick:hover{background:var(--pers-soft)}
@@ -316,6 +321,7 @@
   .warm.owes{background:var(--urgent-soft);color:var(--urgent)}
   .warm.cold{background:var(--chip);color:var(--ink3)}
   .tmplbox{width:100%;font-size:12.5px;line-height:1.5;min-height:330px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .leadchip.fest{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
   .leadchip{font-size:10.5px;font-weight:600;line-height:1.25;padding:1px 4px;border-radius:4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--chip);color:var(--ink2)}
   .leadchip.worked{background:var(--good-soft);color:var(--good)}
   .leadchip.owes{background:var(--urgent-soft);color:var(--urgent)}
@@ -2047,9 +2053,10 @@ function leadCardHTML(l){
     +(l.note?'<div class="why">'+esc(l.note)+'</div>':'')
     +'<div class="acts">'
     +(/@/.test(l.contact||'')
-        ?'<button class="btn primary small" onclick="emailLead(\''+l.id+'\')">✉ Email '+esc(l.poster)+'</button>'
-        :'<span class="chip">'+esc(l.contact||'no contact')+'</span>')
-    +'<button class="btn small" onclick="setLeadStatus(\''+l.id+'\',\'emailed\')">'+(l.status==='emailed'?'Not yet':'Mark reached out')+'</button>'
+        ?'<button class="btn primary small" onclick="emailLead(\''+l.id+'\')">✉ Email</button>'
+        :'<button class="btn primary small" onclick="dmLead(\''+l.id+'\')">💬 DM</button>')
+    +'<a class="btn small" href="'+esc(discordLink(l))+'" target="_blank" rel="noopener">View post</a>'
+    +'<button class="btn small" onclick="setLeadStatus(\''+l.id+'\',\'emailed\')">'+(l.status==='emailed'?'Undo':'Done')+'</button>'
     +'<button class="btn small" onclick="setLeadStatus(\''+l.id+'\',\'passed\')">'+(l.status==='passed'?'Un-pass':'Pass')+'</button>'
     +'</div></div>';
 }
@@ -2060,6 +2067,25 @@ function festDateOf(name){
   const ds=(state.outreach||[]).filter(o=>new RegExp(key,'i').test((o.event||'')+' '+(o.name||'')))
     .map(o=>o.date).filter(Boolean).sort();
   return ds[0]||'9999-12-31';
+}
+const leadsOpen=new Set();
+function toggleLeadBox(k){leadsOpen.has(k)?leadsOpen.delete(k):leadsOpen.add(k);render()}
+const NTA_GUILD='1041566987102457906', NTA_GIGS='1047291633567285330';
+function discordLink(l){
+  const ch=l.channelId||NTA_GIGS;
+  return 'https://discord.com/channels/'+NTA_GUILD+'/'+ch+(l.msgId?'/'+l.msgId:'');
+}
+/* Discord has no way to prefill a DM from a link, so the next best thing is to
+   put the message on the clipboard and open the conversation. */
+function dmLead(id){
+  const l=(state.leads||[]).find(x=>x.id===id);if(!l)return;
+  const msg='Hey '+l.poster+' — saw your '+l.event.replace(/\s*20\d\d$/,'')+' post. '
+    +'I\u2019m already credentialed and on site that week shooting other artists, so covering yours is easy. '
+    +'Photo and video, quick turnarounds. Recent work: '+MUSIC_URL+' — happy to talk rate. — Jay';
+  navigator.clipboard.writeText(msg).then(function(){
+    toast('Message copied — paste it in the DM');
+    window.open(discordLink(l),'_blank');
+  },function(){window.open(discordLink(l),'_blank')});
 }
 function renderDiscordLeads(){
   const host=$('discordCard');if(!host)return;
@@ -2077,10 +2103,13 @@ function renderDiscordLeads(){
     +'<div class="leadgrid">'+keys.map(function(k){
       const rows=g[k].slice().sort((a,b)=>(b.posted||'').localeCompare(a.posted||''));
       const live=rows.filter(l=>l.status!=='passed').length;
-      const d=festDateOf(k);
-      return '<div class="card leadbox"><div class="lbhead">'+esc(k)
+      const d=festDateOf(k), more=leadsOpen.has(k), show=more?rows:rows.slice(0,3);
+      return '<div class="card leadbox"><div class="lbhead">'+esc(k.replace(/\s*20\d\d$/,''))
         +'<span class="ct">'+(d<'9999'?fmtDate(d)+' · ':'')+live+' open</span></div>'
-        +rows.map(leadCardHTML).join('')+'</div>';
+        +show.map(leadCardHTML).join('')
+        +(rows.length>3?'<button class="notesmore" onclick="toggleLeadBox('+JSON.stringify(k).replace(/"/g,'&quot;')+')">'
+          +(more?'Show less':'Show '+(rows.length-3)+' more')+'</button>':'')
+        +'</div>';
     }).join('')+'</div>';
 }
 
@@ -2089,7 +2118,7 @@ function renderDiscordLeads(){
 function festName(o){
   const blob=(o.event||'')+' '+(o.name||'');
   const known=['Lost Lands','Escape','Hulaween','Breakaway','Lights All Night','Dreamstate','Wasteland',
-               'Lost in Dreams','Beyond Wonderland','Nocturnal','North Coast','Shambhala','EDC','Countdown','Block Party'];
+               'Beyond Wonderland','Nocturnal','North Coast','Shambhala','EDC','Countdown','Block Party','Niteharts'];
   for(let i=0;i<known.length;i++)if(new RegExp(known[i],'i').test(blob))return known[i];
   return (o.event||'Other').split('—')[0].split('-')[0].trim()||'Other';
 }
@@ -2170,7 +2199,9 @@ function renderGroups(){
     if(outFilter==='festival'){club.innerHTML=''}
     else{
       const g=groupBy(all.filter(o=>outKind(o)==='club'&&!onTour(o)),clubName);
-      const keys=Object.keys(g).sort(function(a,b){return g[b].length-g[a].length});
+      const junk=/^(other|tba|n\/a|)$/i;
+      const keys=Object.keys(g).filter(k=>!junk.test(k.trim()))
+        .sort(function(a,b){return g[b].length-g[a].length});
       club.innerHTML='<div class="secthead"><h2>🏢 Clubs & venues</h2><span class="ct">'+keys.length+'</span></div>'
         +'<div class="card">'+keys.map(function(k){
           const rows=g[k];
@@ -2197,19 +2228,20 @@ function renderLostLands(){
   let h='<div class="card llcard"><div class="llhead"><h3>🎪 Lost Lands 2026</h3>'
     +'<span class="chip accent">Sep 16–21 · Thornville OH</span></div>'
     +'<div class="llsub">Flights and stay are booked — '+fmt$(LL.sunk)+' already sunk, so every extra artist you pick up is margin, not cost.</div>';
-  const noTime=booked.filter(e=>!e.start);
+  if(posters.length){
+    h+='<div class="llsec" style="margin-top:2px">Lineup poster'+(posters.length>1?'s':'')+'</div><div class="posters">'
+      +posters.map(function(p,i){return '<figure class="poster" onclick="openPoster('+i+')">'
+        +'<img src="'+esc(p.url)+'" alt="'+esc(p.label)+'" loading="lazy">'
+        +'<figcaption>'+esc(p.label)+'</figcaption></figure>'}).join('')
+      +'</div><div class="llsub">Tap to open, then tap again to zoom in and read the small print. No per-day posters published yet — I’ll add them when they drop.</div>';
+  }
   h+='<div class="llsec">Already booked</div>';
-  h+=booked.length?booked.map(e=>'<div style="font-size:13px;color:var(--ink2);padding:3px 0">'
-      +'<b style="color:var(--ink)">'+esc(e.client)+'</b> · '+fmtDate(e.date)+' · '
-      +(e.start?'<b style="color:var(--ink)">'+fmtTime(e.start)+(e.end?'–'+fmtTime(e.end):'')+'</b>'
-               :'<span class="chip urgent">set time unknown</span>')
-      +' · '+(e.gross>0?fmt$(e.gross):'<span class="chip money">rate TBD</span>')+'</div>').join('')
+  h+=booked.length?'<div class="bookgrid">'+booked.map(e=>'<div class="bookcube">'
+      +'<div class="bn">'+esc(e.client)+'</div>'
+      +'<div class="bd">'+fmtDate(e.date)+(e.start?' · '+fmtTime(e.start):'')+'</div>'
+      +(e.gross>0?'<div class="bp">'+fmt$(e.gross)+'</div>':'')
+      +'</div>').join('')+'</div>'
     :'<div style="font-size:13px;color:var(--ink3)">Nothing booked yet.</div>';
-  if(noTime.length)
-    h+='<div class="llsub" style="margin-top:6px;color:var(--urgent)"><b>Get '
-      +noTime.map(e=>esc(greetName(e.client))).join(' and ')+'\u2019s set time'+(noTime.length>1?'s':'')
-      +' before you promise anyone else that week</b> — a second artist booked blind is how you end up double-booked at the same hour.</div>';
-  if(tbd)h+='<div class="llsub" style="margin-top:4px">'+tbd+' rate'+(tbd>1?'s':'')+' still unpriced — those decide whether the week profits.</div>';
 
   h+='';
   const _unused=leads.length?leads.map(function(l){
@@ -2233,13 +2265,6 @@ function renderLostLands(){
   }).join('')
    :'<div style="font-size:13px;color:var(--ink3)">Nothing found yet — ask me to scan the Discord.</div>';
 
-  if(posters.length){
-    h+='<div class="llsec">Lineup poster'+(posters.length>1?'s':'')+'</div><div class="posters">'
-      +posters.map(function(p,i){return '<figure class="poster" onclick="openPoster('+i+')">'
-        +'<img src="'+esc(p.url)+'" alt="'+esc(p.label)+'" loading="lazy">'
-        +'<figcaption>'+esc(p.label)+'</figcaption></figure>'}).join('')
-      +'</div><div class="llsub">Tap to open, then tap again to zoom in and read the small print. No per-day posters published yet — I’ll add them when they drop.</div>';
-  }
   /* 208 names is a wall. The ones he already has a way in to are the list that matters. */
   const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   const history={};
@@ -2409,7 +2434,7 @@ function outHome(){
   if(next){const[y,m,d]=next.date.split('-').map(Number);outY=y;outM=m-1;outSel=next.date}
   else{const n=new Date();outY=n.getFullYear();outM=n.getMonth();outSel=today}
 }
-const FEST_RE=/festival|lost lands|escape|dreamstate|wasteland|beyond wonderland|lost in dreams|nocturnal|apocalypse|edc|countdown|hard summer|shambhala|north coast|hulaween|breakaway|lights all night|block party/i;
+const FEST_RE=/festival|lost lands|escape|dreamstate|wasteland|beyond wonderland|nocturnal|apocalypse|edc|countdown|hard summer|shambhala|north coast|hulaween|breakaway|lights all night|block party|niteharts|nitehearts/i;
 function outKind(o){return o.kind||(FEST_RE.test((o.event||'')+' '+(o.name||''))?'festival':'club')}
 let outFilter='all';
 function setOutFilter(k){outFilter=k;render()}
@@ -2464,11 +2489,17 @@ function renderOutreachCal(){
     cell.innerHTML='<div class="dnum">'+d.getDate()+'</div>';
     const ls=leadsOn(iso), c=clash(iso);
     if(c&&ls.length)cell.classList.add(c.hard?'clashhard':'clashsoft');
-    ls.slice(0,2).forEach(o=>{
-      const cls=o.status==='booked'?'booked':(o.warm==='owes'?'owes':(o.warm==='worked'?'worked':''));
-      cell.innerHTML+='<div class="leadchip '+cls+'">'+(c&&c.hard?'⚠️ ':'')+esc(o.name)+'</div>';
+    /* a festival is one thing on a day; a club night is the artist you'd be shooting */
+    const fests=[],clubs=[];
+    ls.forEach(o=>{(outKind(o)==='festival'?fests:clubs).push(o)});
+    const chips=[];
+    [...new Set(fests.map(festName))].forEach(f=>chips.push({label:f,cls:'fest'}));
+    clubs.forEach(o=>chips.push({label:o.name,
+      cls:o.status==='booked'?'booked':(o.warm==='owes'?'owes':(o.warm==='worked'?'worked':''))}));
+    chips.slice(0,2).forEach(ch=>{
+      cell.innerHTML+='<div class="leadchip '+ch.cls+'">'+(c&&c.hard?'⚠️ ':'')+esc(ch.label)+'</div>';
     });
-    if(ls.length>2)cell.innerHTML+='<div class="evmore">+'+(ls.length-2)+' more</div>';
+    if(chips.length>2)cell.innerHTML+='<div class="evmore">+'+(chips.length-2)+' more</div>';
     cell.onclick=()=>{outSel=iso;render()};
     grid.appendChild(cell);
   }
