@@ -2111,6 +2111,7 @@ function artistAsked(n){
    in the SAME named window; Gmail auto-saves it as a draft when the next loads.
    The last stop is the Drafts folder, where each opens as Gmail's own small
    bottom-corner compose box — review, fix the name, send, next. */
+const ARTIST_DB_URL='https://matsumotojay.github.io/hq/artists/';
 const DRAFT_DWELL=800;   /* ms between pop-ups — just enough that Chrome doesn't block the burst */
 function composeUrl(n,fest,from,to){
   return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
@@ -2727,10 +2728,14 @@ function renderOutreach(){
   const all=state.outreach||[];
   const counts={all:all.length,festival:all.filter(o=>outKind(o)==='festival').length,club:all.filter(o=>outKind(o)==='club').length};
   const fb=$('outFilters');
+  const nMail=Object.keys(state.artistEmails||{}).length;
   if(fb)fb.innerHTML=[['all','Everything'],['festival','Festivals'],['club','Clubs']].map(function(f){
     return '<button class="btn small'+(outFilter===f[0]?' primary':'')+'" onclick="setOutFilter(\''+f[0]+'\')">'
       +f[1]+' <span style="opacity:.65">'+counts[f[0]]+'</span></button>';
-  }).join('');
+  }).join('')
+   +'<a class="btn small" style="margin-left:auto;text-decoration:none" target="_blank" rel="noopener"'
+   +' href="'+ARTIST_DB_URL+'" title="Every artist on every bill, with manager and media addresses">'
+   +'Artist database <span style="opacity:.65">'+nMail+'</span></a>';
   const n=s=>list.filter(o=>o.status===s).length;
   renderOutreachCal();
   $('outStats').innerHTML=
