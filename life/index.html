@@ -2403,10 +2403,18 @@ function previewInvoice(){
     +'<div class="pvbar"><span>'+names+'</span><span style="flex:1"></span>'
     +'<span class="hint" style="font-weight:400;color:#A6ACB1">Check it over &mdash; Continue saves the PDF</span>'
     +'<button class="go" id="pvNext" onclick="nextStep()">Continue &rarr;</button>'
-    +'<button class="go" id="pvGmail" style="display:none" onclick="window.opener.openGmailAndFolder()">✉ Open Gmail</button>'
+    +'<button class="go" id="pvGmail" style="display:none" onclick="openGmail()">✉ Open Gmail</button>'
     +'<button onclick="window.close()">Close</button></div>'
     +sheets
-    +'<script>function nextStep(){window.opener.previewNext()}<\/script>');
+    +'<script>var GURL='+JSON.stringify(gurl)+';'
+    +'function nextStep(){window.opener.previewNext()}'
+    +'function openGmail(){'
+    +'  var w=window.open(GURL,"_blank");'
+    +'  var h=document.querySelector(".pvbar .hint");'
+    +'  if(!w){h.textContent="Chrome blocked the pop-up \u2014 allow pop-ups for this site, then click again";return}'
+    +'  setTimeout(function(){location.href="shortcuts://run-shortcut?name=Open%20Matsu%20Invoices"},400);'
+    +'  h.textContent="Drag the PDF from the folder into the draft, then send.";'
+    +'}<\/script>');
   w.document.close();
   w.focus();
   previewWin=w;
@@ -2450,12 +2458,7 @@ window.previewNext=async function(){
       d.getElementById('pvGmail').style.display=''}catch(e){}
   markComposeSent();
 };
-/* Gmail and the Finder window, side by side, so the drag is one gesture. */
-window.openGmailAndFolder=function(){
-  window.open(gmailUrl(),'_blank');
-  setTimeout(function(){location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Open Matsu Invoices')},500);
-  pvHint('Drag '+(lastSaved?lastSaved.name:'the PDF')+' from the folder into the draft, then send.');
-};
+
 /* Chrome can't open Finder. macOS Shortcuts can, and a link may launch one —
    so a one-line shortcut named below does the job the browser is not allowed to. */
 let lastSaved=null;
