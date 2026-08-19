@@ -651,6 +651,11 @@
         <p class="cmnote"><b>Preview</b> opens the invoice full size. <b>Continue</b> saves the PDF into Documents › Matsu Invoices and marks it sent. Then <b>Open Gmail</b> brings up the draft alongside that folder, so the attachment is one drag away.</p>
       </div>
       <div>
+        <div class="field" style="margin-bottom:14px">
+          <label>Line items <span style="font-weight:400;color:var(--ink3)">— edit before you send</span></label>
+          <div class="itemhead"><span>Description</span><span>Service date</span><span>Qty</span><span>Unit $</span><span title="Already paid">Paid</span><span></span></div>
+          <div id="cmItems"></div>
+        </div>
         <div class="attachbox">
           <div class="attachhead">📎 <span id="cmFiles" class="fn"></span></div>
           <div id="cmThumbs"></div>
@@ -2344,7 +2349,13 @@ async function savePDF(inv,pick){
    invoice that goes with it, and hands the whole thing to Gmail so the
    last look and the send button are his.                              */
 let composeCtx=null;
+function cmInvs(){
+  if(!composeCtx)return [];
+  if(composeCtx.invIds)return composeCtx.invIds.map(invById).filter(Boolean);
+  return cmInvs()||[];
+}
 function openCompose(ctx){
+  ctx.invIds=(ctx.invoices||[]).map(function(i){return i.id});
   composeCtx=ctx;
   $('cmTitle').textContent=ctx.title;
   $('cmTo').value=ctx.to||'';
@@ -2355,13 +2366,77 @@ function openCompose(ctx){
   $('cmPhone').value=contactRec(ctx.client).phone||'';
   renderFolderChip();
   $('cmFiles').textContent=ctx.invoices.map(i=>i.number+'.pdf').join('  ');
-  $('cmThumbs').innerHTML=ctx.invoices.map(i=>'<div class="attachthumb">'+invoiceSheetHTML(i)+'</div>').join('');
   closeOverlays();
   $('mailOverlay').classList.add('open');   /* must be visible before it can be measured */
-  document.querySelectorAll('#cmThumbs .attachthumb').forEach(fitSheet);
+  renderComposeItems();
+  cmRefreshThumbs();
 }
 /* The invoice travels as the attached PDF — it does not belong in the body. */
 function composeBody(){return $('cmBody').value}
+
+/* Same rows as the invoice modal, but bound straight to the invoice being sent,
+   so a wrong description gets fixed here instead of three screens away. */
+function cmItemRows(inv,ii){
+  const items=invItems(inv), many=items.length>1;
+  return items.map(function(it,n){
+    return '<div class="itemrow">'
+      +'<input class="idesc" placeholder="what you did" value="'+esc(it.desc||'')+'" oninput="cmSet('+ii+','+n+',\'desc\',this.value)">'
+      +'<input type="date" value="'+(it.svcDate||'')+'" onchange="cmSet('+ii+','+n+',\'svcDate\',this.value)">'
+      +'<input type="number" min="1" step="1" title="Qty" value="'+(it.qty||1)+'" oninput="cmSet('+ii+','+n+',\'qty\',this.value)">'
+      +'<input type="number" min="0" step="0.01" title="Unit price" placeholder="unit $" value="'+(it.price!=null?it.price:'')+'" oninput="cmSet('+ii+','+n+',\'price\',this.value)">'
+      +'<input class="ipaid" type="checkbox" title="Already paid — stays on the invoice, not added to the total" '+(it.paid?'checked':'')+' onchange="cmSet('+ii+','+n+',\'paid\',this.checked,true)">'
+      +(many?'<button class="iconbtn" title="Remove line" onclick="cmDelItem('+ii+','+n+')">🗑</button>':'<span></span>')
+      +'</div>';
+  }).join('');
+}
+function renderComposeItems(){
+  const host=$('cmItems');if(!host||!composeCtx)return;
+  const multi=cmInvs().length>1;
+  host.innerHTML=cmInvs().map(function(inv,ii){
+    return (multi?'<div style="font-size:11.5px;font-weight:700;color:var(--ink3);margin:8px 0 4px">'+esc(inv.number)+'</div>':'')
+      +cmItemRows(inv,ii)
+      +'<button class="btn small" onclick="cmAddItem('+ii+')" style="margin:2px 0 4px">＋ Add line</button>';
+  }).join('');
+}
+function cmApply(inv){
+  const items=invItems(inv);
+  inv.items=items;
+  inv.desc=items.map(function(x){return x.desc}).filter(Boolean).join(' · ');
+  inv.svcDate=items.map(function(x){return x.svcDate}).filter(Boolean).sort()[0]||'';
+  inv.amount=invAmount(inv);
+  save();
+  cmRefreshThumbs();
+  renderCollect();renderInvoices();renderMoneyNudge();
+}
+/* rerender=true only for structural edits — retyping the rows mid-keystroke would steal focus */
+function cmSet(ii,n,field,val,rerender){
+  const inv=cmInvs()[ii];if(!inv)return;
+  const items=invItems(inv).map(function(x){return Object.assign({},x)});
+  if(field==='qty')val=Math.max(1,parseInt(val)||1);
+  if(field==='price')val=(val===''||val==null)?null:parseFloat(val);
+  items[n][field]=val;
+  inv.items=items;
+  cmApply(inv);
+  if(rerender)renderComposeItems();
+}
+function cmAddItem(ii){
+  const inv=cmInvs()[ii];if(!inv)return;
+  inv.items=invItems(inv).concat([{desc:'',svcDate:'',qty:1,price:null,paid:false}]);
+  cmApply(inv);renderComposeItems();
+}
+function cmDelItem(ii,n){
+  const inv=cmInvs()[ii];if(!inv)return;
+  const items=invItems(inv).slice();
+  if(items.length<2)return;
+  items.splice(n,1);
+  inv.items=items;
+  cmApply(inv);renderComposeItems();
+}
+function cmRefreshThumbs(){
+  const host=$('cmThumbs');if(!host||!composeCtx)return;
+  host.innerHTML=cmInvs().map(function(i){return '<div class="attachthumb">'+invoiceSheetHTML(i)+'</div>'}).join('');
+  document.querySelectorAll('#cmThumbs .attachthumb').forEach(fitSheet);
+}
 function gmailUrl(){
   const cc=$('cmCc').value.trim();
   return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
@@ -2381,8 +2456,8 @@ function previewInvoice(){
   if(!to){toast('Add the To address first');$('cmTo').focus();return}
   composeRemember();
   const css=[].map.call(document.querySelectorAll('style'),n=>n.textContent).join('\n');
-  const sheets=composeCtx.invoices.map(invoiceSheetHTML).join('');
-  const names=composeCtx.invoices.map(i=>i.number).join(', ');
+  const sheets=cmInvs().map(invoiceSheetHTML).join('');
+  const names=cmInvs().map(i=>i.number).join(', ');
   const gurl=gmailUrl();
   const w=window.open('','_blank','width=880,height=1000');
   if(!w){toast('Allow pop-ups to preview the invoice');return}
@@ -2443,7 +2518,7 @@ async function pickInvoiceFolder(){
 let previewWin=null;
 function pvHint(t){try{previewWin.document.querySelector('.pvbar .hint').textContent=t}catch(e){}}
 window.previewNext=async function(){
-  const invs=composeCtx.invoices;
+  const invs=cmInvs();
   pvHint('Writing the PDF\u2026');
   let where=null;
   try{
@@ -2473,7 +2548,7 @@ function openInGmail(){
 }
 /* SMS can't carry a file either, so the text points at the email. */
 function smsText(){
-  const inv=composeCtx.invoices;
+  const inv=cmInvs();
   const nums=inv.map(i=>i.number).join(', ');
   const tot=inv.reduce((t,i)=>t+(i.amount||0),0);
   return 'Hi '+greetName(composeCtx.client)+' — '+(composeCtx.kind==='chase'?'following up on ':'just sent ')
@@ -2486,16 +2561,16 @@ function textInvoice(){
   location.href='sms:'+ph+'&body='+encodeURIComponent(smsText());
 }
 function markComposeSent(){
-  if(composeCtx.kind==='chase'){composeCtx.invoices.forEach(i=>{i.chases=(i.chases||[]).concat(todayISO())})}
-  else{composeCtx.invoices.forEach(i=>{if(i.status!=='sent'){i.status='sent';i.sentAt=todayISO();i.fresh=false}})}
+  if(composeCtx.kind==='chase'){cmInvs().forEach(i=>{i.chases=(i.chases||[]).concat(todayISO())})}
+  else{cmInvs().forEach(i=>{if(i.status!=='sent'){i.status='sent';i.sentAt=todayISO();i.fresh=false}})}
   save();render();
 }
 function composeMarkSent(){
   if(composeCtx.kind==='chase'){
-    composeCtx.invoices.forEach(i=>{i.chases=(i.chases||[]).concat(todayISO())});
+    cmInvs().forEach(i=>{i.chases=(i.chases||[]).concat(todayISO())});
     save();render();toast('Logged as chased today');
   }else{
-    composeCtx.invoices.forEach(i=>{if(i.status!=='sent'){i.status='sent';i.sentAt=todayISO();i.fresh=false}});
+    cmInvs().forEach(i=>{if(i.status!=='sent'){i.status='sent';i.sentAt=todayISO();i.fresh=false}});
     save();render();toast('Marked sent — Net 15 clock starts today');
   }
   closeOverlays();
