@@ -286,6 +286,12 @@
   .daylist{font-size:12.5px;color:var(--ink3);line-height:1.7;margin-top:5px}
   .daylist .kn{color:var(--good);font-weight:700}
   .daylist .ky{color:var(--owed);font-weight:600}
+  .clubgrid{display:grid;grid-template-columns:78px 1fr 64px 40px;gap:5px 10px;align-items:center;margin-top:6px}
+  .clubgrid .ch{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3)}
+  .clubgrid .cd{font-size:12.5px;color:var(--ink2);font-weight:600;white-space:nowrap}
+  .cavail{font-size:11.5px;font-weight:700;white-space:nowrap}
+  .cavail.free{color:var(--good)}
+  .cavail.busy{color:var(--urgent)}
   .bookgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:2px}
   .bookcube{background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
   .bookcube .bn{font-weight:700;font-size:13.5px}
@@ -1044,6 +1050,56 @@ function migrate(){
     const f=state.events.find(e=>e.client==='iFound');
     if(f){f.date='2026-07-27';f.month='';f.details='Carson · studio shoot'}
   }
+  // patch 37 (2026-08-19): the six remaining lineups came in; venue/date corrections
+  if(!state.patch37){
+    state.patch37=true;
+    state.lineups=state.lineups||{};
+    if(!(state.lineups["Niteharts 2026"]||{}).artists||!state.lineups["Niteharts 2026"].artists.length)
+      state.lineups["Niteharts 2026"]={artists:["2hollis", "borne", "Control Freak", "daine", "Devault", "DJ Snake", "Flava D", "Frost Children", "Hamdi", "ISOKNOCK", "ISOxo", "Jane Remover", "KIMJ", "Knock2", "LYNY", "Nitepunk", "Porter Robinson", "RL Grime", "SWEDM®", "Thaiboy Digital", "underscores", "YAEGO"],posters:[]};
+    if(!(state.lineups["Wasteland 2026"]||{}).artists||!state.lineups["Wasteland 2026"].artists.length)
+      state.lineups["Wasteland 2026"]={artists:["Alignment", "Alyssa Jolee", "Angerfist", "Atmozfears", "BEAUZ", "Ben Nicky Presents Extreme", "Bloweapon", "Cara Elizabeth", "CLAWZ PRESENTS: FOR THE FLOOR", "D-Sturb", "Darren Styles", "Dea Magna B2B Dani Thorne", "DJ Isaac", "Dr Donk", "Dual Damage", "Fantasm", "Fatima Hajji", "Johannes Schuster", "Junkie Kid", "Kayzo", "Kobosil", "Kruelty", "KUKO", "Levenkhan", "Lil Texas B2B Yosuf", "Mad Dog", "NOVAH", "Onlynumbers", "Restricted", "Rooler", "Serafina", "Shmitty", "Sihk B2B Water Spirit", "Somewhen", "Sub Zero Project", "Trym", "Vertile", "Winson"],posters:[]};
+    if(!(state.lineups["Hulaween 2026"]||{}).artists||!state.lineups["Hulaween 2026"].artists.length)
+      state.lineups["Hulaween 2026"]={artists:["A Hundred Drums", "Ahee", "AK SPORTS", "Anthill Cinema w/ Jon Ditty", "Baalti", "Ben Böhmer", "Big Gramatik feat. Big Gigantic & Gramatik", "Caitlin Kristo & the Broadcast", "Casey Club", "Close Friends Only", "Costa", "Crankdat", "Curra", "Daily Bread", "Daniel Allan", "Dean Turnley", "Dope Lemon", "Drama (DJ Set)", "Effy", "Eggy", "EOTO & Friends", "Excision", "Frost Children (DJ set)", "Geese", "Gravagers", "Green Velvet", "Greyboy Allstars", "Guavatron", "Gudfella", "Guerilla Toss", "Hamdi", "HerShe", "HEYZ", "Hhunter", "INVT", "Jackie Hollander", "Jerro", "Jon Stickley Trio", "Joy Wagon", "KARAN!", "Karina Rykman", "Kasablanca", "Kettama", "LaMP", "Lettuce", "Levity", "Lewis OfMan", "LYNY", "Maddy O'Neal", "Magoo", "Manic Focus", "Midnight Generation", "Minim", "Moonstone Riders", "Motifv", "Mountain Grass Unit", "My Morning Jacket", "Natalie Brooke", "Of The Trees", "Opiuo", "Playlunch", "Pretty Lights", "Richard Finger", "Riordan", "Rudashi", "Saka x FLY", "Salute", "Sneezy", "Steller", "STS9", "Supertaste", "Tapers Choice", "The Ain't Sisters", "The String Cheese Incident", "The Warren Haynes Incident", "The Yeah Babys", "Tini Gessler", "Tire Fire", "True Loves", "Unknown Mortal Orchestra", "Willis", "¥Øu$uk€ ¥uk1mat$u"],posters:[]};
+    if(!(state.lineups["Breakaway Utah 2026"]||{}).artists||!state.lineups["Breakaway Utah 2026"].artists.length)
+      state.lineups["Breakaway Utah 2026"]={artists:["Ares Carter", "Audien", "BONNIE X CLYDE", "Branden Estrada", "Brandi Cyrus", "Chris Lake", "Frank Walker", "Gorgon City B2B MPH", "HerShe", "HEYZ", "Jackie Hollander", "John Summit", "Kasablanca", "Kaskade (Sunset Set)", "LAYZ B2B TYNAN", "Max Styler", "Mojave Grey", "Niiko x SWAE", "OBAŸASHI", "Ray Volpe", "Roddy Lima", "Soraya", "Tiësto", "Trivecta"],posters:[]};
+    if(!(state.lineups["Lights All Night 2026"]||{}).artists||!state.lineups["Lights All Night 2026"].artists.length)
+      state.lineups["Lights All Night 2026"]={artists:["ARMNHMR", "Artifakts", "ATLiens", "AVELLO", "Azyr", "BEAUZ", "Byorn", "Chris Lake", "Conrad Taylor", "Devault", "DJ Mandy", "Fly", "GG Magree", "Gryffin", "HerShe", "Hhunter", "Hydraulix", "I Hate Models", "Ian Asher", "Jigitz", "Jon Casey", "Josh Baker", "Kettama", "Level Up", "LYNY", "Mad Dubz B2B VKTM", "MADGRRL", "Marie Vaunt", "Mindset", "Ninajirachi", "Sidequest", "Skull Machine (Black Tiger Sex Machine x Kai Wachi)", "Subtronics", "TELYKAST", "Tiësto", "William Black", "Wtchcrft", "YDG", "¥Øu$uk€ ¥uk1mat$u"],posters:[]};
+    if(!(state.lineups["San Marcos Block Party 2026"]||{}).artists||!state.lineups["San Marcos Block Party 2026"].artists.length)
+      state.lineups["San Marcos Block Party 2026"]={artists:["Cozy Kev", "Effin B2B Jkyl & Hyde", "Hairitage", "HerShe", "HEYZ", "Juicy J", "Tape B", "Waka Flocka Flame"],posters:[]};
+    /* corrections: Hulaween runs from the 22nd, Lights All Night moved to Fair Park on the 30th,
+       Breakaway is Sandy not SLC proper, and Block Party is San Marcos TEXAS — not a local gig */
+    state.festMeta=Object.assign(state.festMeta||{},{
+      'Niteharts':{dates:'Oct 9\u201311',where:'Snapdragon Stadium, San Diego CA',local:true},
+      'Wasteland':{dates:'Sep 4\u20135',where:'NOS Event Center, San Bernardino CA',local:true},
+      'Hulaween':{dates:'Oct 22\u201325',where:'Spirit of the Suwannee, Live Oak FL',local:false},
+      'Breakaway':{dates:'Oct 2\u20133',where:"America's First Field, Sandy UT",local:false},
+      'Lights All Night':{dates:'Dec 30\u201331',where:'Fair Park, Dallas TX',local:false},
+      'Block Party':{dates:'Sep 5',where:'Hays County Courthouse Sq, San Marcos TX',local:false}
+    });
+  }
+  // patch 36 (2026-08-19): Dreamstate lineup, Escape poster, and where each festival actually is
+  if(!state.patch36){
+    state.patch36=true;
+    state.lineups=state.lineups||{};
+    if(!state.lineups['Dreamstate SoCal 2026'])
+      state.lineups['Dreamstate SoCal 2026']={artists:['4 Strings','A.N.I.','Aaron Hibell','Above & Beyond','Ace Ventura','Allen Watts','Talla 2XLC','Alpha 9','Ilan Bluestone','Aly & Fila','Billy Gillies','Andrew Rayel','Andy Moor','Animato','ARTBAT','Astrix','Barakuda','BK','Bryan Kearney','John O\'Callaghan','BT','Matt Fax','Burn in Noise','Chris Metcalfe','Cold Blue','Darren Porter','Sean Tyas','Das Pharaoh','Dash Berlin','David Forbes','Mark Sherry','David Rust','Olly James','Eddie Halliwell','Judge Jules','Enrico Sangiuliano','Ferry Corsten','Marsh','Frankyeffe','Giorgia Angiuli','GMS','Hannah Laing','Kaufmann','Marie Vaunt','Infected Mushroom','JOA','John 00 Fleming','John Askew','Simon Patterson','Karma','Lee Ann Roberts','Marco V','Maria Healy','MaRLo','Matty Ralph','Mauro Picotto','Maximizer','Mirage','Neelix','NRG2000','Nu Aspect','Panteros666','Parallel Worlds','Paul van Dyk','Pegassi','Perfect Stranger','Phaxe','Reinier Zonneveld','Rising Dust','Schrotthagen','Sequence Six','Shay De Castro','Sighter','Solarstone','Steve Dekay','Terra','TH;EN','The Rocketman','Vini Vici','VisionV','Warp Brothers'],posters:[]};
+    const esc26=state.lineups['Escape Halloween 2026'];
+    if(esc26&&!Array.isArray(esc26)&&!(esc26.posters||[]).length)
+      esc26.posters=[{label:'Full lineup — Psycho Circus',url:'https://d3vhc53cl8e8km.cloudfront.net/hello-staging/wp-content/uploads/sites/52/2026/08/03115441/esc_2026_lu_full_an_1080x1350_r16-2.jpg'}];
+    state.festMeta={
+      'Lost Lands':{dates:'Sep 16–20',where:'Legend Valley, Thornville OH',local:false},
+      'Escape':{dates:'Oct 30–31',where:'NOS Events Center, San Bernardino CA',local:true},
+      'Niteharts':{dates:'Oct 9–11',where:'Snapdragon Stadium, San Diego CA',local:true},
+      'Wasteland':{dates:'Sep 4–5',where:'NOS Events Center, San Bernardino CA',local:true},
+      'Dreamstate':{dates:'Nov 20–21',where:'Queen Mary Waterfront, Long Beach CA',local:true},
+      'Hulaween':{dates:'Oct 23–25',where:'Spirit of the Suwannee, Live Oak FL',local:false},
+      'Breakaway':{dates:'Oct 2–3',where:'Salt Lake City UT',local:false},
+      'Lights All Night':{dates:'Dec 29–30',where:'Dallas Market Hall, Dallas TX',local:false},
+      'Block Party':{dates:'Sep 5',where:'San Marcos — city unconfirmed',local:true}
+    };
+    /* pipeline hygiene: the Insomniac Clubs contact is an email thread, not an artist */
+    state.outreach=(state.outreach||[]).filter(o=>!/princess labrador/i.test(o.name||''));
+  }
   // patch 35 (2026-08-19): Escape Halloween lineup is out — 85 artists, Oct 30–31, NOS Events Center
   if(!state.patch35){
     state.patch35=true;
@@ -1386,7 +1442,7 @@ function snapshotDocs(){
   (state.wfund||[]).forEach(w=>{m['w.'+w.id]=JSON.stringify(w)});
   (state.outreach||[]).forEach(o=>{m['o.'+o.id]=JSON.stringify(o)});
   (state.leads||[]).forEach(l=>{m['l.'+l.id]=JSON.stringify(l)});
-  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{},bills:state.bills||[],lineups:state.lineups||{}};
+  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{},bills:state.bills||[],lineups:state.lineups||{},festMeta:state.festMeta||{}};
   Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch')meta[k]=state[k]});
   m['meta']=JSON.stringify(meta);
   return m;
@@ -1427,6 +1483,7 @@ window.__adoptCloud=function(cloud){
     state.contacts=meta.contacts||state.contacts||{};
     state.bills=meta.bills||state.bills||[];
     state.lineups=meta.lineups||state.lineups||{};
+    state.festMeta=meta.festMeta||state.festMeta||{};
     /* The cloud is authoritative on which patches have actually LANDED. A flag set locally
        before adoption must not survive it — otherwise the patch is marked done while the
        data it wrote gets replaced by the cloud copy, and it never reaches any device. */
@@ -1971,9 +2028,9 @@ function emailLead(id){
   setLeadStatus(id,'emailed');
 }
 /* The poster carries the day-by-day layout that a list of names throws away. */
+let posterList=[];
 function openPoster(i){
-  const LLL=(state.lineups||{})['Lost Lands 2026'];
-  const p=((LLL&&LLL.posters)||[])[i];if(!p)return;
+  const p=posterList[i];if(!p)return;
   let o=$('posterView');
   if(!o){
     o=document.createElement('div');o.id='posterView';o.className='overlay posterview';
@@ -2039,22 +2096,47 @@ function composeUrl(n,fest,from,to){
     +'&su='+encodeURIComponent(fest+' \u2014 media, already on site')
     +'&body='+encodeURIComponent(festPitch(n,fest,from,to));
 }
+function runDraftQueue(urls,noEmail){
+  const w=window.open(urls[0],'jlt-gmail');
+  if(!w){toast('Chrome blocked the window — allow pop-ups for this site');return false}
+  toast('Writing '+urls.length+' drafts into Gmail — leave that tab alone until it lands on Drafts');
+  urls.slice(1).forEach(function(u,i){setTimeout(function(){window.open(u,'jlt-gmail')},(i+1)*DRAFT_DWELL)});
+  setTimeout(function(){
+    window.open('https://mail.google.com/mail/u/0/#drafts','jlt-gmail');
+    toast(urls.length+' drafts saved — open each from Drafts, check the name, send'
+      +(noEmail?' · '+noEmail+' still need an address':''));
+  },urls.length*DRAFT_DWELL);
+  return true;
+}
 function bulkDraft(fest,from,to){
   const names=[...selArtists];
   if(!names.length){toast('Pick some artists first');return}
-  const noEmail=names.filter(n=>!artistEmail(n)).length;
-  const w=window.open(composeUrl(names[0],fest,from,to),'jlt-gmail');
-  if(!w){toast('Chrome blocked the window — allow pop-ups for this site');return}
-  toast('Writing '+names.length+' drafts into Gmail — leave that tab alone until it lands on Drafts');
-  names.slice(1).forEach(function(n,i){
-    setTimeout(function(){window.open(composeUrl(n,fest,from,to),'jlt-gmail')},(i+1)*DRAFT_DWELL);
-  });
-  setTimeout(function(){
-    window.open('https://mail.google.com/mail/u/0/#drafts','jlt-gmail');
-    toast(names.length+' drafts saved — open each from Drafts, check the name, send'
-      +(noEmail?' · '+noEmail+' still need an address':''));
-  },names.length*DRAFT_DWELL);
-  setArtistStatus(names,'emailed');   /* drafted means asked — yellow until they reply */
+  if(runDraftQueue(names.map(n=>composeUrl(n,fest,from,to)),names.filter(n=>!artistEmail(n)).length))
+    setArtistStatus(names,'emailed');   /* drafted means asked — yellow until they reply */
+}
+/* Clubs pitch a specific night at a specific room, not a week on site. */
+function clubPitch(name,venue,date){
+  return 'Hi '+greetName(name)+',\n\n'
+    +'Saw you\u2019re playing '+venue+(date?' on '+fmtDate(date):'')+'. I shoot there regularly \u2014 '
+    +'photo and video, same-night turnarounds so you have content while the show still matters.\n\n'
+    +'Recent music work: '+MUSIC_URL+'\n\nHappy to talk rate.\n\nThanks,\nJay\n'+BIZ.phone;
+}
+function clubComposeUrl(o,venue){
+  return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
+    +(o.email?'&to='+encodeURIComponent(o.email):'')
+    +'&su='+encodeURIComponent(venue+' '+(o.date?fmtDate(o.date):'')+' \u2014 media')
+    +'&body='+encodeURIComponent(clubPitch(o.name,venue,o.date));
+}
+function clubDraftOne(id,venue){
+  const o=(state.outreach||[]).find(x=>x.id===id);if(!o)return;
+  window.open(clubComposeUrl(o,venue),'_blank');
+  setArtistStatus([o.name],'emailed');
+}
+function bulkDraftClub(venue){
+  const rows=(state.outreach||[]).filter(o=>clubName(o)===venue&&selArtists.has(o.name));
+  if(!rows.length){toast('Pick some artists first');return}
+  if(runDraftQueue(rows.map(o=>clubComposeUrl(o,venue)),rows.filter(o=>!o.email).length))
+    setArtistStatus(rows.map(o=>o.name),'emailed');
 }
 /* One grid, every artist on the bill, colour-coded by where they stand.
    Yellow = asked, green = confirmed. Selection is blue and transient. */
@@ -2245,6 +2327,15 @@ function tourArtists(){
 /* Every festival panel looks the same: the whole lineup as selectable pills.
    Names come from the scraped lineup when we have it, plus anyone already in
    the pipeline for that festival — deduped, so nobody shows twice. */
+function posterListFor(key){
+  const L=(state.lineups||{})[key];
+  return (L&&!Array.isArray(L)&&L.posters)||[];
+}
+function lineupKeyFor(festLabel){
+  const keys=Object.keys(state.lineups||{});
+  return keys.find(x=>x.toLowerCase().indexOf(festLabel.toLowerCase())===0)
+      ||keys.find(x=>x.toLowerCase().includes(festLabel.toLowerCase()))||null;
+}
 function festPanel(k,rows,dates){
   const seen={},names=[];
   (lineupFor(k)||[]).concat(rows.map(o=>o.name)).forEach(function(n){
@@ -2254,9 +2345,41 @@ function festPanel(k,rows,dates){
   });
   const from=dates[0]||todayISO(), to=dates[dates.length-1]||from;
   if(!names.length)return '<div style="font-size:13px;color:var(--ink3);padding:4px 0">Lineup not pulled yet — the nightly research run fills this in.</div>';
-  return legendHTML(names)
+  const lk=lineupKeyFor(k), ps=lk?posterListFor(lk):[];
+  let ph='';
+  if(ps.length){
+    ph='<div class="posters">'+ps.map(function(p,i){
+      return '<figure class="poster" onclick="posterList=posterListFor('+JSON.stringify(lk).replace(/"/g,'&quot;')+');openPoster('+i+')">'
+        +'<img src="'+esc(p.url)+'" alt="'+esc(p.label)+'" loading="lazy"><figcaption>'+esc(p.label)+'</figcaption></figure>';
+    }).join('')+'</div>';
+  }
+  return ph+legendHTML(names)
     +'<div class="pickgrid">'+alpha(names).map(chipFor).join('')+'</div>'
     +pickBarHTML(k,names,from,to);
+}
+function clubPanel(k,rows){
+  const sorted=rows.slice().sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
+  const picked=sorted.filter(o=>selArtists.has(o.name));
+  let h=legendHTML(sorted.map(o=>o.name))
+    +'<div class="clubgrid"><div class="ch">Date</div><div class="ch">Artist</div><div class="ch">You</div><div class="ch"></div>';
+  sorted.forEach(function(o){
+    const c=(typeof clash==='function'&&o.date)?clash(o.date):null;
+    h+='<div class="cd">'+(o.date?fmtDate(o.date):'—')+'</div>'
+      +'<div>'+chipFor(o.name)+'</div>'
+      +'<div class="cavail '+(c?'busy':'free')+'" title="'+esc(c?c.label:'nothing on your calendar')+'">'+(c?'✕ busy':'✓ free')+'</div>'
+      +'<div><button class="btn small" title="Draft an email now" onclick="clubDraftOne(\''+o.id+'\',' +JSON.stringify(k).replace(/"/g,'&quot;')+')">✉</button></div>';
+  });
+  h+='</div>';
+  if(picked.length){
+    const q=JSON.stringify(picked.map(o=>o.name)).replace(/"/g,'&quot;');
+    h+='<div class="pickbar"><b>'+picked.length+' selected</b>'
+      +'<button class="btn primary small" onclick="bulkDraftClub('+JSON.stringify(k).replace(/"/g,'&quot;')+')">✉ Draft '+picked.length+'</button>'
+      +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark emailed</button>'
+      +'<button class="btn small" onclick="setArtistStatus('+q+',\'confirmed\')">Mark confirmed</button>'
+      +'<button class="btn small" onclick="setArtistStatus('+q+',\'new\')">Clear color</button>'
+      +'<button class="btn small" onclick="clearArtists()">Clear</button></div>';
+  }
+  return h;
 }
 function renderGroups(){
   const fest=$('festCard'), club=$('clubCard'), tour=$('tourCard');
@@ -2301,9 +2424,12 @@ function renderGroups(){
           const booked=rows.filter(x=>x.status==='booked').length;
           const asked=rows.filter(x=>x.status==='emailed'||x.status==='replied').length;
           const open=rows.length-booked-asked;
+          const fm=(state.festMeta||{})[k];
           return '<details class="grp"'+(/lost lands/i.test(k)?' open':'')+'><summary>'
             +'<span class="gname">'+esc(k)+'</span>'
-            +'<span class="gmeta">'+(dates.length?'<span class="when">'+fmtDate(dates[0])+(dates.length>1&&dates[dates.length-1]!==dates[0]?'–'+fmtDate(dates[dates.length-1]):'')+'</span>':'')
+            +'<span class="gmeta">'
+            +(fm?'<span class="when">'+esc(fm.dates)+' · '+esc(fm.where)+'</span><span class="chip '+(fm.local?'good':'money')+'">'+(fm.local?'local':'out of state')+'</span>'
+                :(dates.length?'<span class="when">'+fmtDate(dates[0])+(dates.length>1&&dates[dates.length-1]!==dates[0]?'–'+fmtDate(dates[dates.length-1]):'')+'</span>':''))
             +(booked?'<span class="chip good">'+booked+' booked</span>':'')
             +(asked?'<span class="chip accent">'+asked+' emailed</span>':'')
             +(open?'<span class="chip money">'+open+' to ask</span>':'')+'</span></summary>'
@@ -2332,7 +2458,7 @@ function renderGroups(){
             +'<span class="gmeta"><span class="when">'+rows.length+' artist'+(rows.length>1?'s':'')+'</span>'
             +(booked?'<span class="chip good">'+booked+' booked</span>':'')
             +(asked?'<span class="chip accent">'+asked+' emailed</span>':'')+'</span></summary>'
-            +'<div class="gbody">'+rows.sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(leadLine).join('')+'</div></details>';
+            +'<div class="gbody">'+clubPanel(k,rows)+'</div></details>';
         }).join('')+'</div>';
     }
   }
@@ -2351,7 +2477,7 @@ function renderLostLands(){
     +'<div class="llsub">Flights and stay are booked — '+fmt$(LL.sunk)+' already sunk, so every extra artist you pick up is margin, not cost.</div>';
   if(posters.length){
     h+='<div class="llsec" style="margin-top:2px">Lineup poster'+(posters.length>1?'s':'')+'</div><div class="posters">'
-      +posters.map(function(p,i){return '<figure class="poster" onclick="openPoster('+i+')">'
+      +(posterList=posters,posters).map(function(p,i){return '<figure class="poster" onclick="posterList=posterListFor(\'Lost Lands 2026\');openPoster('+i+')">'
         +'<img src="'+esc(p.url)+'" alt="'+esc(p.label)+'" loading="lazy">'
         +'<figcaption>'+esc(p.label)+'</figcaption></figure>'}).join('')
       +'</div><div class="llsub">Tap to open, then tap again to zoom in and read the small print. No per-day posters published yet — I’ll add them when they drop.</div>';
