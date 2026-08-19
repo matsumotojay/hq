@@ -2078,6 +2078,11 @@ function setArtistStatus(names,st){
   selArtists.clear();
   save();render();
 }
+function alpha(list){
+  return (list||[]).slice().sort(function(a,b){
+    return String(a).toLowerCase().replace(/^the /,'').localeCompare(String(b).toLowerCase().replace(/^the /,''),'en',{numeric:true});
+  });
+}
 function chipFor(n){
   const st=artistStatus(n), sel=selArtists.has(n), o=outFor(n);
   return '<span class="achip '+st+(sel?' sel':'')+'" title="'+esc(o&&o.email?o.email:'no email on file yet')+'"'
@@ -2109,7 +2114,7 @@ function artistPicker(fest,artists,from,to){
   if(!artists||!artists.length)return '';
   return '<div class="llsec">Lineup — pick who to email</div>'
     +legendHTML(artists)
-    +'<div class="pickgrid">'+artists.map(chipFor).join('')+'</div>'
+    +'<div class="pickgrid">'+alpha(artists).map(chipFor).join('')+'</div>'
     +pickBarHTML(fest,artists,from,to);
 }
 /* Any festival with a lineup gets the same picker inside its panel. */
@@ -2346,7 +2351,7 @@ function renderLostLands(){
     groups.forEach(function(g){
       h+='<details class="dayblock" open><summary><b>'+g.label+'</b> · '+g.names.length+' artists</summary>'
         +legendHTML(g.names)
-        +'<div class="pickgrid">'+g.names.map(chipFor).join('')+'</div>'
+        +'<div class="pickgrid">'+alpha(g.names).map(chipFor).join('')+'</div>'
         +pickBarHTML('Lost Lands',g.names,LL.start,LL.end)
         +'</details>';
     });
