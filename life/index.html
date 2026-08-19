@@ -2233,6 +2233,22 @@ function tourArtists(){
   const c={};(state.outreach||[]).forEach(o=>{c[o.name]=(c[o.name]||0)+1});
   return Object.keys(c).filter(n=>c[n]>=TOUR_MIN);
 }
+/* Every festival panel looks the same: the whole lineup as selectable pills.
+   Names come from the scraped lineup when we have it, plus anyone already in
+   the pipeline for that festival — deduped, so nobody shows twice. */
+function festPanel(k,rows,dates){
+  const seen={},names=[];
+  (lineupFor(k)||[]).concat(rows.map(o=>o.name)).forEach(function(n){
+    if(!n||seen[nkey(n)])return;
+    if(/lineup|tbc|tba/i.test(n))return;   /* placeholders are not artists */
+    seen[nkey(n)]=1;names.push(n);
+  });
+  const from=dates[0]||todayISO(), to=dates[dates.length-1]||from;
+  if(!names.length)return '<div style="font-size:13px;color:var(--ink3);padding:4px 0">Lineup not pulled yet — the nightly research run fills this in.</div>';
+  return legendHTML(names)
+    +'<div class="pickgrid">'+alpha(names).map(chipFor).join('')+'</div>'
+    +pickBarHTML(k,names,from,to);
+}
 function renderGroups(){
   const fest=$('festCard'), club=$('clubCard'), tour=$('tourCard');
   const all=state.outreach||[];
@@ -2282,9 +2298,9 @@ function renderGroups(){
             +(booked?'<span class="chip good">'+booked+' booked</span>':'')
             +(asked?'<span class="chip accent">'+asked+' emailed</span>':'')
             +(open?'<span class="chip money">'+open+' to ask</span>':'')+'</span></summary>'
-            +'<div class="gbody">'+(/lost lands/i.test(k)?'<div id="llCard"></div>':'')
-            +rows.sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(leadLine).join('')
-            +(!/lost lands/i.test(k)&&lineupFor(k)?artistPicker(k,lineupFor(k),dates[0]||todayISO(),dates[dates.length-1]||dates[0]||todayISO()):'')
+            +'<div class="gbody">'+(/lost lands/i.test(k)
+              ?'<div id="llCard"></div>'
+              :festPanel(k,rows,dates))
             +'</div></details>';
         }).join('')
         :'<div style="padding:14px;font-size:13px;color:var(--ink3)">No festival leads yet.</div>')+'</div>';
