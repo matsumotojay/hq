@@ -2078,36 +2078,48 @@ function setArtistStatus(names,st){
   selArtists.clear();
   save();render();
 }
-function artistPicker(fest,artists,from,to){
-  if(!artists||!artists.length)return '';
+function chipFor(n){
+  const st=artistStatus(n), sel=selArtists.has(n), o=outFor(n);
+  return '<span class="achip '+st+(sel?' sel':'')+'" title="'+esc(o&&o.email?o.email:'no email on file yet')+'"'
+    +' onclick="toggleArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'+esc(n)+'</span>';
+}
+function legendHTML(artists){
   const counts={new:0,emailed:0,confirmed:0};
-  artists.forEach(function(n){counts[artistStatus(n)]++});
-  const picked=artists.filter(n=>selArtists.has(n));
-  let h='<div class="llsec">Lineup — pick who to email</div>'
-    +'<div class="legend">'
+  (artists||[]).forEach(function(n){counts[artistStatus(n)]++});
+  return '<div class="legend">'
     +'<span><i class="sw new"></i>not contacted '+counts['new']+'</span>'
     +'<span><i class="sw emailed"></i>emailed '+counts['emailed']+'</span>'
     +'<span><i class="sw confirmed"></i>confirmed '+counts['confirmed']+'</span>'
-    +'<span><i class="sw sel"></i>selected</span></div>'
-    +'<div class="pickgrid">'
-    +artists.map(function(n){
-      const st=artistStatus(n), sel=selArtists.has(n), o=outFor(n);
-      return '<span class="achip '+st+(sel?' sel':'')+'" title="'+esc(o&&o.email?o.email:'no email on file yet')+'"'
-        +' onclick="toggleArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'+esc(n)+'</span>';
-    }).join('')
-    +'</div>';
-  if(picked.length){
-    const q=JSON.stringify(picked).replace(/"/g,'&quot;');
-    const noMail=picked.filter(n=>!(outFor(n)||{}).email).length;
-    h+='<div class="pickbar"><b>'+picked.length+' selected</b>'
-      +(noMail?'<span class="chip money">'+noMail+' without an email</span>':'')
-      +'<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">✉ Draft '+picked.length+'</button>'
-      +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark emailed</button>'
-      +'<button class="btn small" onclick="setArtistStatus('+q+',\'confirmed\')">Mark confirmed</button>'
-      +'<button class="btn small" onclick="setArtistStatus('+q+',\'new\')">Clear color</button>'
-      +'<button class="btn small" onclick="clearArtists()">Clear</button></div>';
-  }
-  return h;
+    +'<span><i class="sw sel"></i>selected</span></div>';
+}
+function pickBarHTML(fest,artists,from,to){
+  const picked=(artists||[]).filter(n=>selArtists.has(n));
+  if(!picked.length)return '';
+  const q=JSON.stringify(picked).replace(/"/g,'&quot;');
+  const noMail=picked.filter(n=>!(outFor(n)||{}).email).length;
+  return '<div class="pickbar"><b>'+picked.length+' selected</b>'
+    +(noMail?'<span class="chip money">'+noMail+' without an email</span>':'')
+    +'<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">✉ Draft '+picked.length+'</button>'
+    +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark emailed</button>'
+    +'<button class="btn small" onclick="setArtistStatus('+q+',\'confirmed\')">Mark confirmed</button>'
+    +'<button class="btn small" onclick="setArtistStatus('+q+',\'new\')">Clear color</button>'
+    +'<button class="btn small" onclick="clearArtists()">Clear</button></div>';
+}
+function artistPicker(fest,artists,from,to){
+  if(!artists||!artists.length)return '';
+  return '<div class="llsec">Lineup — pick who to email</div>'
+    +legendHTML(artists)
+    +'<div class="pickgrid">'+artists.map(chipFor).join('')+'</div>'
+    +pickBarHTML(fest,artists,from,to);
+}
+/* Any festival with a lineup gets the same picker inside its panel. */
+function lineupFor(festLabel){
+  const keys=Object.keys(state.lineups||{});
+  const k=keys.find(x=>x.toLowerCase().indexOf(festLabel.toLowerCase())===0)
+       ||keys.find(x=>x.toLowerCase().includes(festLabel.toLowerCase()));
+  if(!k)return null;
+  const L=state.lineups[k];
+  return Array.isArray(L)?L:((L&&L.artists)||null);
 }
 function markOutreached(name){
   const o=(state.outreach||[]).find(x=>x.name===name);
@@ -2266,7 +2278,9 @@ function renderGroups(){
             +(asked?'<span class="chip accent">'+asked+' emailed</span>':'')
             +(open?'<span class="chip money">'+open+' to ask</span>':'')+'</span></summary>'
             +'<div class="gbody">'+(/lost lands/i.test(k)?'<div id="llCard"></div>':'')
-            +rows.sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(leadLine).join('')+'</div></details>';
+            +rows.sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(leadLine).join('')
+            +(!/lost lands/i.test(k)&&lineupFor(k)?artistPicker(k,lineupFor(k),dates[0]||todayISO(),dates[dates.length-1]||dates[0]||todayISO()):'')
+            +'</div></details>';
         }).join('')
         :'<div style="padding:14px;font-size:13px;color:var(--ink3)">No festival leads yet.</div>')+'</div>';
       if($('llCard'))renderLostLands();
@@ -2330,15 +2344,15 @@ function renderLostLands(){
       .concat(main.length?[{label:'Main festival — day not announced (Sep 18–20)',names:main}]:[]);
     h+='<div class="llsec">Day by day</div>';
     groups.forEach(function(g){
-      h+='<details class="dayblock"><summary><b>'+g.label+'</b> · '+g.names.length+' artists</summary>'
-        +'<div class="daylist">'+g.names.map(function(n){
-          const st=artistStatus(n);
-          return '<span class="'+(st!=='new'?(st==='confirmed'?'kn':'ky'):'')+'">'+esc(n)+'</span>';
-        }).join(' · ')+'</div></details>';
+      h+='<details class="dayblock" open><summary><b>'+g.label+'</b> · '+g.names.length+' artists</summary>'
+        +legendHTML(g.names)
+        +'<div class="pickgrid">'+g.names.map(chipFor).join('')+'</div>'
+        +pickBarHTML('Lost Lands',g.names,LL.start,LL.end)
+        +'</details>';
     });
     h+='<div class="llsub">Only Wed 16 and Thu 17 have per-day billing so far (from the early-arrival poster). Everyone else could play any of Fri–Sun — Lost Lands hasn’t published the day splits.</div>';
   }
-  h+=artistPicker('Lost Lands',line,LL.start,LL.end);
+  if(!dayKeys.length)h+=artistPicker('Lost Lands',line,LL.start,LL.end);
   host.innerHTML=h+'</div>';
 }
 
