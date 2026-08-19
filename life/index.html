@@ -2060,8 +2060,9 @@ function openPoster(i){
 /* One pitch, his angle: he is already paid to be there, so covering one more
    artist costs the artist almost nothing. */
 /* Festivals Jay has actually worked before — only these get the "shot it before" line. */
-function festSubject(name,fest){
-  return fest+' \u2014 '+name+' \u2014 media inquiry, already on site';
+function festSubject(name,fest,from){
+  const yr=String(from||'').slice(0,4);
+  return fest+(yr?' '+yr:'')+': '+name+' (media inquiry)';
 }
 const SHOT_BEFORE=['lost lands'];
 function shotBefore(fest){
@@ -2070,28 +2071,51 @@ function shotBefore(fest){
 }
 /* Greeting is deliberately "Hello" — most of these land in a management inbox,
    so addressing the artist by name reads wrong to whoever actually opens it. */
+/* On-site window comes from festMeta, not from the outreach rows. Lost Lands' rows
+   are the main festival (Sep 18-20) but Jay is there from the 16th for the pre-parties,
+   so the rows would understate how long he's actually available. */
+function onsiteWindow(fest,from,to){
+  const fm=(state.festMeta||{})[fest];
+  if(fm&&fm.dates)return String(fm.dates).replace(/[\u2013\u2014]/g,' to ');
+  return fmtDate(from)+' to '+fmtDate(to);
+}
+/* The wording Jay approved. Do not re-voice this copy. */
 function festPitch(name,fest,from,to){
+  const yr=String(from||'').slice(0,4);
+  const yrs=yr?(+yr-2018):8;
   return 'Hello,\n\n'
-    +'My name is Jay Matsumoto \u2014 I\u2019m a photographer and videographer, and I\u2019m shooting '
-    +fest+' this year. I\u2019m already credentialed and on site '
-    +fmtDate(from)+'\u2013'+fmtDate(to)+', so there\u2019s nothing to arrange on the credential side.\n\n'
-    +(shotBefore(fest)?'I\u2019ve shot '+fest+' before, so I already know the site and how it runs.\n\n':'')
-    +'I have several artists booked across the weekend who are splitting my travel and lodging, '
-    +'which keeps the cost low \u2014 most artists come out around $100\u2013200 total, rather than '
-    +'covering flights and a hotel for a dedicated shooter.\n\n'
-    +'What I can cover for '+name+':\n'
-    +'\u2022 Photo \u2014 full set coverage, edited and delivered\n'
-    +'\u2022 Video \u2014 multicam clips cut for social\n'
-    +'\u2022 Video \u2014 full multicam set, up to an hour\n\n'
-    +'Happy to put together something specific to what you need.\n\n'
-    +'Thanks,\nJay Matsumoto\n\n'
-    +MUSIC_URL
-    +(INSTA_URL?'\n'+INSTA_URL:'');
+    +'My name is Jay and I\u2019ve been shooting photo/video in the EDM industry for the past '
+    +yrs+' years, and I\u2019m reaching out to see if '+name+' needs any media at '+fest+' this year.\n\n'
+    +emph('I\u2019m already credentialed and on site '+onsiteWindow(fest,from,to))
+    +', so there\u2019s nothing to arrange on the credential side.'
+    +(shotBefore(fest)?' I\u2019ve shot '+fest+' before, so I know the run of show and the venue layout.':'')
+    +'\n\n'
+    +'What I offer:\n\n'
+    +'Photos\n'
+    +'\u2022 Full set coverage, 10-20 photos\n\n'
+    +'Video\n'
+    +'\u2022 Multi-cam clips cut for socials, 5-10 clips\n'
+    +'\u2022 Full multi-cam set for YouTube\n\n'
+    +'I have a few artists splitting my travel and lodging, so coverage runs about $100-200 '
+    +'instead of the $800+ it takes to fly a shooter out and put them up. '
+    +'That number keeps dropping as more artists come on.\n\n'
+    +'If you\u2019re interested, let me know what you\u2019re looking for and I\u2019m happy to send a quote.\n\n'
+    +'Thanks,\nJay Matsu\n\n'
+    +'Website: '+MUSIC_URL
+    +(INSTA_URL?'\nInstagram: '+INSTA_URL:'')+'\n';
+}
+/* Plain-text email: there is no bold. EMPHASIS picks how the credential line stands out.
+   'caps' = ALL CAPS · 'stars' = *wrapped in asterisks* · 'none' = plain */
+let EMPHASIS='stars';   /* matches the ** Jay used when he wrote the copy */
+function emph(t){
+  if(EMPHASIS==='caps')return t.toUpperCase();
+  if(EMPHASIS==='stars')return '*'+t+'*';
+  return t;
 }
 const MUSIC_URL='https://www.jaymatsu.com/music';
-const INSTA_URL='';   /* set to the full profile URL and it appears under the site link */
+const INSTA_URL='https://www.instagram.com/jay_matsu/';
 function draftArtist(name,email,fest,from,to){
-  const sub=festSubject(name,fest);
+  const sub=festSubject(name,fest,from);
   const url='https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
     +(email?'&to='+encodeURIComponent(email):'')
     +'&su='+encodeURIComponent(sub)
@@ -2138,7 +2162,7 @@ const DRAFT_DWELL=800;   /* ms between pop-ups — just enough that Chrome doesn
 function composeUrl(n,fest,from,to){
   return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
     +(artistEmail(n)?'&to='+encodeURIComponent(artistEmail(n)):'')
-    +'&su='+encodeURIComponent(festSubject(n,fest))
+    +'&su='+encodeURIComponent(festSubject(n,fest,from))
     +'&body='+encodeURIComponent(festPitch(n,fest,from,to));
 }
 function runDraftQueue(urls,noEmail){
@@ -2164,10 +2188,13 @@ function bulkDraft(fest,from,to){
 }
 /* Clubs pitch a specific night at a specific room, not a week on site. */
 function clubPitch(name,venue,date){
-  return 'Hi '+greetName(name)+',\n\n'
-    +'Saw you\u2019re playing '+venue+(date?' on '+fmtDate(date):'')+'. I shoot there regularly \u2014 '
-    +'photo and video, same-night turnarounds so you have content while the show still matters.\n\n'
-    +'Recent music work: '+MUSIC_URL+'\n\nHappy to talk rate.\n\nThanks,\nJay\n'+BIZ.phone;
+  return 'Hello,\n\n'
+    +'Saw you\u2019re playing '+venue+(date?' on '+fmtDate(date):'')+'. I shoot there regularly. '
+    +'Photo and video, same-night turnarounds so you have content while the show still matters.\n\n'
+    +'Recent music work: '+MUSIC_URL+'\n\nHappy to talk rate.\n\n'
+    +'Thanks,\nJay Matsu\n\n'
+    +'Website: '+MUSIC_URL
+    +(INSTA_URL?'\nInstagram: '+INSTA_URL:'')+'\n';
 }
 function clubComposeUrl(o,venue){
   return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
