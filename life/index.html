@@ -310,8 +310,9 @@
   .legend .sw.emailed{background:var(--owed-soft);border-color:var(--owed)}
   .legend .sw.confirmed{background:var(--good-soft);border-color:var(--good)}
   .legend .sw.sel{background:var(--pers);border-color:var(--pers)}
-  .pickgrid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-  .achip{font-size:12.5px;line-height:1.2;padding:6px 11px;border-radius:999px;border:1px solid var(--line);
+  .pickgrid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;align-items:stretch}
+  .achip{font-size:12.5px;line-height:1.05;padding:2px 11px 2px;border-radius:999px;border:1px solid var(--line);
+    display:inline-flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
     font-weight:600;
     background:var(--surface2);color:var(--ink2);cursor:pointer;user-select:none;transition:background .12s,color .12s,border-color .12s}
   .achip:hover{background:var(--pers-soft);border-color:var(--pers);color:var(--pers)}
@@ -324,8 +325,11 @@
   .fbtn b{font-weight:800;margin-left:2px}
   .fbtn:hover{border-color:var(--pers);color:var(--pers)}
   .fbtn.on{background:var(--pers);border-color:var(--pers);color:#fff}
-  .achip .bm{font-style:normal;opacity:.5;margin-right:5px;font-size:11px}
-  .achip.sel .bm{opacity:.85}
+  /* Marker sits on the small meta line with the follower count, not beside the
+     name. Anchored to the name it collided with the last letter and read as part
+     of it, which was the opposite of tidy. */
+  .achip .bm{font-weight:700;margin-right:3px}
+  .achip .an{font-style:normal;display:block}
   .fnone{font-size:12px;color:var(--ink3);padding:8px 0 4px}
   .fbar.sizes{margin:-4px 0 8px;align-items:center}
   .flab{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-right:2px}
@@ -333,8 +337,10 @@
   .fnote{font-size:11.5px;color:var(--ink3);margin:-4px 0 8px}
   .nodraft{font-size:11.5px;color:var(--ink3);padding:0 4px}
   .achip{position:relative}
-  .achip .fc{font-style:normal;opacity:.45;margin-left:6px;font-size:10.5px;font-weight:700}
-  .achip.sel .fc{opacity:.8}
+  /* always rendered, even when empty, so every bubble is the same height */
+  .achip .fc{font-style:normal;display:block;font-size:8.5px;font-weight:700;line-height:1;
+    min-height:9px;opacity:.45;letter-spacing:.03em;margin-top:1px}
+  .achip.sel .fc{opacity:.85}
   .acard{display:none;position:absolute;left:0;bottom:calc(100% + 7px);z-index:60;
     min-width:190px;max-width:280px;padding:9px 11px;border-radius:10px;
     background:var(--card,#1b1b1e);border:1px solid var(--line);
@@ -2338,7 +2344,8 @@ function setSizeFilter(v){sizeFilter=+v;render()}
 function passesSize(n){
   if(!sizeFilter)return true;
   const f=artistFollowers(n);
-  return f>0&&f<sizeFilter;      /* unknown size cannot pass a size filter */
+  if(!f)return false;            /* unknown size cannot pass a size filter */
+  return sizeFilter>0 ? f<sizeFilter : f>=-sizeFilter;
 }
 function bucketCounts(artists){
   const c={all:(artists||[]).length,email:0,ig:0,none:0};
@@ -2375,8 +2382,9 @@ function filterBarHTML(artists){
     +b('none','No contact',c.none)
     +'</div>'
     +'<div class="fbar sizes"><span class="flab">Size</span>'
-    +sb(0,'Any')+sb(20000,'&lt;20K')+sb(50000,'&lt;50K')
-    +sb(75000,'&lt;75K')+sb(100000,'&lt;100K')
+    +sb(0,'Any')+sb(20000,'&lt;20K')+sb(50000,'&lt;50K')+sb(75000,'&lt;75K')
+    +sb(100000,'&lt;100K')+sb(150000,'&lt;150K')+sb(200000,'&lt;200K')
+    +sb(-300000,'300K+')
     +'</div>'
     +(hidden?'<div class="fnote">'+hidden+' hidden — no follower count on file yet</div>':'');
 }
@@ -2393,8 +2401,9 @@ function chipFor(n){
     +'</span>';
   return '<span class="achip '+st+' b-'+bk+(sel?' sel':'')+'"'
     +' onclick="toggleArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'
-    +(mark?'<i class="bm">'+mark+'</i>':'')+esc(n)
-    +(f?'<i class="fc">'+fmtFollowers(f)+'</i>':'')
+    +'<i class="an">'+esc(n)+'</i>'
+    +'<i class="fc">'+(mark?'<b class="bm">'+mark+'</b>':'')
+                     +(f?fmtFollowers(f):'')+'</i>'
     +card+'</span>';
 }
 function legendHTML(artists){
