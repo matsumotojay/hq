@@ -327,6 +327,25 @@
   .achip .bm{font-style:normal;opacity:.5;margin-right:5px;font-size:11px}
   .achip.sel .bm{opacity:.85}
   .fnone{font-size:12px;color:var(--ink3);padding:8px 0 4px}
+  .fbar.sizes{margin:-4px 0 8px;align-items:center}
+  .flab{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-right:2px}
+  .fbtn.sz{padding:3px 9px;font-size:11px}
+  .fnote{font-size:11.5px;color:var(--ink3);margin:-4px 0 8px}
+  .nodraft{font-size:11.5px;color:var(--ink3);padding:0 4px}
+  .achip{position:relative}
+  .achip .fc{font-style:normal;opacity:.45;margin-left:6px;font-size:10.5px;font-weight:700}
+  .achip.sel .fc{opacity:.8}
+  .acard{display:none;position:absolute;left:0;bottom:calc(100% + 7px);z-index:60;
+    min-width:190px;max-width:280px;padding:9px 11px;border-radius:10px;
+    background:var(--card,#1b1b1e);border:1px solid var(--line);
+    box-shadow:0 10px 28px rgba(0,0,0,.45);text-align:left;cursor:default;
+    font-size:11.5px;line-height:1.45;color:var(--ink2);white-space:normal}
+  .achip:hover .acard{display:block}
+  .acard b{display:block;font-size:13px;color:var(--ink);margin-bottom:3px}
+  .acard .af{display:block;font-weight:700;color:var(--good)}
+  .acard .af.none{color:var(--ink3);font-weight:500}
+  .acard .ac{display:block;margin-top:4px;word-break:break-word}
+  .acard .ah{display:block;margin-top:3px;color:var(--pers)}
   .pickbar{position:sticky;bottom:8px;display:flex;gap:8px;align-items:center;margin-top:8px;
     padding:9px 12px;border-radius:9px;background:var(--pers-soft);box-shadow:var(--shadow);font-size:13px}
   .artrow .b{flex:1;min-width:180px;font-size:13px;color:var(--ink)}
@@ -1075,6 +1094,14 @@ function migrate(){
   if(!state.patch39){
     state.patch39=true;
     state.artistIG={"ahundreddrums":"ahundreddrums","acslater":"djacslater","acyan":"acyanmusic","adamten":"adamten_","ahee":"iamahee","alienpark":"alienparkmusic","allenwatts":"allenwattsmusic","alok":"alok","artifakts":"artifaktsmusic","atliens":"atliensofficial","audien":"audien","barelyalive":"barelyalive","basstripper":"basstripper","beargrillz":"itsbeargrillz","benbhmer":"benbohmermusic","bennybenassi":"bennybenassi","blacktigersexmachine":"officialbtsm","skullmachineblacktigersexmachinexkaiwachi":"officialbtsm","blossom":"blossom.dj","boogiet":"mrboogiet","borgore":"borgore","brandicyrus":"brandicyrus","canabliss":"canablissss","capochino":"capochinomusic","caseyclub":"caseyclubofficial","caspa":"caspaofficial","champagnedrip":"champagnedrip","champion":"champion_dj","chassi":"chassimusic","chrislake":"chrislake","codddubz":"codd_dubz","coone":"djcoone","cooneb2bdjisaac":"djcoone","crankdat":"crankdat","craze":"crazearoni","crumbpit":"crumbpitmusic","cultureshock":"cultureshock","dabin":"dabinmusic","dailybread":"dailybreadmusic","darksiderz":"darksiderz","darrenstyles":"darrenstylesuk","deadcrow":"devdcrow","devault":"devaultmusic","diontimmer":"dion_timmer","dirtmonkey":"dirtmonkeymusic","dirtyphonics":"dirtyphonics","dirtysnatcha":"dirtysnatcha","discolines":"discolines","djisaac":"djisaacofficial","dodgefuski":"dodge_and_fuski","dopelemon":"dopelemonmusic","drfresch":"drfresch","eotofriends":"eotomusic","eptic":"eptic","excision":"excision","flavad":"flava_d","frontliner":"djfrontliner","frontlinerjourneyset":"djfrontliner","funtcase":"funtcaseuk","galantis":"wearegalantis","ganjawhitenight":"ganjawhitenight","geese":"geesebandnyc","ggmagree":"ggmagree","gorgoncity":"gorgoncity","gorgoncityb2bmph":"gorgoncity","gryffin":"gryffin","guerillatoss":"guerillatoss","hairitage":"hairitage_music","hedex":"hedexuk","hershe":"hershe","ihatemodels":"ihatemodels1","ianasher":"ianasher","illenium":"illenium","indirapaganotto":"indirapaganotto","ivylab":"ivylab","jamiejones":"jamiejonesmusic","jamiejonesb2bfrankyrizardo":"jamiejonesmusic","jessicaaudiffred":"jessica_audiffred","josephcapriati":"josephcapriati","josephcapriatib2bsosa":"josephcapriati","joshteed":"joshteedmusic","joyryde":"enjoyryde","joyrydesunsetset":"enjoyryde","kaiwachi":"kaiwachiofficial","kaskade":"kaskade","kaskadesunsetset":"kaskade","kompany":"kompanymusic","kream":"wearekream","leotrix":"leotrixofficial","levelup":"levelupdub","lewisofman":"lewisofman","liquidstranger":"liquidstranger","maddyoneal":"maddy_oneal","manicfocus":"manicfocus","moonstoneriders":"moonstone_riders","opiuo":"opiuo","pegboardnerds":"pegboardnerds","phaseone":"phaseoneau","ravenscoon":"ravenscoon","rayvolpe":"rayvolpe","riotten":"riottenmusic","shlump":"shlumpbass","sippy":"sippyau","spacelaces":"space_laces","subtronics":"subtronics","sullivanking":"sullivanking","superfuture":"superfuturedj","supertaste":"supertastemusic","taikinulight":"taikinulightuk","taperschoice":"taperschoice","telykast":"telykast","thaiboydigital":"bigthaiboy","tisto":"tiesto","tokyomachine":"tokyomachine","trivecta":"trivectamusic","trueloves":"truelovesband","trym":"trym","unknownmortalorchestra":"unknownmortalorchestra","virtualriot":"officialvirtualriot","waxmotif":"waxmotif","whethan":"whethan","williamblack":"williamblack","wooli":"woolimusic","xotix":"xotixbass","zomboy":"zomboy"};
+  }
+  // patch 40 (2026-08-19): Instagram follower counts, read off each profile on that
+  //   date. A BASELINE, not a live figure — it exists so the lineup can be sorted by
+  //   how big an act is. Jay's read: the smaller the act, the likelier they still need
+  //   a shooter, so under ~50K is where a reply actually comes from.
+  if(!state.patch40){
+    state.patch40=true;
+    state.artistFollowers={"ahundreddrums":45100,"acslater":132000,"acyan":7400,"adamten":138000,"ahee":113000,"alienpark":16100,"allenwatts":25000,"alok":28800000,"artifakts":24700,"atliens":357000,"audien":108000,"barelyalive":251000,"basstripper":45500,"beargrillz":240000,"benbhmer":519000,"bennybenassi":500000,"blacktigersexmachine":268000,"skullmachineblacktigersexmachinexkaiwachi":268000,"blossom":108000,"boogiet":215000,"borgore":570000,"brandicyrus":996000,"canabliss":93500,"capochino":39300,"caseyclub":28400,"caspa":63700,"champagnedrip":66900,"champion":30600,"chassi":21200,"chrislake":571000,"codddubz":45300,"coone":263000,"cooneb2bdjisaac":263000,"crankdat":721000,"craze":133000,"crumbpit":38800,"cultureshock":102000,"dabin":163000,"dailybread":88100,"darksiderz":71200,"darrenstyles":141000,"deadcrow":13700,"devault":68700,"diontimmer":159000,"dirtmonkey":96000,"dirtyphonics":78300,"dirtysnatcha":63000,"discolines":548000,"djisaac":99300,"dodgefuski":61400,"dopelemon":116000,"drfresch":206000,"eotofriends":8570,"eptic":317000,"excision":1000000,"flavad":91100,"frontliner":108000,"frontlinerjourneyset":108000,"funtcase":154000,"galantis":987000,"ganjawhitenight":255000,"geese":467000,"ggmagree":123000,"gorgoncity":349000,"gorgoncityb2bmph":349000,"gryffin":424000,"guerillatoss":25700,"hairitage":74400,"hedex":314000,"hershe":119000,"ihatemodels":1100000,"ianasher":1400000,"illenium":1100000,"indirapaganotto":1700000,"ivylab":81500,"jamiejones":816000,"jamiejonesb2bfrankyrizardo":816000,"jessicaaudiffred":203000,"josephcapriati":920000,"josephcapriatib2bsosa":920000,"joshteed":20700,"joyryde":199000,"joyrydesunsetset":199000,"kaiwachi":233000,"kaskade":1200000,"kaskadesunsetset":1200000,"kompany":167000,"kream":254000,"leotrix":41100,"levelup":280000,"lewisofman":65800,"liquidstranger":244000,"maddyoneal":43000,"manicfocus":46200,"moonstoneriders":4817,"opiuo":56400,"pegboardnerds":106000,"phaseone":157000,"ravenscoon":89300,"rayvolpe":278000,"riotten":209000,"shlump":67100,"sippy":169000,"spacelaces":122000,"subtronics":959000,"sullivanking":600000,"superfuture":37100,"supertaste":18400,"taikinulight":86900,"taperschoice":7255,"telykast":132000,"thaiboydigital":310000,"tisto":7800000,"tokyomachine":86800,"trivecta":71300,"trueloves":28100,"trym":548000,"unknownmortalorchestra":156000,"virtualriot":448000,"waxmotif":156000,"whethan":282000,"williamblack":154000,"wooli":305000,"xotix":29500,"zomboy":518000};
   }
   // patch 37 (2026-08-19): the six remaining lineups came in; venue/date corrections
   if(!state.patch37){
@@ -2164,6 +2191,16 @@ function artistIG(n){
   const h=(state.artistIG||{})[norm(n)];
   return h?'https://www.instagram.com/'+h+'/':'';
 }
+function artistFollowers(n){
+  const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  return (state.artistFollowers||{})[norm(n)]||0;
+}
+function fmtFollowers(f){
+  if(!f)return '';
+  if(f>=1e6)return (f/1e6).toFixed(f>=1e7?0:1).replace(/\.0$/,'')+'M';
+  if(f>=1e3)return (f/1e3).toFixed(f>=1e5?0:1).replace(/\.0$/,'')+'K';
+  return String(f);
+}
 /* Which pile is this artist in? Email always wins — it is the pitch that works.
    Instagram is only the fallback for acts with no address at all. */
 function artistBucket(n){
@@ -2294,14 +2331,32 @@ function alpha(list){
    shows the whole lineup again, so nobody loses artists to a filter they forgot. */
 var lineupFilter='all';
 function setLineupFilter(v){lineupFilter=v;render()}
+/* Size tiers are cumulative — "under 50K" includes everyone under 20K. Jay's whole
+   point is that small acts reply, so the useful question is always "under what". */
+var sizeFilter=0;
+function setSizeFilter(v){sizeFilter=+v;render()}
+function passesSize(n){
+  if(!sizeFilter)return true;
+  const f=artistFollowers(n);
+  return f>0&&f<sizeFilter;      /* unknown size cannot pass a size filter */
+}
 function bucketCounts(artists){
   const c={all:(artists||[]).length,email:0,ig:0,none:0};
   (artists||[]).forEach(function(n){c[artistBucket(n)]++});
   return c;
 }
 function shownArtists(artists){
-  if(lineupFilter==='all')return artists||[];
-  return (artists||[]).filter(n=>artistBucket(n)===lineupFilter);
+  return (artists||[]).filter(function(n){
+    return (lineupFilter==='all'||artistBucket(n)===lineupFilter)&&passesSize(n);
+  });
+}
+/* How many the size filter is hiding purely because we have no follower count.
+   Shown explicitly so a good lead never vanishes without saying why. */
+function unknownSizeCount(artists){
+  if(!sizeFilter)return 0;
+  return (artists||[]).filter(function(n){
+    return (lineupFilter==='all'||artistBucket(n)===lineupFilter)&&!artistFollowers(n);
+  }).length;
 }
 function filterBarHTML(artists){
   const c=bucketCounts(artists);
@@ -2309,19 +2364,38 @@ function filterBarHTML(artists){
     return '<button class="fbtn'+(lineupFilter===key?' on':'')+'" onclick="setLineupFilter(\''+key+'\')">'
       +label+' <b>'+n+'</b></button>';
   };
+  const sb=function(v,label){
+    return '<button class="fbtn sz'+(sizeFilter===v?' on':'')+'" onclick="setSizeFilter('+v+')">'+label+'</button>';
+  };
+  const hidden=unknownSizeCount(artists);
   return '<div class="fbar">'
     +b('all','All',c.all)
     +b('email','\u2709 Email',c.email)
     +b('ig','\u25ce IG only',c.ig)
     +b('none','No contact',c.none)
-    +'</div>';
+    +'</div>'
+    +'<div class="fbar sizes"><span class="flab">Size</span>'
+    +sb(0,'Any')+sb(20000,'&lt;20K')+sb(50000,'&lt;50K')
+    +sb(75000,'&lt;75K')+sb(100000,'&lt;100K')
+    +'</div>'
+    +(hidden?'<div class="fnote">'+hidden+' hidden — no follower count on file yet</div>':'');
 }
 function chipFor(n){
   const st=artistStatus(n), sel=selArtists.has(n), bk=artistBucket(n);
   const mark=bk==='email'?'\u2709':(bk==='ig'?'\u25ce':'');
-  return '<span class="achip '+st+' b-'+bk+(sel?' sel':'')+'" title="'+esc(artistEmailNote(n))+'"'
+  const f=artistFollowers(n), ig=artistIG(n);
+  const card='<span class="acard">'
+    +'<b>'+esc(n)+'</b>'
+    +(f?'<span class="af">'+fmtFollowers(f)+' followers</span>'
+       :'<span class="af none">follower count not on file</span>')
+    +'<span class="ac">'+esc(artistEmailNote(n))+'</span>'
+    +(ig?'<span class="ah">@'+esc(ig.replace(/\/$/,'').split('/').pop())+'</span>':'')
+    +'</span>';
+  return '<span class="achip '+st+' b-'+bk+(sel?' sel':'')+'"'
     +' onclick="toggleArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'
-    +(mark?'<i class="bm">'+mark+'</i>':'')+esc(n)+'</span>';
+    +(mark?'<i class="bm">'+mark+'</i>':'')+esc(n)
+    +(f?'<i class="fc">'+fmtFollowers(f)+'</i>':'')
+    +card+'</span>';
 }
 function legendHTML(artists){
   const counts={new:0,emailed:0,confirmed:0};
@@ -2333,13 +2407,8 @@ function legendHTML(artists){
     +'<span><i class="sw sel"></i>selected</span></div>';
 }
 function pickBarHTML(fest,artists,from,to){
-  const shown=shownArtists(artists);
   const picked=(artists||[]).filter(n=>selArtists.has(n));
-  const unpicked=shown.filter(n=>!selArtists.has(n));
-  const selAll=unpicked.length
-    ? '<button class="btn small" onclick="selectShown('+JSON.stringify(unpicked).replace(/"/g,'&quot;')+')">Select all '+unpicked.length+' shown</button>'
-    : '';
-  if(!picked.length)return selAll?'<div class="pickbar">'+selAll+'</div>':'';
+  if(!picked.length)return '';
   const q=JSON.stringify(picked).replace(/"/g,'&quot;');
   /* Count against artistEmail(), not just Jay's own rows — the research database
      holds most of these addresses and the old count ignored it entirely. */
@@ -2349,15 +2418,15 @@ function pickBarHTML(fest,artists,from,to){
   return '<div class="pickbar"><b>'+picked.length+' selected</b>'
     +(igOnly.length?'<span class="chip money">'+igOnly.length+' IG only</span>':'')
     +(nothing?'<span class="chip">'+nothing+' no contact</span>':'')
-    + selAll
-    +(mailable.length?'<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">\u2709 Draft '+mailable.length+'</button>':'')
+    +(mailable.length
+       ? '<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">\u2709 Draft '+mailable.length+'</button>'
+       : '<span class="nodraft" title="Nothing selected has an address on file">\u2709 no address to draft to</span>')
     +(igOnly.length?'<button class="btn small" onclick="bulkInstagram()">\u25ce Open '+igOnly.length+' on Instagram</button>':'')
     +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark contacted</button>'
     +'<button class="btn small" onclick="setArtistStatus('+q+',\'confirmed\')">Mark confirmed</button>'
-    +'<button class="btn small" onclick="setArtistStatus('+q+',\'new\')">Clear color</button>'
-    +'<button class="btn small" onclick="clearArtists()">Clear</button></div>';
+    +'<button class="btn small" title="Sets them back to not-contacted — undoes the yellow/green, keeps them selected" onclick="setArtistStatus('+q+',\'new\')">Mark not contacted</button>'
+    +'<button class="btn small" title="Just unticks them — changes nothing else" onclick="clearArtists()">Deselect</button></div>';
 }
-function selectShown(names){(names||[]).forEach(n=>selArtists.add(n));render()}
 /* The Instagram half of the pipeline: only ever the acts with no address. */
 function bulkInstagram(){
   const names=[...selArtists].filter(n=>!artistEmail(n)&&artistIG(n));
