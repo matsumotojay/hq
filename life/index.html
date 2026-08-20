@@ -318,6 +318,15 @@
   .achip.emailed{background:var(--owed-soft);border-color:var(--owed);color:var(--owed)}
   .achip.confirmed{background:var(--good-soft);border-color:var(--good);color:var(--good)}
   .achip.sel{background:var(--pers);border-color:var(--pers);color:#fff}
+  .fbar{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px}
+  .fbtn{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;cursor:pointer;
+    border:1px solid var(--line);background:transparent;color:var(--ink2);white-space:nowrap}
+  .fbtn b{font-weight:800;margin-left:2px}
+  .fbtn:hover{border-color:var(--pers);color:var(--pers)}
+  .fbtn.on{background:var(--pers);border-color:var(--pers);color:#fff}
+  .achip .bm{font-style:normal;opacity:.5;margin-right:5px;font-size:11px}
+  .achip.sel .bm{opacity:.85}
+  .fnone{font-size:12px;color:var(--ink3);padding:8px 0 4px}
   .pickbar{position:sticky;bottom:8px;display:flex;gap:8px;align-items:center;margin-top:8px;
     padding:9px 12px;border-radius:9px;background:var(--pers-soft);box-shadow:var(--shadow);font-size:13px}
   .artrow .b{flex:1;min-width:180px;font-size:13px;color:var(--ink)}
@@ -1058,6 +1067,14 @@ function migrate(){
   if(!state.patch38){
     state.patch38=true;
     state.artistEmails={"ahundreddrums":{"e":"ahundreddrums@redlightmanagement.com","t":"management","o":"Red Light Management","p":""},"acslater":{"e":"marc@bullettrainmusic.com","t":"management","o":"Bullet Train Music","p":"Marc Thomas"},"acyan":{"e":"ashli@a2zartistmgmt.com","t":"management","o":"A2Z Artist Mgmt","p":"Ashli"},"ahee":{"e":"info@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":""},"alienpark":{"e":"cole@confirmedgroup.com","t":"management","o":"Confirmed Group","p":"Cole"},"allenwatts":{"e":"allenwattsmusic@gmail.com","t":"general","o":"Allen Watts","p":""},"artifakts":{"e":"freddy@risetalentgroup.com","t":"management","o":"Rise Talent Group","p":"Freddy"},"audien":{"e":"bryce@prodigyartists.com","t":"management","o":"Prodigy Artists","p":"Bryce"},"barelyalive":{"e":"ed@disciplerecs.com","t":"label_press","o":"Disciple Records","p":""},"basstripper":{"e":"g@ctrlfrk.co.uk","t":"management","o":"Ctrl Frk","p":"G"},"beargrillz":{"e":"max.freeman@unitedtalent.com","t":"booking","o":"UTA","p":"Max Freeman"},"benbhmer":{"e":"tom@involvedmanagement.com","t":"management","o":"Involved Management","p":"Tom"},"bennybenassi":{"e":"info@milkhoneyla.com","t":"management","o":"Milk & Honey","p":""},"blossom":{"e":"tony.garvey@redlightmanagement.com","t":"management","o":"Red Light Management","p":"Tony Garvey"},"boogiet":{"e":"boogiet@redlightmanagement.com","t":"management","o":"Red Light Management","p":""},"borgore":{"e":"borgore@redlightmanagement.com","t":"management","o":"Red Light Management","p":""},"bou":{"e":"david@wrgmanagement.co.uk","t":"management","o":"WRG Management","p":"David"},"canabliss":{"e":"loper@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":"Robert A. Loper"},"capochino":{"e":"jon@confirmedgroup.com","t":"management","o":"Confirmed Group","p":"Jon"},"caseyclub":{"e":"max.necus@redlightmanagement.com","t":"management","o":"Red Light Management","p":"Max Necus"},"caspa":{"e":"steve.gordon@unitedtalent.com","t":"booking","o":"UTA (N America)","p":"Steve Gordon"},"champagnedrip":{"e":"info@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":""},"champion":{"e":"lenny@admusicgroup.com","t":"management","o":"AD Music Group (UK/ROTW)","p":"Lenny"},"chassi":{"e":"ashten@thebehyve.com","t":"management","o":"The Behyve","p":"Ashten"},"chozen":{"e":"brianna@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":"Brianna"},"chrislake":{"e":"cchapman@paradigmagency.com","t":"booking","o":"Paradigm (N/S America)","p":"Cody Chapman"},"codddubz":{"e":"mikeadams@littleempiremusic.com","t":"management","o":"Little Empire Music","p":"Mike Adams"},"cozykev":{"e":"adam@korumgmt.com","t":"management","o":"Koru Management","p":"Adam Abecassis"},"crankdat":{"e":"support@merchsupport.net","t":"general","o":"Crankdat merch","p":""},"craze":{"e":"brent@good-direction.agency","t":"booking","o":"Good Direction Agency","p":"Brent Tactic"},"crumbpit":{"e":"rami@spaceyacht.net","t":"booking","o":"Space Yacht","p":"Rami"},"cultureshock":{"e":"seb@worshipartists.uk","t":"management","o":"Worship Artists","p":"Seb"},"dabin":{"e":"guy.oldaker@unitedtalent.com","t":"booking","o":"UTA","p":"Guy Oldaker"},"dailybread":{"e":"jmoss@teamwass.com","t":"booking","o":"Wasserman","p":"Jay Moss"},"darksiderz":{"e":"lcorson@corsonagency.com","t":"booking","o":"Corson Agency","p":"Leo Corson"},"darrenstyles":{"e":"lee@uaagency.co.uk","t":"booking","o":"UA Agency","p":"Lee"},"deadcrow":{"e":"jonathan.griffin@redlightmanagement.com","t":"management","o":"Red Light Management","p":"Jonathan Griffin"},"devault":{"e":"saaya@emagen.com","t":"management","o":"Emagen","p":"Saaya"},"diontimmer":{"e":"management@diontimmer.com","t":"management","o":"Dion Timmer","p":""},"dirtmonkey":{"e":"booking@abtouring.com","t":"booking","o":"AB Touring","p":""},"dirtyphonics":{"e":"ed@disciplerecs.com","t":"label_press","o":"Disciple Records","p":""},"dirtysnatcha":{"e":"booking@abtouring.com","t":"booking","o":"AB Touring","p":""},"discolines":{"e":"discolines@threesixzero.com","t":"management","o":"Three Six Zero","p":""},"distantmatter":{"e":"kamran@kkmgmt.co","t":"management","o":"KK Mgmt","p":"Kamran"},"dodgefuski":{"e":"ed@disciplerecs.com","t":"label_press","o":"Disciple Records","p":""},"drfresch":{"e":"peter@keel.la","t":"management","o":"Keel","p":"Peter Rugo"},"drushuu":{"e":"tom@dscvr.agency","t":"management","o":"DSCVR Agency","p":"Tom"},"dreamtakers":{"e":"thedreamtakers@gmail.com","t":"general","o":"Dream Takers","p":""},"drinkurwater":{"e":"justin@nuwave.io","t":"management","o":"Nuwave","p":"Justin"},"effin":{"e":"andrew@distortedmgmt.com","t":"management","o":"Distorted MGMT","p":"Andrew"},"emorfik":{"e":"bryce@prodigyartists.com","t":"management","o":"Prodigy Artists","p":"Bryce"},"eptic":{"e":"sp@theshalizigroup.com","t":"management","o":"The Shalizi Group","p":""},"ero808":{"e":"spencer@threesixzero.com","t":"booking","o":"Three Six Zero","p":"Spencer"},"excision":{"e":"management@excision.ca","t":"management","o":"Excision / Rottun","p":""},"finnuh":{"e":"dvartanian@corsonagency.com","t":"booking","o":"Corson Agency","p":""},"funtcase":{"e":"booking@abtouring.com","t":"booking","o":"AB Touring","p":""},"futureexit":{"e":"booking@abtouring.com","t":"booking","o":"AB Touring","p":""},"ganjawhitenight":{"e":"alexdarkhorsegroup@gmail.com","t":"management","o":"Dark Horse Group","p":"Alex"},"ggmagree":{"e":"booking@abtouring.com","t":"booking","o":"AB Touring","p":""},"gladdepaling":{"e":"wessel@bumblebeat.me","t":"management","o":"Bumblebeat","p":"Wessel"},"greenmatter":{"e":"joseph@alteredimpactmgmt.com","t":"management","o":"Altered Impact Mgmt","p":"Joseph"},"greenvelvet":{"e":"contact@velvet.vision","t":"media","o":"Velvet Vision","p":""},"greyboyallstars":{"e":"jared@danny-rose.com","t":"management","o":"Danny Rose","p":"Jared"},"gryffin":{"e":"parker@palmtreemgmt.com","t":"management","o":"Palm Tree Mgmt","p":"Parker"},"hairitage":{"e":"megan@visionartists.co","t":"management","o":"Vision Artists","p":"Megan Daugherty"},"hedex":{"e":"will@dnballstars.com","t":"management","o":"DNB Allstars","p":"Will"},"hershe":{"e":"brianna@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":"Brianna"},"heyz":{"e":"sam@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":"Samantha Gallagher"},"hol":{"e":"brandon@soundshieldartists.com","t":"management","o":"SoundShield Artists","p":"Brandon"},"hostagesituation":{"e":"booking@abtouring.com","t":"booking","o":"AB Touring","p":""},"hurtbox":{"e":"brandon@soundshieldartists.com","t":"management","o":"SoundShield Artists","p":"Brandon"},"hydraulix":{"e":"booking@abtouring.com","t":"booking","o":"AB Touring","p":""},"ihatemodels":{"e":"nina@apelago.com","t":"booking","o":"Apelago","p":"Nina"},"ianasher":{"e":"ianasher@milkhoneyla.com","t":"management","o":"Milk & Honey","p":""},"ivory":{"e":"perry@24-8.com","t":"booking","o":"24-8 (NA)","p":"Perry"},"ivylab":{"e":"shai@ivylab.co.uk","t":"management","o":"Ivy Lab","p":"Shai"},"izadi":{"e":"lee@nodesiremgmt.com","t":"management","o":"No Desire Mgmt","p":"Lee"},"izzyvadim":{"e":"sp@theshalizigroup.com","t":"management","o":"The Shalizi Group","p":""},"janeremover":{"e":"mgmt@deadairrecords.com","t":"management","o":"deadAir Records","p":""},"jantsen":{"e":"info@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":""},"jerro":{"e":"ml@mlennial.com","t":"management","o":"MLennial","p":""},"jessicaaudiffred":{"e":"sp@theshalizigroup.com","t":"management","o":"The Shalizi Group","p":""},"jkylhyde":{"e":"brandon@soundshieldartists.com","t":"management","o":"Soundshield Artists","p":"Brandon"},"joncasey":{"e":"bryce@prodigyartists.com","t":"management","o":"Prodigy Artists","p":"Bryce"},"joshbaker":{"e":"music@joshbakermusic.co.uk","t":"general","o":"Josh Baker","p":""},"joshteed":{"e":"jared@mammothmusicgroup.com","t":"management","o":"Mammoth Music Group","p":"Jared"},"kaiwachi":{"e":"perry.gilman@unitedtalent.com","t":"booking","o":"UTA","p":"Perry Gilman"},"killmatter":{"e":"ashten@thebehyve.com","t":"management","o":"The Behyve","p":"Ashten"},"kliptic":{"e":"pat@latertonightgroup.com","t":"management","o":"Later Tonight Group","p":"Pat"},"kloud":{"e":"dennis@tba-management.com","t":"management","o":"TBA Management","p":"Dennis"},"kompany":{"e":"ml@mlennial.com","t":"management","o":"MLennial","p":""},"layz":{"e":"will@wearesound.management","t":"management","o":"We Are Sound Management","p":"Will"},"lazrus":{"e":"paige@divergentmgmt.com","t":"management","o":"Divergent Mgmt","p":"Paige"},"leotrix":{"e":"charley.p@teamwrkmusicgroup.com","t":"management","o":"Teamwrk Music Group","p":"Charley P."},"levelup":{"e":"eric.silver@redlightmanagement.com","t":"management","o":"Red Light Management","p":"Eric Silver"},"levity":{"e":"harrison@2plus2.net","t":"management","o":"2+2 Management","p":"Harrison"},"liquidstranger":{"e":"loper@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":"Robert A. Loper"},"lowcation":{"e":"nathan@momentomgmt.com","t":"management","o":"Momento Mgmt","p":"Nathan"},"luci":{"e":"booking@abtouring.com","t":"booking","o":"AB Touring","p":""},"machaki":{"e":"machakimgmt@gmail.com","t":"management","o":"Machaki","p":""},"maddubz":{"e":"adrian@continuamgmt.com","t":"management","o":"Continua Management","p":"Adrian"},"maddyoneal":{"e":"phil@mammothmusicgroup.com","t":"management","o":"Mammoth Music Group","p":"Phil"},"madgrrl":{"e":"contact@madgrrlmusic.com","t":"general","o":"MADGRRL","p":""},"manicfocus":{"e":"peter.anderson@etp.agency","t":"booking","o":"ETP Agency","p":"Peter Anderson"},"marievaunt":{"e":"mano@thisismyhou.se","t":"management","o":"This Is My House","p":"Mano"},"modalnodes":{"e":"kstewart@littleempiremusic.com","t":"management","o":"Little Empire Music","p":"K. Stewart"},"motifv":{"e":"freddy@risetalentgroup.com","t":"management","o":"Rise Talent Group","p":"Freddy"},"muerte":{"e":"adrian@continuamgmt.com","t":"management","o":"Continua Management","p":"Adrian"},"neotek":{"e":"mgmt@neotekbeats.com","t":"management","o":"Neotek","p":""},"neumonic":{"e":"freddy@risetalentgroup.com","t":"management","o":"Rise Talent Group","p":"Freddy"},"nghtmre":{"e":"bryce@prodigyartists.com","t":"management","o":"Prodigy Artists","p":"Bryce"},"niikoxswae":{"e":"bryce@prodigyartists.com","t":"management","o":"Prodigy Artists","p":"Bryce"},"nikitathewicked":{"e":"jpro@distortedmgmt.com","t":"management","o":"DISTORTED MGMT","p":"Jackie Procacci"},"nimda":{"e":"tom@dscvr.agency","t":"management","o":"DSCVR Agency","p":"Tom"},"nitepunk":{"e":"sacha@nitepunk.world","t":"management","o":"Nitepunk","p":"Sacha"},"noetika":{"e":"noetikamusic@gmail.com","t":"general","o":"Noetika","p":""},"ofthetrees":{"e":"jay@kompassmg.com","t":"management","o":"Kompass MG","p":"Jay Rogovin"},"ognixin":{"e":"mgmt@ognixin.com","t":"management","o":"OG Nixin","p":""},"oliverse":{"e":"ed@disciplerecs.com","t":"label_press","o":"Disciple Records","p":""},"omnom":{"e":"sp@theshalizigroup.com","t":"management","o":"The Shalizi Group","p":""},"opiuo":{"e":"jay@kompassmg.com","t":"management","o":"Kompass MG","p":"Jay Rogovin"},"paperskies":{"e":"farhad@northsideartists.com","t":"management","o":"Northside Artist Management","p":"Farhad Ghousy"},"pegboardnerds":{"e":"ferry@apa-agency.com","t":"booking","o":"APA Agency (Americas/AU)","p":"Ferry"},"phaseone":{"e":"ed@disciplerecs.com","t":"label_press","o":"Disciple Records","p":""},"phrva":{"e":"anthony@radishmgmt.com","t":"management","o":"Radish Mgmt","p":"Anthony"},"poni":{"e":"booking@abtouring.com","t":"booking","o":"AB Touring","p":""},"prosecute":{"e":"megan@visionartists.co","t":"management","o":"Vision Artists","p":"Megan Daugherty"},"ravenscoon":{"e":"info@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":""},"rayvolpe":{"e":"pat@bloomartists.net","t":"management","o":"Bloom Artists","p":"Pat Ward"},"riotten":{"e":"mgmt@groupriot.com","t":"management","o":"Group Riot","p":""},"roi":{"e":"tom@dscvr.agency","t":"management","o":"DSCVR Agency","p":"Tom"},"rommii":{"e":"bryce@prodigyartists.com","t":"management","o":"Prodigy Artists","p":"Bryce"},"rsun":{"e":"tony@trumgmt.org","t":"management","o":"TRU Mgmt","p":"Tony"},"ryns":{"e":"jared@excision.ca","t":"management","o":"Excision / Rottun","p":"Jared"},"sakaxfly":{"e":"info@kompassmg.com","t":"management","o":"Kompass MG","p":""},"sanpacho":{"e":"info@2night-global.co.uk","t":"management","o":"2Night Global","p":""},"sethdavid":{"e":"adonis@mindwarpmgmt.com","t":"management","o":"Mindwarp Mgmt","p":"Adonis"},"sevenlions":{"e":"ml@mlennial.com","t":"management","o":"MLennial","p":""},"shlump":{"e":"mgmt@shlumpbass.com","t":"management","o":"Shlump","p":""},"sidequest":{"e":"briana@night.co","t":"management","o":"Night","p":"Briana"},"sippy":{"e":"harrison@2plus2.net","t":"management","o":"2+2 Management","p":"Harrison"},"sisto":{"e":"sporeralison@gmail.com","t":"management","o":"SISTO mgmt","p":""},"skilah":{"e":"skilah@blk-matter.com","t":"management","o":"BLK Matter","p":""},"slander":{"e":"bryce@prodigyartists.com","t":"management","o":"Prodigy Artists","p":"Bryce"},"smoakland":{"e":"smoakland@redlightmanagement.com","t":"management","o":"Red Light Management","p":""},"sodown":{"e":"contact@nocturnalmgmt.com","t":"management","o":"Nocturnal Mgmt","p":""},"spacelaces":{"e":"sp@theshalizigroup.com","t":"management","o":"The Shalizi Group","p":""},"spacewizard":{"e":"sp@theshalizigroup.com","t":"management","o":"The Shalizi Group","p":""},"stonedlevel":{"e":"adrian@continuamgmt.com","t":"management","o":"Continua Management","p":"Adrian"},"subtronics":{"e":"subtronics@redlightmanagement.com","t":"management","o":"Red Light Management","p":""},"sullivanking":{"e":"sullivanking@milkhoneyla.com","t":"management","o":"Milk & Honey","p":""},"superfuture":{"e":"david@kompassmg.com","t":"management","o":"Kompass MG","p":"David"},"taikinulight":{"e":"marc@bullettrainmusic.com","t":"management","o":"Bullet Train Music","p":"Marc"},"tapeb":{"e":"adam@korumgmt.com","t":"management","o":"Koru Management","p":"Adam Abecassis"},"telykast":{"e":"nick@thegoldenkidsgroup.com","t":"management","o":"The Golden Kids Group","p":"Nick"},"tisto":{"e":"christian@musicalfreedom.com","t":"management","o":"Musical Freedom","p":"Christian"},"tokyomachine":{"e":"michael@jetpackdinosaur.com","t":"management","o":"Jetpack Dinosaur","p":"Michael"},"trivecta":{"e":"info@confirmedgroup.com","t":"management","o":"Confirmed Group","p":"Emily Bell"},"twopercent":{"e":"loper@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":"Robert A. Loper"},"tynan":{"e":"megan@visionartists.co","t":"management","o":"Vision Artists","p":"Megan Daugherty"},"usaybflow":{"e":"max.freeman@unitedtalent.com","t":"booking","o":"UTA","p":"Max Freeman"},"vampa":{"e":"jonathan@nocturnalmgmt.com","t":"management","o":"Nocturnal Mgmt","p":"Jonathan"},"virtualriot":{"e":"ed@disciplerecs.com","t":"label_press","o":"Disciple Records","p":""},"waxmotif":{"e":"jon@confirmedgroup.com","t":"management","o":"Confirmed Group","p":"Jon"},"whethan":{"e":"dan@goodluckhavefun.media","t":"management","o":"Good Luck Have Fun Media","p":"Dan"},"williamblack":{"e":"chance@cindermgmt.com","t":"management","o":"Cinder Management","p":"Chance"},"wonkywilla":{"e":"contact@nocturnalmgmt.com","t":"management","o":"Nocturnal Mgmt","p":""},"wooli":{"e":"jon@confirmedgroup.com","t":"management","o":"Confirmed Group","p":"Jon"},"wraz":{"e":"stewart@triplea.agency","t":"booking","o":"Triple A Agency","p":"Stewart"},"wtchcrft":{"e":"wtchcrft.music@gmail.com","t":"general","o":"Wtchcrft","p":""},"xotix":{"e":"cris@optimysticendeavors.com","t":"management","o":"Optimystic Endeavors","p":"Cris"},"yetep":{"e":"imyetep@gmail.com","t":"general","o":"yetep","p":""},"zenselekta":{"e":"zenselekta@redlightmanagement.com","t":"management","o":"Red Light Management","p":""},"zoey808":{"e":"andrew@milkhoneyla.com","t":"management","o":"Milk & Honey","p":"Andrew"},"onmode":{"e":"pat@bloomartists.net","t":"management","o":"Bloom Artists","p":"Pat Ward"}};
+  }
+  // patch 39 (2026-08-19): Instagram handles reach the tracker, so the lineup can
+  //   answer "no email — can I DM them instead?". Every handle here was opened as a
+  //   live profile in a logged-in browser; the two dead ones (HEYZ, Seven Lions) are
+  //   deliberately excluded rather than shipped as broken links.
+  if(!state.patch39){
+    state.patch39=true;
+    state.artistIG={"ahundreddrums":"ahundreddrums","acslater":"djacslater","acyan":"acyanmusic","adamten":"adamten_","ahee":"iamahee","alienpark":"alienparkmusic","allenwatts":"allenwattsmusic","alok":"alok","artifakts":"artifaktsmusic","atliens":"atliensofficial","audien":"audien","barelyalive":"barelyalive","basstripper":"basstripper","beargrillz":"itsbeargrillz","benbhmer":"benbohmermusic","bennybenassi":"bennybenassi","blacktigersexmachine":"officialbtsm","skullmachineblacktigersexmachinexkaiwachi":"officialbtsm","blossom":"blossom.dj","boogiet":"mrboogiet","borgore":"borgore","brandicyrus":"brandicyrus","canabliss":"canablissss","capochino":"capochinomusic","caseyclub":"caseyclubofficial","caspa":"caspaofficial","champagnedrip":"champagnedrip","champion":"champion_dj","chassi":"chassimusic","chrislake":"chrislake","codddubz":"codd_dubz","coone":"djcoone","cooneb2bdjisaac":"djcoone","crankdat":"crankdat","craze":"crazearoni","crumbpit":"crumbpitmusic","cultureshock":"cultureshock","dabin":"dabinmusic","dailybread":"dailybreadmusic","darksiderz":"darksiderz","darrenstyles":"darrenstylesuk","deadcrow":"devdcrow","devault":"devaultmusic","diontimmer":"dion_timmer","dirtmonkey":"dirtmonkeymusic","dirtyphonics":"dirtyphonics","dirtysnatcha":"dirtysnatcha","discolines":"discolines","djisaac":"djisaacofficial","dodgefuski":"dodge_and_fuski","dopelemon":"dopelemonmusic","drfresch":"drfresch","eotofriends":"eotomusic","eptic":"eptic","excision":"excision","flavad":"flava_d","frontliner":"djfrontliner","frontlinerjourneyset":"djfrontliner","funtcase":"funtcaseuk","galantis":"wearegalantis","ganjawhitenight":"ganjawhitenight","geese":"geesebandnyc","ggmagree":"ggmagree","gorgoncity":"gorgoncity","gorgoncityb2bmph":"gorgoncity","gryffin":"gryffin","guerillatoss":"guerillatoss","hairitage":"hairitage_music","hedex":"hedexuk","hershe":"hershe","ihatemodels":"ihatemodels1","ianasher":"ianasher","illenium":"illenium","indirapaganotto":"indirapaganotto","ivylab":"ivylab","jamiejones":"jamiejonesmusic","jamiejonesb2bfrankyrizardo":"jamiejonesmusic","jessicaaudiffred":"jessica_audiffred","josephcapriati":"josephcapriati","josephcapriatib2bsosa":"josephcapriati","joshteed":"joshteedmusic","joyryde":"enjoyryde","joyrydesunsetset":"enjoyryde","kaiwachi":"kaiwachiofficial","kaskade":"kaskade","kaskadesunsetset":"kaskade","kompany":"kompanymusic","kream":"wearekream","leotrix":"leotrixofficial","levelup":"levelupdub","lewisofman":"lewisofman","liquidstranger":"liquidstranger","maddyoneal":"maddy_oneal","manicfocus":"manicfocus","moonstoneriders":"moonstone_riders","opiuo":"opiuo","pegboardnerds":"pegboardnerds","phaseone":"phaseoneau","ravenscoon":"ravenscoon","rayvolpe":"rayvolpe","riotten":"riottenmusic","shlump":"shlumpbass","sippy":"sippyau","spacelaces":"space_laces","subtronics":"subtronics","sullivanking":"sullivanking","superfuture":"superfuturedj","supertaste":"supertastemusic","taikinulight":"taikinulightuk","taperschoice":"taperschoice","telykast":"telykast","thaiboydigital":"bigthaiboy","tisto":"tiesto","tokyomachine":"tokyomachine","trivecta":"trivectamusic","trueloves":"truelovesband","trym":"trym","unknownmortalorchestra":"unknownmortalorchestra","virtualriot":"officialvirtualriot","waxmotif":"waxmotif","whethan":"whethan","williamblack":"williamblack","wooli":"woolimusic","xotix":"xotixbass","zomboy":"zomboy"};
   }
   // patch 37 (2026-08-19): the six remaining lineups came in; venue/date corrections
   if(!state.patch37){
@@ -2141,6 +2158,19 @@ function artistEmail(n){
   const r=(state.artistEmails||{})[norm(n)];    /* otherwise fall back to the research db */
   return r&&r.e?r.e:'';
 }
+/* The Instagram fallback. If there is no address, this is how Jay reaches them. */
+function artistIG(n){
+  const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const h=(state.artistIG||{})[norm(n)];
+  return h?'https://www.instagram.com/'+h+'/':'';
+}
+/* Which pile is this artist in? Email always wins — it is the pitch that works.
+   Instagram is only the fallback for acts with no address at all. */
+function artistBucket(n){
+  if(artistEmail(n))return 'email';
+  if(artistIG(n))return 'ig';
+  return 'none';
+}
 /* What kind of door is this — a manager, a publicist, or just a booking agent?
    Shown on hover so a booking address is never mistaken for a media contact. */
 function artistEmailNote(n){
@@ -2185,10 +2215,17 @@ function runDraftQueue(urls,noEmail){
   return true;
 }
 function bulkDraft(fest,from,to){
-  const names=[...selArtists];
-  if(!names.length){toast('Pick some artists first');return}
-  if(runDraftQueue(names.map(n=>composeUrl(n,fest,from,to)),names.filter(n=>!artistEmail(n)).length))
-    setArtistStatus(names,'emailed');   /* drafted means asked — yellow until they reply */
+  /* Only ever draft to acts that actually have an address. This used to open a
+     compose window for everyone selected, so acts with no email produced blank
+     drafts with nobody in the To field — and then got marked emailed anyway. */
+  const all=[...selArtists];
+  if(!all.length){toast('Pick some artists first');return}
+  const names=all.filter(n=>artistEmail(n));
+  const skipped=all.length-names.length;
+  if(!names.length){toast('None of those have an email — try Open on Instagram');return}
+  if(runDraftQueue(names.map(n=>composeUrl(n,fest,from,to)),0))
+    setArtistStatus(names,'emailed');   /* only the ones actually drafted go yellow */
+  if(skipped)toast(skipped+' skipped — no address on file, still selected for Instagram');
 }
 /* Clubs pitch a specific night at a specific room, not a week on site. */
 function clubPitch(name,venue,date){
@@ -2253,10 +2290,38 @@ function alpha(list){
     return String(a).toLowerCase().replace(/^the /,'').localeCompare(String(b).toLowerCase().replace(/^the /,''),'en',{numeric:true});
   });
 }
+/* Which pile the lineup is showing. Deliberately NOT saved — a reload always
+   shows the whole lineup again, so nobody loses artists to a filter they forgot. */
+var lineupFilter='all';
+function setLineupFilter(v){lineupFilter=v;render()}
+function bucketCounts(artists){
+  const c={all:(artists||[]).length,email:0,ig:0,none:0};
+  (artists||[]).forEach(function(n){c[artistBucket(n)]++});
+  return c;
+}
+function shownArtists(artists){
+  if(lineupFilter==='all')return artists||[];
+  return (artists||[]).filter(n=>artistBucket(n)===lineupFilter);
+}
+function filterBarHTML(artists){
+  const c=bucketCounts(artists);
+  const b=function(key,label,n){
+    return '<button class="fbtn'+(lineupFilter===key?' on':'')+'" onclick="setLineupFilter(\''+key+'\')">'
+      +label+' <b>'+n+'</b></button>';
+  };
+  return '<div class="fbar">'
+    +b('all','All',c.all)
+    +b('email','\u2709 Email',c.email)
+    +b('ig','\u25ce IG only',c.ig)
+    +b('none','No contact',c.none)
+    +'</div>';
+}
 function chipFor(n){
-  const st=artistStatus(n), sel=selArtists.has(n), o=outFor(n);
-  return '<span class="achip '+st+(sel?' sel':'')+'" title="'+esc(artistEmailNote(n))+'"'
-    +' onclick="toggleArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'+esc(n)+'</span>';
+  const st=artistStatus(n), sel=selArtists.has(n), bk=artistBucket(n);
+  const mark=bk==='email'?'\u2709':(bk==='ig'?'\u25ce':'');
+  return '<span class="achip '+st+' b-'+bk+(sel?' sel':'')+'" title="'+esc(artistEmailNote(n))+'"'
+    +' onclick="toggleArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'
+    +(mark?'<i class="bm">'+mark+'</i>':'')+esc(n)+'</span>';
 }
 function legendHTML(artists){
   const counts={new:0,emailed:0,confirmed:0};
@@ -2268,23 +2333,49 @@ function legendHTML(artists){
     +'<span><i class="sw sel"></i>selected</span></div>';
 }
 function pickBarHTML(fest,artists,from,to){
+  const shown=shownArtists(artists);
   const picked=(artists||[]).filter(n=>selArtists.has(n));
-  if(!picked.length)return '';
+  const unpicked=shown.filter(n=>!selArtists.has(n));
+  const selAll=unpicked.length
+    ? '<button class="btn small" onclick="selectShown('+JSON.stringify(unpicked).replace(/"/g,'&quot;')+')">Select all '+unpicked.length+' shown</button>'
+    : '';
+  if(!picked.length)return selAll?'<div class="pickbar">'+selAll+'</div>':'';
   const q=JSON.stringify(picked).replace(/"/g,'&quot;');
-  const noMail=picked.filter(n=>!(outFor(n)||{}).email).length;
+  /* Count against artistEmail(), not just Jay's own rows — the research database
+     holds most of these addresses and the old count ignored it entirely. */
+  const mailable=picked.filter(n=>artistEmail(n));
+  const igOnly=picked.filter(n=>!artistEmail(n)&&artistIG(n));
+  const nothing=picked.length-mailable.length-igOnly.length;
   return '<div class="pickbar"><b>'+picked.length+' selected</b>'
-    +(noMail?'<span class="chip money">'+noMail+' without an email</span>':'')
-    +'<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">✉ Draft '+picked.length+'</button>'
-    +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark emailed</button>'
+    +(igOnly.length?'<span class="chip money">'+igOnly.length+' IG only</span>':'')
+    +(nothing?'<span class="chip">'+nothing+' no contact</span>':'')
+    + selAll
+    +(mailable.length?'<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">\u2709 Draft '+mailable.length+'</button>':'')
+    +(igOnly.length?'<button class="btn small" onclick="bulkInstagram()">\u25ce Open '+igOnly.length+' on Instagram</button>':'')
+    +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark contacted</button>'
     +'<button class="btn small" onclick="setArtistStatus('+q+',\'confirmed\')">Mark confirmed</button>'
     +'<button class="btn small" onclick="setArtistStatus('+q+',\'new\')">Clear color</button>'
     +'<button class="btn small" onclick="clearArtists()">Clear</button></div>';
 }
+function selectShown(names){(names||[]).forEach(n=>selArtists.add(n));render()}
+/* The Instagram half of the pipeline: only ever the acts with no address. */
+function bulkInstagram(){
+  const names=[...selArtists].filter(n=>!artistEmail(n)&&artistIG(n));
+  if(!names.length){toast('None of those are Instagram-only');return}
+  const stamp=Date.now();
+  names.forEach(function(n,i){
+    setTimeout(function(){window.open(artistIG(n),'jlt-ig'+stamp+'-'+i)},i*DRAFT_DWELL);
+  });
+  toast(names.length+' Instagram profile'+(names.length>1?'s':'')+' opening — DM them, then Mark contacted');
+}
 function artistPicker(fest,artists,from,to){
   if(!artists||!artists.length)return '';
+  const shown=shownArtists(artists);
   return '<div class="llsec">Lineup — pick who to email</div>'
+    +filterBarHTML(artists)
     +legendHTML(artists)
-    +'<div class="pickgrid">'+alpha(artists).map(chipFor).join('')+'</div>'
+    +(shown.length?'<div class="pickgrid">'+alpha(shown).map(chipFor).join('')+'</div>'
+                  :'<div class="fnone">Nobody in this pile for this festival.</div>')
     +pickBarHTML(fest,artists,from,to);
 }
 /* Any festival with a lineup gets the same picker inside its panel. */
@@ -2432,8 +2523,10 @@ function festPanel(k,rows,dates){
         +'<img src="'+esc(p.url)+'" alt="'+esc(p.label)+'" loading="lazy"><figcaption>'+esc(p.label)+'</figcaption></figure>';
     }).join('')+'</div>';
   }
-  return ph+legendHTML(names)
-    +'<div class="pickgrid">'+alpha(names).map(chipFor).join('')+'</div>'
+  const shown1=shownArtists(names);
+  return ph+filterBarHTML(names)+legendHTML(names)
+    +(shown1.length?'<div class="pickgrid">'+alpha(shown1).map(chipFor).join('')+'</div>'
+                   :'<div class="fnone">Nobody in this pile for this festival.</div>')
     +pickBarHTML(k,names,from,to);
 }
 function clubPanel(k,rows){
@@ -2577,11 +2670,15 @@ function renderLostLands(){
     const main=line.filter(n=>!early.has(nkey(n)));
     const groups=dayKeys.map(d=>({label:fmtDate(d),names:days[d]||[]}))
       .concat(main.length?[{label:'Main festival — day not announced (Sep 18–20)',names:main}]:[]);
-    h+='<div class="llsec">Day by day</div>';
+    h+='<div class="llsec">Day by day</div>'+filterBarHTML(line);
     groups.forEach(function(g){
-      h+='<details class="dayblock" open><summary><b>'+g.label+'</b> · '+g.names.length+' artists</summary>'
+      const sg=shownArtists(g.names);
+      const cnt=(lineupFilter==='all')?g.names.length+' artists'
+                                      :sg.length+' of '+g.names.length;
+      h+='<details class="dayblock" open><summary><b>'+g.label+'</b> · '+cnt+'</summary>'
         +legendHTML(g.names)
-        +'<div class="pickgrid">'+alpha(g.names).map(chipFor).join('')+'</div>'
+        +(sg.length?'<div class="pickgrid">'+alpha(sg).map(chipFor).join('')+'</div>'
+                   :'<div class="fnone">Nobody in this pile on this day.</div>')
         +pickBarHTML('Lost Lands',g.names,LL.start,LL.end)
         +'</details>';
     });
