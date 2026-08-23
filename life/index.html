@@ -335,6 +335,7 @@
   .achip{position:relative}
   /* follower count after a hairline rule — currentColor so the divider tracks
      whatever state colour the chip is in */
+  .achip .sent{font-style:normal;font-size:10px;font-weight:800;color:var(--urgent);margin-left:4px}
   .achip .dv{font-style:normal;font-size:9px;font-weight:800;color:var(--good);
     margin-left:5px;letter-spacing:-.5px}
   .achip.sel .dv{color:#fff}
@@ -2224,9 +2225,20 @@ function openPoster(i){
 /* One pitch, his angle: he is already paid to be there, so covering one more
    artist costs the artist almost nothing. */
 /* Festivals Jay has actually worked before — only these get the "shot it before" line. */
+/* Jay's wording, unchanged except the artist slot: one manager often represents
+   several acts on the same bill, and sending them near-identical separate emails
+   reads as automated. `name` may be a single string or a list. */
+function artistList(name){
+  const a=Array.isArray(name)?name.slice():[name];
+  if(a.length===1)return a[0];
+  if(a.length===2)return a[0]+' or '+a[1];
+  return a.slice(0,-1).join(', ')+' or '+a[a.length-1];
+}
 function festSubject(name,fest,from){
   const yr=String(from||'').slice(0,4);
-  return fest+(yr?' '+yr:'')+': '+name+' (media inquiry)';
+  const a=Array.isArray(name)?name:[name];
+  const who=a.length>1?a.slice(0,-1).join(', ')+' + '+a[a.length-1]:a[0];
+  return fest+(yr?' '+yr:'')+': '+who+' (media inquiry)';
 }
 const SHOT_BEFORE=['lost lands'];
 function shotBefore(fest){
@@ -2249,7 +2261,8 @@ function festPitch(name,fest,from,to){
   const yrs=yr?(+yr-2018):8;
   return 'Hello,\n\n'
     +'My name is Jay and I\u2019ve been shooting photo/video in the EDM industry for the past '
-    +yrs+' years, and I\u2019m reaching out to see if '+name+' needs any media at '+fest+' this year.\n'
+    +yrs+' years, and I\u2019m reaching out to see if '+artistList(name)
+    +((Array.isArray(name)&&name.length>1)?' need':' needs')+' any media at '+fest+' this year.\n'
     +emph('I\u2019m already credentialed and on site '+onsiteWindow(fest,from,to))
     +', so there\u2019s nothing to arrange on the credential side.'
     +(shotBefore(fest)?' I\u2019ve shot '+fest+' before, so I know the run of show and the venue layout.':'')
@@ -2318,6 +2331,31 @@ function resolveArtist(n,has){
   var p=billedParts(n);
   for(var i=0;i<p.length;i++) if(has(p[i]))return p[i];
   return n;
+}
+/* Status lives per ARTIST, but a manager is per ADDRESS. Without this, emailing
+   three acts who share one manager looks like three identical automated messages.
+   Keyed by address, survives across days and across separate sending sessions. */
+function sentLog(){ state.sentLog=state.sentLog||{}; return state.sentLog }
+function sentBefore(email){
+  const e=String(email||'').toLowerCase();
+  return e?(sentLog()[e]||null):null;
+}
+function recordSent(email,names,fest){
+  const e=String(email||'').toLowerCase(); if(!e)return;
+  const L=sentLog(); const r=L[e]||{n:0,artists:[],last:''};
+  r.n++; r.last=todayISO();
+  (Array.isArray(names)?names:[names]).forEach(function(x){ if(r.artists.indexOf(x)<0)r.artists.push(x) });
+  r.fest=fest||r.fest||'';
+  L[e]=r;
+}
+/* Group a selection by the address it would actually go to. */
+function byAddress(names){
+  const g={};
+  (names||[]).forEach(function(n){
+    const e=artistEmail(n); if(!e)return;
+    (g[e.toLowerCase()]=g[e.toLowerCase()]||[]).push(n);
+  });
+  return g;
 }
 function artistEmail(n){
   const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -2406,16 +2444,37 @@ function runDraftQueue(urls,noEmail){
   return true;
 }
 function bulkDraft(fest,from,to){
-  /* Only ever draft to acts that actually have an address. This used to open a
-     compose window for everyone selected, so acts with no email produced blank
-     drafts with nobody in the To field — and then got marked emailed anyway. */
+  /* One email per ADDRESS, not per artist. 39% of these acts share a manager with
+     another act on the same bill, so drafting per-artist sent one person several
+     near-identical emails — which reads as automated and burns the contact. */
   const all=[...selArtists];
   if(!all.length){toast('Pick some artists first');return}
   const names=all.filter(n=>artistEmail(n));
   const skipped=all.length-names.length;
   if(!names.length){toast('None of those have an email — try Open on Instagram');return}
-  if(runDraftQueue(names.map(n=>composeUrl(n,fest,from,to)),0))
-    setArtistStatus(names,'emailed');   /* only the ones actually drafted go yellow */
+  const groups=byAddress(names);
+  const addrs=Object.keys(groups);
+  const again=addrs.filter(e=>sentBefore(e));
+  if(again.length && !confirm(
+      again.length+' of these addresses you have written to before:\n\n'
+      +again.map(e=>'  '+e+'  ('+sentBefore(e).artists.join(', ')+', '+sentBefore(e).last+')').join('\n')
+      +'\n\nSend again anyway?')) return;
+  const urls=addrs.map(function(e){
+    const who=groups[e];
+    return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
+      +'&to='+encodeURIComponent(e)
+      +'&su='+encodeURIComponent(festSubject(who,fest,from))
+      +'&body='+encodeURIComponent(festPitch(who,fest,from,to));
+  });
+  if(runDraftQueue(urls,0)){
+    addrs.forEach(e=>recordSent(e,groups[e],fest));
+    setArtistStatus(names,'emailed');
+    save();
+    const merged=addrs.filter(e=>groups[e].length>1);
+    if(merged.length)
+      toast(names.length+' artists \u2192 '+addrs.length+' emails · '
+            +merged.length+' manager'+(merged.length>1?'s':'')+' covered more than one act');
+  }
   if(skipped)toast(skipped+' skipped — no address on file, still selected for Instagram');
 }
 /* Clubs pitch a specific night at a specific room, not a week on site. */
@@ -2554,6 +2613,9 @@ function chipFor(n){
     +' onclick="toggleArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'
     +esc(n)
     +(artistDual(n)?'<i class="dv" title="address confirmed independently by both Claude and Codex">\u2713\u2713</i>':'')
+    +(sentBefore(artistEmail(n))?'<i class="sent" title="you have already emailed this address on '
+        +esc(sentBefore(artistEmail(n)).last)+' about '+esc(sentBefore(artistEmail(n)).artists.join(', '))
+        +'">\u21bb</i>':'')
     +(f?'<i class="fc">'+fmtFollowers(f)+'</i>':'')
     +card+'</span>';
 }
@@ -2575,11 +2637,21 @@ function pickBarHTML(fest,artists,from,to){
   const mailable=picked.filter(n=>artistEmail(n));
   const igOnly=picked.filter(n=>!artistEmail(n)&&artistIG(n));
   const nothing=picked.length-mailable.length-igOnly.length;
+  const grp=byAddress(mailable);
+  const nAddr=Object.keys(grp).length;
+  const shared=Object.keys(grp).filter(e=>grp[e].length>1);
+  const repeat=Object.keys(grp).filter(e=>sentBefore(e));
   return '<div class="pickbar"><b>'+picked.length+' selected</b>'
+    +(shared.length?'<span class="chip accent" title="'
+        +esc(shared.map(e=>e+': '+grp[e].join(', ')).join(' | '))
+        +'">'+shared.length+' shared manager'+(shared.length>1?'s':'')+' \u2192 merged</span>':'')
+    +(repeat.length?'<span class="chip urgent" title="'
+        +esc(repeat.map(e=>e+' \u2014 '+sentBefore(e).last).join(' | '))
+        +'">'+repeat.length+' already emailed</span>':'')
     +(igOnly.length?'<span class="chip money">'+igOnly.length+' IG only</span>':'')
     +(nothing?'<span class="chip">'+nothing+' no contact</span>':'')
     +(mailable.length
-       ? '<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">\u2709 Draft '+mailable.length+'</button>'
+       ? '<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">\u2709 Draft '+nAddr+(nAddr!==mailable.length?' ('+mailable.length+' artists)':'')+'</button>'
        : '<span class="nodraft" title="Nothing selected has an address on file">\u2709 no address to draft to</span>')
     +(igOnly.length?'<button class="btn small" onclick="bulkInstagram()">\u25ce Open '+igOnly.length+' on Instagram</button>':'')
     +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark contacted</button>'
