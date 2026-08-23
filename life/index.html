@@ -1616,7 +1616,7 @@ function snapshotDocs(){
   (state.wfund||[]).forEach(w=>{m['w.'+w.id]=JSON.stringify(w)});
   (state.outreach||[]).forEach(o=>{m['o.'+o.id]=JSON.stringify(o)});
   (state.leads||[]).forEach(l=>{m['l.'+l.id]=JSON.stringify(l)});
-  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{},bills:state.bills||[],lineups:state.lineups||{},festMeta:state.festMeta||{}};
+  const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{},bills:state.bills||[],lineups:state.lineups||{},festMeta:state.festMeta||{},sentLog:state.sentLog||{}};
   Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch')meta[k]=state[k]});
   m['meta']=JSON.stringify(meta);
   return m;
@@ -2340,13 +2340,50 @@ function sentBefore(email){
   const e=String(email||'').toLowerCase();
   return e?(sentLog()[e]||null):null;
 }
+/* History is kept PER FESTIVAL. Writing to Bryce about Lost Lands in August and
+   about Escape in October is two legitimate pitches, not a duplicate — but writing
+   to him twice about Lost Lands is the thing that reads as automated. Those two
+   cases must not look the same. */
 function recordSent(email,names,fest){
   const e=String(email||'').toLowerCase(); if(!e)return;
-  const L=sentLog(); const r=L[e]||{n:0,artists:[],last:''};
+  const L=sentLog(); const r=L[e]||{n:0,artists:[],last:'',fests:{}};
+  r.fests=r.fests||{};
   r.n++; r.last=todayISO();
-  (Array.isArray(names)?names:[names]).forEach(function(x){ if(r.artists.indexOf(x)<0)r.artists.push(x) });
-  r.fest=fest||r.fest||'';
+  const arr=Array.isArray(names)?names:[names];
+  arr.forEach(function(x){ if(r.artists.indexOf(x)<0)r.artists.push(x) });
+  const f=fest||'(no festival)';
+  const fr=r.fests[f]||{when:'',artists:[]};
+  fr.when=todayISO();
+  arr.forEach(function(x){ if(fr.artists.indexOf(x)<0)fr.artists.push(x) });
+  r.fests[f]=fr;
   L[e]=r;
+}
+/* Un-marking an artist has to undo the send record too, or a test can never be
+   cleaned up and a mistaken send is remembered forever. Only the named artists are
+   removed; anyone else at that same address keeps their history. */
+function clearSent(names){
+  const L=sentLog();
+  (names||[]).forEach(function(n){
+    const e=String(artistEmail(n)||'').toLowerCase(); if(!e||!L[e])return;
+    const r=L[e];
+    r.artists=(r.artists||[]).filter(x=>x!==n);
+    Object.keys(r.fests||{}).forEach(function(f){
+      r.fests[f].artists=(r.fests[f].artists||[]).filter(x=>x!==n);
+      if(!r.fests[f].artists.length) delete r.fests[f];
+    });
+    if(!r.artists.length || !Object.keys(r.fests||{}).length) delete L[e];
+  });
+}
+/* Did this address already get a pitch for THIS festival? */
+function sentForFest(email,fest){
+  const r=sentBefore(email); if(!r||!r.fests)return null;
+  return r.fests[fest||'(no festival)']||null;
+}
+/* Contacted before, but about something else. */
+function sentOtherFest(email,fest){
+  const r=sentBefore(email); if(!r||!r.fests)return [];
+  return Object.keys(r.fests).filter(f=>f!==(fest||'(no festival)'))
+          .map(f=>({fest:f, ...r.fests[f]}));
 }
 /* Group a selection by the address it would actually go to. */
 function byAddress(names){
@@ -2454,11 +2491,27 @@ function bulkDraft(fest,from,to){
   if(!names.length){toast('None of those have an email — try Open on Instagram');return}
   const groups=byAddress(names);
   const addrs=Object.keys(groups);
-  const again=addrs.filter(e=>sentBefore(e));
-  if(again.length && !confirm(
-      again.length+' of these addresses you have written to before:\n\n'
-      +again.map(e=>'  '+e+'  ('+sentBefore(e).artists.join(', ')+', '+sentBefore(e).last+')').join('\n')
-      +'\n\nSend again anyway?')) return;
+  const dupe=addrs.filter(e=>sentForFest(e,fest));      /* same festival = real repeat */
+  const other=addrs.filter(e=>!sentForFest(e,fest)&&sentOtherFest(e,fest).length);
+  if(dupe.length||other.length){
+    let m='';
+    if(dupe.length){
+      m+='ALREADY PITCHED FOR '+fest.toUpperCase()+':\n';
+      dupe.forEach(function(e){
+        const r=sentForFest(e,fest);
+        m+='  '+e+'\n     you sent this on '+r.when+' about '+r.artists.join(', ')+'\n';
+      });
+      m+='\nSending again is the thing that reads as automated.\n\n';
+    }
+    if(other.length){
+      m+='WRITTEN TO BEFORE, BUT ABOUT A DIFFERENT FESTIVAL:\n';
+      other.forEach(function(e){
+        m+='  '+e+'\n'+sentOtherFest(e,fest).map(x=>'     '+x.fest+' on '+x.when+' ('+x.artists.join(', ')+')').join('\n')+'\n';
+      });
+      m+='\nThat is a fair new pitch — they will just recognise your name.\n\n';
+    }
+    if(!confirm(m+'Go ahead?')) return;
+  }
   const urls=addrs.map(function(e){
     const who=groups[e];
     return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
@@ -2613,9 +2666,11 @@ function chipFor(n){
     +' onclick="toggleArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'
     +esc(n)
     +(artistDual(n)?'<i class="dv" title="address confirmed independently by both Claude and Codex">\u2713\u2713</i>':'')
-    +(sentBefore(artistEmail(n))?'<i class="sent" title="you have already emailed this address on '
-        +esc(sentBefore(artistEmail(n)).last)+' about '+esc(sentBefore(artistEmail(n)).artists.join(', '))
-        +'">\u21bb</i>':'')
+    +(function(){
+        const e=artistEmail(n), r=sentBefore(e); if(!r)return '';
+        const fs=Object.keys(r.fests||{}).map(f=>f+' '+r.fests[f].when+' ('+r.fests[f].artists.join(', ')+')');
+        return '<i class="sent" title="already written to '+esc(e)+' \u2014 '+esc(fs.join(' | '))+'">\u21bb</i>';
+      })()
     +(f?'<i class="fc">'+fmtFollowers(f)+'</i>':'')
     +card+'</span>';
 }
@@ -2640,14 +2695,17 @@ function pickBarHTML(fest,artists,from,to){
   const grp=byAddress(mailable);
   const nAddr=Object.keys(grp).length;
   const shared=Object.keys(grp).filter(e=>grp[e].length>1);
-  const repeat=Object.keys(grp).filter(e=>sentBefore(e));
+  const repeat=Object.keys(grp).filter(e=>sentForFest(e,fest));
+  const seenElse=Object.keys(grp).filter(e=>!sentForFest(e,fest)&&sentOtherFest(e,fest).length);
   return '<div class="pickbar"><b>'+picked.length+' selected</b>'
     +(shared.length?'<span class="chip accent" title="'
         +esc(shared.map(e=>e+': '+grp[e].join(', ')).join(' | '))
         +'">'+shared.length+' shared manager'+(shared.length>1?'s':'')+' \u2192 merged</span>':'')
     +(repeat.length?'<span class="chip urgent" title="'
-        +esc(repeat.map(e=>e+' \u2014 '+sentBefore(e).last).join(' | '))
-        +'">'+repeat.length+' already emailed</span>':'')
+        +esc(repeat.map(e=>e+' \u2014 '+fest+' on '+sentForFest(e,fest).when
+             +' about '+sentForFest(e,fest).artists.join(', ')).join(' | '))
+        +'">'+repeat.length+' already pitched for '+esc(fest)+'</span>':'')
+    +(seenElse.length?'<span class="chip">'+seenElse.length+' contacted before (other festival)</span>':'')
     +(igOnly.length?'<span class="chip money">'+igOnly.length+' IG only</span>':'')
     +(nothing?'<span class="chip">'+nothing+' no contact</span>':'')
     +(mailable.length
@@ -2656,7 +2714,7 @@ function pickBarHTML(fest,artists,from,to){
     +(igOnly.length?'<button class="btn small" onclick="bulkInstagram()">\u25ce Open '+igOnly.length+' on Instagram</button>':'')
     +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark contacted</button>'
     +'<button class="btn small" onclick="setArtistStatus('+q+',\'confirmed\')">Mark confirmed</button>'
-    +'<button class="btn small" title="Sets them back to not-contacted — undoes the yellow/green, keeps them selected" onclick="setArtistStatus('+q+',\'new\')">Mark not contacted</button>'
+    +'<button class="btn small" title="Sets them back to not-contacted AND forgets that you emailed their manager" onclick="clearSent('+q+');setArtistStatus('+q+',\'new\')">Mark not contacted</button>'
     +'<button class="btn small" title="Just unticks them — changes nothing else" onclick="clearArtists()">Deselect</button></div>';
 }
 /* The Instagram half of the pipeline: only ever the acts with no address. */
