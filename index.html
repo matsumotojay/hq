@@ -537,7 +537,11 @@ a{color:var(--sky)}
 .headtbl .hseats{display:flex;gap:.6rem}
 .banks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2.6rem 2.2rem}
 @media(max-width:600px){.banks{grid-template-columns:1fr}}
-@media(min-width:1440px){.banks{grid-template-columns:repeat(4,minmax(0,1fr));gap:2.6rem 2.4rem}}
+/* two by two is the decided layout — never fan out to four columns */
+.banks{max-width:56rem;margin:0 auto}
+.chef.short{border-color:var(--leaf)}
+.chef.alsoran{opacity:.55}
+.chef.alsoran:hover{opacity:1}
 .bank{border:1.5px dashed color-mix(in srgb,var(--line-2) 60%,transparent);border-radius:16px;padding:.55rem .6rem}
 .bank{display:flex;flex-direction:column;align-items:stretch}
 .tblh{display:flex;align-items:center;gap:.5rem;font-family:var(--disp);font-weight:800;font-size:.8rem;margin:.15rem 0 .3rem}
@@ -684,6 +688,10 @@ a{color:var(--sky)}
   <div class="ph"><h2>📋 <span lang-en>The checklist</span><span lang-ja>チェックリスト</span></h2>
     <p><span lang-en>Owners and dates are editable — tap them.</span><span lang-ja>担当と期限はタップで変更できます。</span></p></div>
   <div id="decortasks" style="margin-bottom:1.9rem"></div>
+  <div class="ph"><h2>🎨 <span lang-en>Theme colour</span><span lang-ja>テーマカラー</span></h2>
+    <p><span lang-en>Makiko is waiting on an exact shade, not just &ldquo;orange&rdquo;. Pick from the wheel and send her the codes.</span><span lang-ja>まきこさんは「オレンジ」ではなく具体的な色を待っています。ホイールから選んでカラーコードをお送りください。</span></p></div>
+  <div class="card pad" style="margin-bottom:1.9rem"><div id="palwheel"></div></div>
+
   <div class="ph"><h2>🖼 <span lang-en>Reference pictures</span><span lang-ja>参考画像</span></h2>
     <p><span lang-en>Tables, arches, flowers, welcome signs — anything either of you finds.</span><span lang-ja>テーブル、アーチ、装花、ウェルカムサインなど。</span></p></div>
   <div id="decorboard"></div>
@@ -1396,7 +1404,7 @@ var HMU=[
   hik:"",hikj:""}];
 function hmuById(id){for(var i=0;i<HMU.length;i++)if(HMU[i].id===id)return HMU[i];return null;}
 var CHEFS=[
- {id:"tera",n:"Teranishi",nj:"寺西シェフ",c:"#7C8598",p:P.cloche,lo:1320000,hi:1400000,budget:1399200,drinksIncl:true,rank:1,
+ {id:"tera",n:"Teranishi",nj:"寺西シェフ",c:"#7C8598",p:P.cloche,lo:1320000,hi:1400000,budget:1399200,drinksIncl:true,rank:1,short:1,
   f:["<b>Written quote received</b> — dated 2 June 2026, ¥1,320,000 priced for 40 adults + 6 children",
      "Food ¥13,000/adult · drinks ¥5,000/adult (120 min, sparkling, red &amp; white wine, soft) · children ¥5,000",
      "Staff &amp; travel ¥450,000 flat — kitchen car ¥100,000, chef ¥50,000, 2 cooks ¥60,000, 4 service ¥120,000, sommelier ¥50,000, rental car ¥40,000, tolls ¥30,000",
@@ -1414,7 +1422,7 @@ var CHEFS=[
   hik:"Hikaru&rsquo;s first choice. She likes that he&rsquo;s worked at the Lakehouse — but it depends on how the food looks and tastes. On the phone he came across as &ldquo;a slightly troublesome older man,&rdquo; so she&rsquo;s unsure how easy he&rsquo;ll be to work with.",
   hikj:"光の第一希望。レイクハウスでの実績を評価。ただし見た目と味次第。電話では「ちょっとめんどくさそうなおじさん」の印象で、やりとりのしやすさが気になるとのこと。",
   tags:[["Her #1","光の1位","yes"],["Drinks included","ドリンク込み","yes"],["Quote in hand","見積もり受領","yes"],["Cocktail hour extra","カクテル別途","no"]]},
- {id:"ohkawa",n:"Chef Ohkawa",nj:"大川シェフ",c:"#C97B3F",p:P.ramen,lo:1100000,hi:1200000,budget:1150000,drinksIncl:false,rank:2,
+ {id:"ohkawa",n:"Chef Ohkawa",nj:"大川シェフ",c:"#C97B3F",p:P.ramen,lo:1100000,hi:1200000,budget:1150000,drinksIncl:false,rank:2,short:1,
   f:["¥18–20,000 per head","Ramen and sushi brought in from other vendors","10 serving staff at ¥10,000 each","Closest to the buffet you sketched"],
   fj:["お一人様18,000〜20,000円","ラーメン・寿司は別業者から手配","サーブ10名（各10,000円）","構想中のビュッフェに一番近い"],
   hik:"Her second choice. He works alone, so she&rsquo;s worried about consistency of quality.",
@@ -1555,7 +1563,7 @@ var TCAT=[
  {id:4, ic:"🎀", n:"Design &amp; Decorations",          nj:"デザイン・装飾", o:"h"},
  {id:5, ic:"🖨", n:"Printed Materials",                nj:"プリント類",     o:"j"},
  {id:6, ic:"🎤", n:"Entertainment &amp; Program",       nj:"コンテンツ・演出",o:"j"},
- {id:7, ic:"📷", n:"Photography &amp; Videography",     nj:"写真・映像",     o:"h"},
+ {id:7, ic:"📷", n:"Media",                            nj:"写真・映像",     o:"b"},
  {id:8, ic:"💄", n:"Attire &amp; Beauty",               nj:"衣装・美容",     o:"h"},
  {id:9, ic:"🚐", n:"Transport &amp; Accommodation",     nj:"交通・宿泊",     o:"b"},
  {id:10,ic:"💴", n:"Budget &amp; Contracts",            nj:"お金・契約",     o:"b"},
@@ -1566,6 +1574,7 @@ var TASKS=[
  /* ① Venue & Operations */
  {id:"t101",c:1,o:"j",n:"Venue contract",nj:"会場契約",due:"2026-12-01",d:"Holding deposit is paid; the 20% accommodation deposit lands on this date",dj:"予約金は支払い済み。宿泊費デポジット20%がこの日"},
  {id:"p10", c:1,o:"j",n:"Confirm the table layout with Makiko",nj:"テーブル配置をまきこさんに確認",due:"2027-03-01",d:"She has 8 guest tables on file and recommends four 1800×120 joined into two long rows. <b>Tent confirmed 10m × 15m (Ayuko, 17 Aug 2026).</b> Three a side on an 1800mm table is 60cm per person — comfortable. The problem is not the seats, it is the floor: four rows side by side need 10.8m across and the tent is 10m. See the scale plan on the Tables tab.",dj:"まきこさんはゲストテーブル8卓で認識。1800×120を4台繋げて2列を推奨。<b>テントは10m×15mで確定（鮎子さん・2026年8月17日）。</b>1800mmのテーブルに片側3名で1名あたり60cm — ゆとりがあります。問題は席幅ではなく床面積で、4列を横並びにすると10.8m必要ですがテントは10mです。「席次」タブの実寸プランをご覧ください。"},
+ {id:"p4b", c:3,o:"b",n:"Choose between Teranishi and Chef Ohkawa",nj:"寺西シェフと大川シェフのどちらかに決める",due:"2026-10-01",d:"The shortlist is these two. Teranishi has a written quote — ¥1,399,200 at 50, drinks and all staff included. Ohkawa has no written quote yet: ¥18–20,000 a head, ramen and sushi bought in, 10 staff at ¥10,000 each. <b>Get Ohkawa on paper before comparing.</b>",dj:"最終候補はこの2名。寺西シェフは見積もり済み（50名で税込1,399,200円、ドリンク・スタッフ全込み）。大川シェフは見積もり未取得で、お一人様18,000〜20,000円、ラーメン・寿司は外部手配、サーブ10名（各10,000円）。<b>比較の前に大川シェフの見積もりを書面で。</b>"},
  {id:"t103",c:1,o:"j",n:"Create the event timeline",nj:"タイムスケジュール作成",due:"2027-02-01",d:"The running order on The day tab is the draft — Ayuko finalises it",dj:"「当日」タブの進行が下書き。最終版は鮎子さんが作成"},
  {id:"t102",c:1,o:"j",n:"Layout design",nj:"レイアウト設計",due:"2027-03-01",d:"",dj:""},
  {id:"t104",c:1,o:"j",n:"Rain backup plan",nj:"雨天時プラン",due:"2027-04-01",d:"Tent and sound are confirmed until 9pm — the plan is what moves indoors and when you call it",dj:"テントと音響は21時まで確認済み。何を屋内に移すか、いつ判断するかを決める"},
@@ -1629,13 +1638,13 @@ var TASKS=[
  {id:"t608",c:6,o:"j",n:"Fireworks moment",nj:"花火演出",due:"2027-04-15",d:"",dj:""},
 
  /* ⑦ Photography & Videography */
- {id:"q1",  c:7,o:"h",n:"Decide on video, or drop it",nj:"映像を手配するか決める",due:"2026-12-01",d:"¥280,000 with no vendor attached. Video is on her spend-here list",dj:"280,000円・業者未定。映像は光が「お金をかける」側に挙げた項目"},
- {id:"t702",c:7,o:"h",n:"Videographer arrangements",nj:"ビデオグラファー手配",due:"2027-01-15",d:"",dj:""},
- {id:"p9",  c:7,o:"h",n:"Pick the photographer",nj:"カメラマンを決める",due:"2027-03-31",d:"Nom-san ¥120,000 is Hikaru&rsquo;s pick but unconfirmed until end of March. Takayo ¥56,000 and Niki ¥180,000 are backups she finds underwhelming",dj:"のむさん120,000円が光の希望だが3月末まで確定せず。Takayo 56,000円とNiki 180,000円は控えだが光の評価は低い"},
- {id:"t701",c:7,o:"h",n:"Photographer arrangements",nj:"カメラマン手配",due:"2027-04-01",d:"",dj:""},
- {id:"t703",c:7,o:"h",n:"Shot list / photography brief",nj:"撮影指示書作成",due:"2027-04-15",d:"",dj:""},
- {id:"t705",c:7,o:"h",n:"Photo spot planning",nj:"フォトスポット検討",due:"2027-04-15",d:"",dj:""},
- {id:"t704",c:7,o:"h",n:"Group photo list",nj:"集合写真リスト作成",due:"2027-05-01",d:"",dj:""},
+ {id:"q1",  c:7,o:"b",n:"Decide on video, or drop it",nj:"映像を手配するか決める",due:"2026-12-01",d:"¥280,000 with no vendor attached. Video is on her spend-here list",dj:"280,000円・業者未定。映像は光が「お金をかける」側に挙げた項目"},
+ {id:"t702",c:7,o:"b",n:"Videographer arrangements",nj:"ビデオグラファー手配",due:"2027-01-15",d:"",dj:""},
+ {id:"p9",  c:7,o:"b",n:"Pick the photographer",nj:"カメラマンを決める",due:"2027-03-31",d:"Nom-san ¥120,000 is Hikaru&rsquo;s pick but unconfirmed until end of March. Takayo ¥56,000 and Niki ¥180,000 are backups she finds underwhelming",dj:"のむさん120,000円が光の希望だが3月末まで確定せず。Takayo 56,000円とNiki 180,000円は控えだが光の評価は低い"},
+ {id:"t701",c:7,o:"b",n:"Photographer arrangements",nj:"カメラマン手配",due:"2027-04-01",d:"",dj:""},
+ {id:"t703",c:7,o:"b",n:"Shot list / photography brief",nj:"撮影指示書作成",due:"2027-04-15",d:"",dj:""},
+ {id:"t705",c:7,o:"b",n:"Photo spot planning",nj:"フォトスポット検討",due:"2027-04-15",d:"",dj:""},
+ {id:"t704",c:7,o:"b",n:"Group photo list",nj:"集合写真リスト作成",due:"2027-05-01",d:"",dj:""},
 
  /* ⑧ Attire & Beauty */
  {id:"q3",  c:8,o:"h",n:"Pick the hair &amp; makeup artist",nj:"ヘアメイク担当を決める",due:"2026-11-01",d:"Her shortlist is Matsumoto-san and bonita, both ¥64,900 — the difference is how late they stay",dj:"候補は松本さんとbonitaで、いずれも64,900円。違いはアテンドの終了時間です"},
@@ -2925,7 +2934,8 @@ function renderChefs(){
   var sel=getChoice("caterer");
   CHEFS.forEach(function(c){
     var price=c.lo==null?bi("No quote","未取得"):money(c.lo)+(c.hi?"–"+money(c.hi):"");
-    var d=el("div","card chef sel"+(c.id===sel?" on":""));
+    var d=el("div","card chef sel"+(c.id===sel?" on":"")+(c.short?" short":" alsoran"));
+    var sh=c.short?'<span class="badge" style="background:var(--leaf)">'+t("SHORTLIST","最終候補")+'</span>':'';
     var rk=c.rank?'<span class="badge">'+t("HER #","光の")+c.rank+t("","位")+'</span>':'';
     var ch2=c.cheap?'<span class="badge" style="background:var(--sky)">'+t("CHEAPEST","最安")+'</span>':'';
     var fdel=load("chef.fdel."+c.id,[]),fadd=load("chef.fadd."+c.id,[]);
@@ -2945,7 +2955,7 @@ function renderChefs(){
       (hik!=null?esc(hik):(c.hik?bi(c.hik,c.hikj):'<i style="color:var(--ink-faint)">'+t("no notes yet","メモなし")+'</i>'))+
       '</span> <button class="bul-edit" data-hikedit="'+c.id+'">'+t("edit","編集")+'</button></div>';
     d.innerHTML='<div class="tick">✓</div><div class="chef-top">'+chef(c.c,c.p)+
-      '<div><h3>'+bi(c.n,c.nj)+rk+ch2+'</h3></div>'+
+      '<div><h3>'+bi(c.n,c.nj)+sh+rk+ch2+'</h3></div>'+
       '<div class="price"><b>'+price+'</b><small>'+bi("for 50","50名")+'</small></div></div>'+
       '<ul>'+lis+'</ul>'+
       '<div class="buladd"><input type="text" data-chefadd="'+c.id+'" placeholder="'+t("Add a point…","項目を追加…")+'" style="font-size:.75rem;width:60%"><button class="bul-edit" data-chefaddbtn="'+c.id+'">＋</button></div>'+
@@ -3803,11 +3813,11 @@ function tentLayouts(){
   var bx=[(10-(PITCH+TBL.D+CH*2))/2+CH],bB=[];
   bx.push(bx[0]+PITCH);
   for(i=0;i<2;i++) for(j=0;j<2;j++) bB.push({x:bx[j],y:3.2+i*(BANKL+1.2),h:false});
-  L.grid={n:"Two by two",nj:"2列×2段",
-    sub:"Folded in half, the couple still on the 10m end",
-    subj:"2列×2段。おふたりは引き続き10mの短辺側",
-    tw:10,tl:15,banks:bB,head:{x:4.1,y:0.6},
-    stage:{x:0.4,y:12.4,w:3.0,h:1.8},buffet:{x:0.4,y:4.0,w:0.75,h:3.6}};
+  L.grid={n:"Two by two",nj:"2列×2段",final:1,
+    sub:"The decided layout — MC beside the top table, buffet along the wall",
+    subj:"決定した配置 — 司会は上座の横、ビュッフェは壁沿い",
+    tw:10,tl:15,banks:bB,head:{x:4.1,y:0.5},
+    stage:{x:6.6,y:0.5,w:3.0,h:1.8},buffet:{x:0.4,y:4.0,w:0.75,h:3.6}};
   /* C — turned a quarter: the couple sit along the 15m wall, so the room reads
      wide instead of deep and nobody is looking past two rows of heads. */
   var cB=[];
@@ -3867,22 +3877,123 @@ function tentPlan(key){
   o+='</svg>';
   return o;
 }
+/* ---------- the theme colour, picked off a wheel ----------
+   Makiko is waiting on an exact shade, not "orange". 36 hues around, five
+   lightness rings out from the middle, plus a neutral bar and a native picker
+   for anything the wheel does not land on. Everything writes to the same
+   "palette" key the p6 swatches already use, so the two never disagree. */
+var WHEEL_H=36, WHEEL_R=5;
+function hsl2hex(h,s,l){
+  s/=100;l/=100;
+  var a=s*Math.min(l,1-l);
+  function f(n){var k=(n+h/30)%12,c=l-a*Math.max(-1,Math.min(k-3,Math.min(9-k,1)));
+    return Math.round(255*c).toString(16).padStart(2,"0");}
+  return ("#"+f(0)+f(8)+f(4)).toUpperCase();
+}
+var NEUTRALS=["#FFFFFF","#F5F0E8","#E8D9B5","#C9A66B","#9A9A9A","#4A4A4A","#1C1C1C"];
+function palGet(){ return load("palette",["#FFFFFF","#7FB069","#F0883B","#FF9DB8"]); }
+function palToggle(hex){
+  var cur=palGet().slice(),i=cur.indexOf(hex);
+  if(i>-1)cur.splice(i,1); else cur.push(hex);
+  save("palette",cur); renderAll();
+}
+function wheelSVG(){
+  var picked=palGet(), R=100, inner=30, step=(R-inner)/WHEEL_R;
+  var o='<svg viewBox="-108 -108 216 216" style="width:100%;max-width:20rem;height:auto;display:block;margin:0 auto">';
+  for(var r=0;r<WHEEL_R;r++){
+    var r0=inner+r*step, r1=r0+step;
+    var light=[82,70,58,46,34][r], sat=[70,72,74,70,62][r];
+    for(var i=0;i<WHEEL_H;i++){
+      var a0=(i*360/WHEEL_H-90)*Math.PI/180, a1=((i+1)*360/WHEEL_H-90)*Math.PI/180;
+      var hex=hsl2hex(i*360/WHEEL_H,sat,light), on=picked.indexOf(hex)>-1;
+      var x0=(r0*Math.cos(a0)).toFixed(2),y0=(r0*Math.sin(a0)).toFixed(2);
+      var x1=(r1*Math.cos(a0)).toFixed(2),y1=(r1*Math.sin(a0)).toFixed(2);
+      var x2=(r1*Math.cos(a1)).toFixed(2),y2=(r1*Math.sin(a1)).toFixed(2);
+      var x3=(r0*Math.cos(a1)).toFixed(2),y3=(r0*Math.sin(a1)).toFixed(2);
+      o+='<path d="M'+x0+' '+y0+'L'+x1+' '+y1+'A'+r1+' '+r1+' 0 0 1 '+x2+' '+y2+
+         'L'+x3+' '+y3+'A'+r0+' '+r0+' 0 0 0 '+x0+' '+y0+'Z" fill="'+hex+
+         '" stroke="'+(on?"var(--ink)":"rgba(0,0,0,.08)")+'" stroke-width="'+(on?2.5:.4)+
+         '" data-hex="'+hex+'" style="cursor:pointer"><title>'+hex+'</title></path>';
+    }
+  }
+  o+='<circle r="'+(inner-2)+'" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.5"/>';
+  o+='<text y="5" text-anchor="middle" font-size="13" font-weight="800" fill="var(--ink-faint)" font-family="system-ui">'+
+     picked.length+'</text></svg>';
+  return o;
+}
+function renderPalette(){
+  var w=document.getElementById("palwheel"); if(!w) return;
+  var picked=palGet();
+  var h='<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:1rem">';
+  h+='<div>'+wheelSVG()+
+     '<p style="text-align:center;font-size:.76rem;color:var(--ink-faint);margin:.5rem 0 0">'+
+     bi("Tap a wedge to add or remove it. Outer rings are deeper shades.",
+        "色をタップで追加・解除。外側ほど濃くなります。")+'</p></div>';
+  h+='<div><div style="font-size:.78rem;font-weight:700;color:var(--ink-soft);margin-bottom:.35rem">'+
+     bi("Neutrals","ニュートラル")+'</div><div class="tk-pal">';
+  NEUTRALS.forEach(function(hex){
+    h+='<button class="psw'+(picked.indexOf(hex)>-1?" on":"")+'" data-hex="'+hex+
+       '" style="background:'+hex+'" title="'+hex+'"></button>';});
+  h+='</div></div>';
+  h+='<div><div style="font-size:.78rem;font-weight:700;color:var(--ink-soft);margin-bottom:.35rem">'+
+     bi("Exact shade","色を直接指定")+'</div>'+
+     '<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">'+
+     '<input type="color" id="palexact" value="#F0883B" style="width:3rem;height:2.4rem;border:2px solid var(--line-2);border-radius:10px;background:var(--card);cursor:pointer;padding:2px">'+
+     '<button class="btn" id="palexactadd" style="margin-top:0">＋ '+bi("Add this","この色を追加")+'</button></div></div>';
+  h+='</div>';
+  h+='<div style="margin-top:1.1rem;border-top:1px solid var(--line);padding-top:.9rem">'+
+     '<div style="font-family:var(--disp);font-weight:800;font-size:.88rem;margin-bottom:.5rem">'+
+     bi("What goes to Makiko","まきこさんに送る色")+'</div>';
+  if(!picked.length){
+    h+='<p style="font-size:.84rem;color:var(--ink-faint);margin:0">'+bi("Nothing chosen yet.","まだ選ばれていません。")+'</p>';
+  }else{
+    h+='<div style="display:flex;flex-wrap:wrap;gap:.55rem">';
+    picked.forEach(function(hex){
+      h+='<div style="border:2px solid var(--line-2);border-radius:12px;overflow:hidden;width:5.2rem">'+
+         '<div style="background:'+hex+';height:2.6rem"></div>'+
+         '<div style="font-size:.68rem;font-family:ui-monospace,Menlo,monospace;text-align:center;padding:.25rem 0 .1rem">'+hex+'</div>'+
+         '<button class="psw-x" data-drop="'+hex+'" style="display:block;width:100%;border:0;border-top:1px solid var(--line);background:transparent;color:var(--ink-faint);font:inherit;font-size:.68rem;padding:.2rem 0;cursor:pointer">'+bi("remove","削除")+'</button></div>';});
+    h+='</div>';
+    h+='<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem">'+
+       '<button class="btn" id="palcopy">📋 '+bi("Copy the codes","カラーコードをコピー")+'</button></div>'+
+       '<textarea id="palout" readonly style="width:100%;margin-top:.6rem;font-family:ui-monospace,Menlo,monospace;font-size:.76rem;'+
+       'border:2px solid var(--line-2);border-radius:10px;background:var(--sunk);color:var(--ink);padding:.5rem;min-height:3.2rem">'+
+       picked.join("  ")+'</textarea>';
+  }
+  h+='</div>';
+  w.innerHTML=h;
+  w.querySelectorAll("[data-hex]").forEach(function(e){
+    e.addEventListener("click",function(){palToggle(e.dataset.hex);});});
+  w.querySelectorAll("[data-drop]").forEach(function(e){
+    e.addEventListener("click",function(){palToggle(e.dataset.drop);});});
+  var add=w.querySelector("#palexactadd");
+  if(add)add.addEventListener("click",function(){
+    var v=(w.querySelector("#palexact").value||"").toUpperCase();
+    if(/^#[0-9A-F]{6}$/.test(v)&&palGet().indexOf(v)<0)palToggle(v);});
+  var cp=w.querySelector("#palcopy");
+  if(cp)cp.addEventListener("click",function(){
+    var ta=w.querySelector("#palout"); ta.focus(); ta.select();
+    try{document.execCommand("copy");if(typeof toast==="function")toast(t("Copied","コピーしました"));}
+    catch(e){if(typeof toast==="function")toast(t("Select the text and copy","テキストを選択してコピーしてください"));}});
+}
+
 function renderTent(){
   var w=document.getElementById("tentplan"); if(!w) return;
-  var L=tentLayouts(),key=load("tentv","long"); if(!L[key])key="long";
+  var L=tentLayouts(),key=load("tentv","grid"); if(!L[key])key="grid";
   var lay=L[key],f=tentFit(lay),ok=f.okX&&f.okY;
   var h='<div class="seg" style="margin-bottom:.7rem;max-width:100%;overflow:auto">';
   ["side","grid","long"].forEach(function(k){
     h+='<button type="button" data-tv="'+k+'" style="flex:1;font:inherit;font-family:var(--disp);font-weight:800;'+
        'font-size:.72rem;border:0;padding:.5rem;cursor:pointer;white-space:nowrap;'+
        (k===key?'background:var(--accent);color:#fff':'background:transparent;color:var(--ink-faint)')+'">'+
-       bi(L[k].n,L[k].nj)+'</button>';});
+       (L[k].final?"★ ":"")+bi(L[k].n,L[k].nj)+'</button>';});
   h+='</div><div style="font-size:.82rem;color:var(--ink-soft);margin-bottom:.5rem">'+bi(lay.sub,lay.subj)+'</div>';
   h+=tentPlan(key);
   var col=ok?"var(--leaf)":"var(--coral)";
   h+='<div class="card pad" style="margin-top:.8rem;border-color:'+col+';background:color-mix(in srgb,'+col+' 8%,var(--card))">'+
      '<div style="font-family:var(--disp);font-weight:800;font-size:.9rem;margin-bottom:.35rem">'+
-     (ok?bi("Fits","収まります"):bi("Does not fit","収まりません"))+'</div>'+
+     (lay.final?bi("★ Chosen — this is the layout","★ 決定 — この配置でいきます")
+              :(ok?bi("Fits","収まります"):bi("Does not fit","収まりません")))+'</div>'+
      '<div style="font-size:.84rem;line-height:1.8">'+
      bi("Seated guests take <b>"+f.w.toFixed(1)+"m</b> across a <b>"+lay.tw+"m</b> wall"+
         (f.okX?" — <b>"+(lay.tw-f.w).toFixed(1)+"m</b> spare.":" — <b>"+(f.w-lay.tw).toFixed(1)+"m</b> too much.")+"<br>"+
@@ -4967,7 +5078,7 @@ function renderAll(){
   renderBudget();renderUpdates();
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
   renderHeroShot();renderCal();renderInbox();renderFeed();renderDecor2();renderBeauty();
-  renderStay();renderSeat();renderTent();renderDrive();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
+  renderStay();renderSeat();renderTent();renderPalette();renderDrive();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
   document.querySelectorAll(".m").forEach(function(e){e.textContent=money(parseFloat(e.dataset.yen));});
