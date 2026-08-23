@@ -533,28 +533,29 @@ a{color:var(--sky)}
 .psw.on{border-color:var(--mint);box-shadow:0 0 0 2px color-mix(in srgb,var(--mint) 45%,transparent)}
 /* ---- seat-level table plan ---- */
 #seatlay{margin-top:.4rem}
-.headtbl{display:flex;flex-direction:column;align-items:center;gap:.35rem;margin:0 auto 1.4rem;padding:.7rem 1rem;border:2px solid var(--pink);border-radius:18px;background:color-mix(in srgb,var(--pink) 7%,var(--card));width:max-content;max-width:100%}
-.headtbl .hseats{display:flex;gap:.6rem}
+.headtbl{display:flex;flex-direction:column;align-items:center;gap:.45rem;margin:0 auto 1.4rem;padding:.7rem 1rem;border:2px solid var(--pink);border-radius:18px;background:color-mix(in srgb,var(--pink) 7%,var(--card));width:min(100%,30.85rem)}
+.headtbl .hseats{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.3rem 1.7rem;width:100%;padding:.15rem 0}
+.headtbl .hseats::before{content:"";position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:1.7rem;background:var(--sunk);border:2px solid var(--line-2);border-radius:6px}
 .banks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2.6rem 2.2rem}
 @media(max-width:600px){.banks{grid-template-columns:1fr}}
 /* two by two is the decided layout — never fan out to four columns */
-.banks{max-width:56rem;margin:0 auto}
+.banks{max-width:62rem;margin:0 auto}
 .chef.short{border-color:var(--leaf)}
 .chef.alsoran{opacity:.55}
 .chef.alsoran:hover{opacity:1}
 .bank{border:1.5px dashed color-mix(in srgb,var(--line-2) 60%,transparent);border-radius:16px;padding:.55rem .6rem}
 .bank{display:flex;flex-direction:column;align-items:stretch}
 .tblh{display:flex;align-items:center;gap:.5rem;font-family:var(--disp);font-weight:800;font-size:.8rem;margin:.15rem 0 .3rem}
-.tbl{position:relative;display:grid;grid-template-columns:auto auto;justify-content:space-between;gap:.4rem 1.9rem;padding:.45rem 0}
+.tbl{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.3rem 1.7rem;padding:.4rem 0}
 .tbl::before{content:"";position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:1.7rem;background:var(--sunk);border:2px solid var(--line-2);border-radius:6px}
 .tbl.jointop::before{border-top-left-radius:0;border-top-right-radius:0;border-top:0;top:-.45rem}
 .tbl.joinbot::before{border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:0;bottom:-.45rem}
-.seatz{min-height:2.15rem;min-width:4.4rem;border:2px dashed var(--line-2);border-radius:999px;display:flex;align-items:center;justify-content:center;padding:.12rem .15rem;position:relative;z-index:1;background:color-mix(in srgb,var(--card) 60%,transparent)}
-.seatz .chip{margin:0;max-width:none;font-size:.72rem;padding:.18rem .5rem;flex:0 0 auto}
+.seatz{min-height:2.3rem;width:100%;min-width:0;border:2px dashed var(--line-2);border-radius:999px;display:flex;align-items:center;justify-content:center;padding:.14rem .3rem;position:relative;z-index:1;background:color-mix(in srgb,var(--card) 60%,transparent)}
+.seatz .chip{margin:0;max-width:100%;font-size:.72rem;padding:.2rem .5rem;flex:0 1 auto;min-width:0;overflow:visible}
 .seatz .chip .flb{width:1.15rem;height:1.15rem;flex:0 0 auto}
 .seatz.filled{border-style:solid;border-color:var(--line)}
 .seatz.overfull{border-color:var(--coral)}
-.endseat{grid-column:1/-1;justify-self:center;min-width:7.5rem}
+.endseat{grid-column:1/-1;justify-self:center;width:calc(50% - .85rem)}
 /* ---- editable running order ---- */
 .ev{display:flex;align-items:flex-start;gap:.55rem;padding:.55rem 0;border-bottom:1px solid var(--line);position:relative}
 .ev:last-of-type{border-bottom:0}
@@ -689,7 +690,7 @@ a{color:var(--sky)}
     <p><span lang-en>Owners and dates are editable — tap them.</span><span lang-ja>担当と期限はタップで変更できます。</span></p></div>
   <div id="decortasks" style="margin-bottom:1.9rem"></div>
   <div class="ph"><h2>🎨 <span lang-en>Theme colour</span><span lang-ja>テーマカラー</span></h2>
-    <p><span lang-en>Makiko is waiting on an exact shade, not just &ldquo;orange&rdquo;. Pick from the wheel and send her the codes.</span><span lang-ja>まきこさんは「オレンジ」ではなく具体的な色を待っています。ホイールから選んでカラーコードをお送りください。</span></p></div>
+    <p><span lang-en>Decided &mdash; these six. Send Makiko the codes, not the colour names, so she matches the exact shades.</span><span lang-ja>この6色で決定しました。色名ではなくカラーコードをまきこさんにお送りください。</span></p></div>
   <div class="card pad" style="margin-bottom:1.9rem"><div id="palwheel"></div></div>
 
   <div class="ph"><h2>🖼 <span lang-en>Reference pictures</span><span lang-ja>参考画像</span></h2>
@@ -1609,7 +1610,7 @@ var TASKS=[
  {id:"t303",c:3,o:"h",n:"Confirm allergy accommodations",nj:"アレルギー対応確認",due:"2027-03-15",d:"",dj:""},
 
  /* ④ Design & Decorations */
- {id:"p6",  c:4,o:"b",n:"Send Makiko the theme colour",nj:"まきこさんにテーマカラーを送る",due:"2026-09-30",d:"Table runners are blocked until she has it. Tap the swatches to pick together — she has this set on file and wants it reconfirmed.",dj:"テーブルランナー発注が保留中。色見本をタップして決めてください。まきこさんは把握済みですが再確認を希望。"},
+ {id:"p6",  c:4,o:"b",n:"Send Makiko the theme colour",nj:"まきこさんにテーマカラーを送る",due:"2026-09-30",d:"<b>Decided 23 Aug 2026 — sage, forest, white, greige, terracotta and apricot.</b> The exact codes are on the Theme colour card above; copy them across so she is matching shades, not words. Table runners are blocked until she has them.",dj:"<b>2026年8月23日決定 — セージ／フォレスト／ホワイト／グレージュ／テラコッタ／アプリコット。</b>正確なカラーコードは上の「テーマカラー」にあります。色名ではなくコードでお伝えください。テーブルランナー発注はこの回答待ちです。"},
  {id:"t401",c:4,o:"h",n:"Define the concept and theme",nj:"コンセプト決定",due:"2026-10-15",d:"",dj:""},
  {id:"t402",c:4,o:"h",n:"Table styling and décor",nj:"テーブルコーディネート",due:"2027-02-01",d:"",dj:""},
  {id:"t403",c:4,o:"h",n:"Floral arrangements",nj:"装花手配",due:"2027-02-15",d:"She wants DIY artificial flowers — cheaper and they survive the drive",dj:"造花のDIYを希望。安価で移動にも強い"},
@@ -1918,19 +1919,6 @@ function taskRow(tk,showCat){
   var nb=d.querySelector(".tk-note"); if(nb) nb.addEventListener("click",editDesc);
   var ab=d.querySelector(".arch");
   if(ab)ab.addEventListener("click",function(){ setTaskArch(tk.id,true); renderAll(); });
-  if(tk.id==="p6"&&!done){
-    var pw2=el("div","tk-pal");
-    var picked=load("palette",["#FFFFFF","#7FB069","#F0883B","#FF9DB8"]);
-    PALETTE.forEach(function(c2){
-      var on=picked.indexOf(c2[0])>-1;
-      var sw=el("button","psw"+(on?" on":""));sw.style.background=c2[0];
-      sw.title=t(c2[1],c2[2]);
-      sw.addEventListener("click",function(){
-        var cur=load("palette",["#FFFFFF","#7FB069","#F0883B","#FF9DB8"]),i2=cur.indexOf(c2[0]);
-        if(i2>-1)cur.splice(i2,1);else cur.push(c2[0]);save("palette",cur);renderAll();});
-      pw2.appendChild(sw);});
-    d.querySelector(".tk-b").insertBefore(pw2,d.querySelector(".tk-m"));
-  }
   var db=d.querySelector("[data-delmy]");
   if(db)db.addEventListener("click",function(){
     var mine=load("mytasks",[]),gone=null;
@@ -3258,7 +3246,7 @@ var J2HER=[
   a:"",aj:""},
  {q:"Do you want an outfit change?",qj:"お色直しはする？",a:"",aj:""},
  {q:"Who do you want to speak, and in what order?",qj:"スピーチは誰に、どの順番で頼む？",a:"",aj:""},
- {q:"Final theme colour — which of the swatches?",qj:"テーマカラーは最終的にどれ？",a:"",aj:""},
+ {q:"Final theme colour — which of the swatches?",qj:"テーマカラーは最終的にどれ？",a:"Decided 23 Aug 2026: sage #8B9B6E, forest #4E5D4C, white #FFFFFF, greige #C7C2B4, terracotta #E37A4F, apricot #F5C6A4. The Decor tab has them with a copy button for Makiko.",aj:"2026年8月23日決定：セージ #8B9B6E、フォレスト #4E5D4C、ホワイト #FFFFFF、グレージュ #C7C2B4、テラコッタ #E37A4F、アプリコット #F5C6A4。「装飾」タブにコピー用のボタンがあります。"},
  {q:"How much travel support feels right for your family?",qj:"ご家族の交通費はどこまで出す？",a:"",aj:""}];
 function renderNotes(){
   renderQA("h",J2H.filter(function(x){return !x.a;}),"asked","waiting for Jay","ジェイの回答待ち");
@@ -3877,106 +3865,38 @@ function tentPlan(key){
   o+='</svg>';
   return o;
 }
-/* ---------- the theme colour, picked off a wheel ----------
-   Makiko is waiting on an exact shade, not "orange". 36 hues around, five
-   lightness rings out from the middle, plus a neutral bar and a native picker
-   for anything the wheel does not land on. Everything writes to the same
-   "palette" key the p6 swatches already use, so the two never disagree. */
-var WHEEL_H=36, WHEEL_R=5;
-function hsl2hex(h,s,l){
-  s/=100;l/=100;
-  var a=s*Math.min(l,1-l);
-  function f(n){var k=(n+h/30)%12,c=l-a*Math.max(-1,Math.min(k-3,Math.min(9-k,1)));
-    return Math.round(255*c).toString(16).padStart(2,"0");}
-  return ("#"+f(0)+f(8)+f(4)).toUpperCase();
-}
-var NEUTRALS=["#FFFFFF","#F5F0E8","#E8D9B5","#C9A66B","#9A9A9A","#4A4A4A","#1C1C1C"];
-function palGet(){ return load("palette",["#FFFFFF","#7FB069","#F0883B","#FF9DB8"]); }
-function palToggle(hex){
-  var cur=palGet().slice(),i=cur.indexOf(hex);
-  if(i>-1)cur.splice(i,1); else cur.push(hex);
-  save("palette",cur); renderAll();
-}
-function wheelSVG(){
-  var picked=palGet(), R=100, inner=30, step=(R-inner)/WHEEL_R;
-  var o='<svg viewBox="-108 -108 216 216" style="width:100%;max-width:20rem;height:auto;display:block;margin:0 auto">';
-  for(var r=0;r<WHEEL_R;r++){
-    var r0=inner+r*step, r1=r0+step;
-    var light=[82,70,58,46,34][r], sat=[70,72,74,70,62][r];
-    for(var i=0;i<WHEEL_H;i++){
-      var a0=(i*360/WHEEL_H-90)*Math.PI/180, a1=((i+1)*360/WHEEL_H-90)*Math.PI/180;
-      var hex=hsl2hex(i*360/WHEEL_H,sat,light), on=picked.indexOf(hex)>-1;
-      var x0=(r0*Math.cos(a0)).toFixed(2),y0=(r0*Math.sin(a0)).toFixed(2);
-      var x1=(r1*Math.cos(a0)).toFixed(2),y1=(r1*Math.sin(a0)).toFixed(2);
-      var x2=(r1*Math.cos(a1)).toFixed(2),y2=(r1*Math.sin(a1)).toFixed(2);
-      var x3=(r0*Math.cos(a1)).toFixed(2),y3=(r0*Math.sin(a1)).toFixed(2);
-      o+='<path d="M'+x0+' '+y0+'L'+x1+' '+y1+'A'+r1+' '+r1+' 0 0 1 '+x2+' '+y2+
-         'L'+x3+' '+y3+'A'+r0+' '+r0+' 0 0 0 '+x0+' '+y0+'Z" fill="'+hex+
-         '" stroke="'+(on?"var(--ink)":"rgba(0,0,0,.08)")+'" stroke-width="'+(on?2.5:.4)+
-         '" data-hex="'+hex+'" style="cursor:pointer"><title>'+hex+'</title></path>';
-    }
-  }
-  o+='<circle r="'+(inner-2)+'" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.5"/>';
-  o+='<text y="5" text-anchor="middle" font-size="13" font-weight="800" fill="var(--ink-faint)" font-family="system-ui">'+
-     picked.length+'</text></svg>';
-  return o;
-}
+/* ---------- the theme colour ----------
+   Decided 23 Aug 2026. Six shades, fixed — this card exists to hand Makiko the
+   exact codes, not to browse alternatives, so there is no picker any more. */
+var THEME=[
+ {hex:"#8B9B6E",n:"Sage",       nj:"セージ"},
+ {hex:"#4E5D4C",n:"Forest",     nj:"フォレスト"},
+ {hex:"#FFFFFF",n:"White",      nj:"ホワイト"},
+ {hex:"#C7C2B4",n:"Greige",     nj:"グレージュ"},
+ {hex:"#E37A4F",n:"Terracotta", nj:"テラコッタ"},
+ {hex:"#F5C6A4",n:"Apricot",    nj:"アプリコット"}];
+function themeCodes(){ return THEME.map(function(c){return c.hex;}).join("  "); }
 function renderPalette(){
   var w=document.getElementById("palwheel"); if(!w) return;
-  var picked=palGet();
-  var h='<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:1rem">';
-  h+='<div>'+wheelSVG()+
-     '<p style="text-align:center;font-size:.76rem;color:var(--ink-faint);margin:.5rem 0 0">'+
-     bi("Tap a wedge to add or remove it. Outer rings are deeper shades.",
-        "色をタップで追加・解除。外側ほど濃くなります。")+'</p></div>';
-  h+='<div><div style="font-size:.78rem;font-weight:700;color:var(--ink-soft);margin-bottom:.35rem">'+
-     bi("Neutrals","ニュートラル")+'</div><div class="tk-pal">';
-  NEUTRALS.forEach(function(hex){
-    h+='<button class="psw'+(picked.indexOf(hex)>-1?" on":"")+'" data-hex="'+hex+
-       '" style="background:'+hex+'" title="'+hex+'"></button>';});
-  h+='</div></div>';
-  h+='<div><div style="font-size:.78rem;font-weight:700;color:var(--ink-soft);margin-bottom:.35rem">'+
-     bi("Exact shade","色を直接指定")+'</div>'+
-     '<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">'+
-     '<input type="color" id="palexact" value="#F0883B" style="width:3rem;height:2.4rem;border:2px solid var(--line-2);border-radius:10px;background:var(--card);cursor:pointer;padding:2px">'+
-     '<button class="btn" id="palexactadd" style="margin-top:0">＋ '+bi("Add this","この色を追加")+'</button></div></div>';
+  var h='<div style="display:flex;flex-wrap:wrap;gap:.7rem">';
+  THEME.forEach(function(c){
+    h+='<div style="border:2px solid var(--line-2);border-radius:14px;overflow:hidden;width:6.2rem">'+
+       '<div style="background:'+c.hex+';height:3.4rem"></div>'+
+       '<div style="text-align:center;padding:.35rem .2rem .1rem;font-size:.76rem;font-weight:700">'+bi(c.n,c.nj)+'</div>'+
+       '<div style="text-align:center;padding:0 .2rem .4rem;font-size:.7rem;font-family:ui-monospace,Menlo,monospace;color:var(--ink-faint)">'+c.hex+'</div></div>';});
   h+='</div>';
-  h+='<div style="margin-top:1.1rem;border-top:1px solid var(--line);padding-top:.9rem">'+
-     '<div style="font-family:var(--disp);font-weight:800;font-size:.88rem;margin-bottom:.5rem">'+
-     bi("What goes to Makiko","まきこさんに送る色")+'</div>';
-  if(!picked.length){
-    h+='<p style="font-size:.84rem;color:var(--ink-faint);margin:0">'+bi("Nothing chosen yet.","まだ選ばれていません。")+'</p>';
-  }else{
-    h+='<div style="display:flex;flex-wrap:wrap;gap:.55rem">';
-    picked.forEach(function(hex){
-      h+='<div style="border:2px solid var(--line-2);border-radius:12px;overflow:hidden;width:5.2rem">'+
-         '<div style="background:'+hex+';height:2.6rem"></div>'+
-         '<div style="font-size:.68rem;font-family:ui-monospace,Menlo,monospace;text-align:center;padding:.25rem 0 .1rem">'+hex+'</div>'+
-         '<button class="psw-x" data-drop="'+hex+'" style="display:block;width:100%;border:0;border-top:1px solid var(--line);background:transparent;color:var(--ink-faint);font:inherit;font-size:.68rem;padding:.2rem 0;cursor:pointer">'+bi("remove","削除")+'</button></div>';});
-    h+='</div>';
-    h+='<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem">'+
-       '<button class="btn" id="palcopy">📋 '+bi("Copy the codes","カラーコードをコピー")+'</button></div>'+
-       '<textarea id="palout" readonly style="width:100%;margin-top:.6rem;font-family:ui-monospace,Menlo,monospace;font-size:.76rem;'+
-       'border:2px solid var(--line-2);border-radius:10px;background:var(--sunk);color:var(--ink);padding:.5rem;min-height:3.2rem">'+
-       picked.join("  ")+'</textarea>';
-  }
-  h+='</div>';
+  h+='<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem">'+
+     '<button class="btn" id="palcopy" style="margin-top:0">\ud83d\udccb '+bi("Copy the codes","カラーコードをコピー")+'</button></div>'+
+     '<textarea id="palout" readonly style="width:100%;margin-top:.6rem;font-family:ui-monospace,Menlo,monospace;font-size:.78rem;'+
+     'border:2px solid var(--line-2);border-radius:10px;background:var(--sunk);color:var(--ink);padding:.55rem;min-height:2.8rem">'+
+     themeCodes()+'</textarea>';
   w.innerHTML=h;
-  w.querySelectorAll("[data-hex]").forEach(function(e){
-    e.addEventListener("click",function(){palToggle(e.dataset.hex);});});
-  w.querySelectorAll("[data-drop]").forEach(function(e){
-    e.addEventListener("click",function(){palToggle(e.dataset.drop);});});
-  var add=w.querySelector("#palexactadd");
-  if(add)add.addEventListener("click",function(){
-    var v=(w.querySelector("#palexact").value||"").toUpperCase();
-    if(/^#[0-9A-F]{6}$/.test(v)&&palGet().indexOf(v)<0)palToggle(v);});
   var cp=w.querySelector("#palcopy");
   if(cp)cp.addEventListener("click",function(){
     var ta=w.querySelector("#palout"); ta.focus(); ta.select();
     try{document.execCommand("copy");if(typeof toast==="function")toast(t("Copied","コピーしました"));}
     catch(e){if(typeof toast==="function")toast(t("Select the text and copy","テキストを選択してコピーしてください"));}});
 }
-
 function renderTent(){
   var w=document.getElementById("tentplan"); if(!w) return;
   var L=tentLayouts(),key=load("tentv","grid"); if(!L[key])key="grid";
@@ -4049,7 +3969,7 @@ function renderSeat(){
     return h;
   }
   var h='<div class="headtbl"><div style="font-family:var(--disp);font-weight:800;font-size:.85rem">💐 '+bi("Jay &amp; Hikaru","ジェイと光")+'</div>'+
-    '<div class="hseats"><div class="seatz zone" data-zone="h1" style="min-width:6.5rem"></div><div class="seatz zone" data-zone="h2" style="min-width:6.5rem"></div></div></div>';
+    '<div class="hseats"><div class="seatz zone" data-zone="h1"></div><div class="seatz zone" data-zone="h2"></div></div></div>';
   h+='<div class="banks">';
   for(var b2=0;b2<4;b2++){
     var up=b2*2+1, dn=up+1;
@@ -4171,7 +4091,6 @@ var FOODWISH=[
  {id:"fw6",n:"Cute cup appetisers",nj:"カップ入りの前菜",d:"Pretty small plates rather than formal courses",dj:"かしこまったコースより見た目のかわいい一品を"},
  {id:"fw7",n:"Pots of free hot tea",nj:"温かいお茶をポットで",d:"Because the evening will be cold",dj:"夜は寒くなるため"},
  {id:"fw8",n:"Something participatory",nj:"参加型の演出",d:"Gets people moving around instead of sitting and watching",dj:"座って見るだけでなく、人の動きが出るように"}];
-var PALETTE=[["#FFFFFF","White","白"],["#7FB069","Green","緑"],["#F0883B","Orange","オレンジ"],["#FF9DB8","Pink","ピンク"],["#E8D9B5","Beige","ベージュ"],["#9BC4D6","Sky","水色"],["#C9A66B","Gold","ゴールド"],["#6E5B7B","Plum","プラム"]];
 var MAKIKO=[
  ["Table layout","テーブル配置","She&rsquo;s heard 7–8 guest tables. She recommends joining four 1800×120 tables into two long rows — it lets her use long centrepieces and costs less.","ゲストテーブルは7〜8卓と伺っています。1800×120を4つ繋げて2列にすると、長さのあるセンターピースが活かせて金額も抑えられます。"],
  ["Your budget","ご予算","Even a rough figure. She fits her rental stock and new purchases around it.","概算で構いません。レンタル品と新規購入を予算内で組み合わせます。"],
