@@ -148,7 +148,9 @@ a{color:var(--sky)}
 :root[data-role="planner"] .page:not([data-planner-edit]) .sendo,
 :root[data-role="planner"] .page:not([data-planner-edit]) .ph2{display:none!important}
 :root[data-role="planner"] .page:not([data-planner-edit]) .grip{opacity:.25;cursor:default;pointer-events:none}
-:root[data-role="planner"] .page:not([data-planner-edit]) .chip{cursor:default}
+:root[data-role="planner"] .page:not([data-planner-edit]) .chip{cursor:default;touch-action:auto;user-select:text}
+:root[data-role="planner"] .page:not([data-planner-edit]) .zone,
+:root[data-role="planner"] .page:not([data-planner-edit]) .seatz{cursor:default}
 :root[data-role="planner"] .page:not([data-planner-edit]) input[type=checkbox],
 :root[data-role="planner"] .page:not([data-planner-edit]) input[type=date],
 :root[data-role="planner"] .page:not([data-planner-edit]) input[type=text],
@@ -5025,6 +5027,13 @@ function armMarquee(scope){
   });
 }
 function armZone(scope,onDrop){
+  /* The planner could pick a name up and carry it across the room before the
+     save was refused. Rejecting the write was never the point — offering the
+     gesture was. So on a board she cannot change, the drag is never armed. */
+  if(window.ROLE==="planner"){
+    var host=document.querySelector(scope);
+    if(host&&!host.closest("[data-planner-edit]")) return;
+  }
   armMarquee(scope);
   var sel=selSet(scope);
   var live={}; document.querySelectorAll(scope+" .chip").forEach(function(c){live[c.dataset.pid]=1;});
