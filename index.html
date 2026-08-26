@@ -153,6 +153,7 @@ a{color:var(--sky)}
 :root[data-role="planner"] .page:not([data-planner-edit]) input[type=date],
 :root[data-role="planner"] .page:not([data-planner-edit]) input[type=text],
 :root[data-role="planner"] .page:not([data-planner-edit]) textarea{pointer-events:none;opacity:.6}
+:root[data-role="planner"] #p-ayu .del{display:none!important}
 :root[data-role="planner"] .page:not([data-planner-edit]) .sel{cursor:default}
 .gal{position:relative;aspect-ratio:3/2;background:var(--sunk)}
 .gal img{width:100%;height:100%;object-fit:cover;display:block}
@@ -1043,16 +1044,21 @@ a{color:var(--sky)}
 </div>
 
 <div class="page notes-wide" id="p-ayu" data-planner-edit>
+  <div id="ayu-inbox"></div>
   <div class="ph"><h2>📮 <span lang-en>Ayuko&rsquo;s dashboard</span><span lang-ja>鮎子さんのダッシュボード</span></h2>
     <p><span lang-en>Everything on your plate in one place — what Jay and Hikaru have asked, what you are handling, and somewhere to write back.</span><span lang-ja>ご対応いただく内容をひとまとめに。ジェイと光からの質問、担当いただいている項目、そしてご連絡欄です。</span></p></div>
 
-  <div class="ph"><h2>✅ <span lang-en>Yours to do</span><span lang-ja>鮎子さんのタスク</span></h2>
+  <div class="ph" id="ayu-thead"><h2>✅ <span lang-en>Yours to do</span><span lang-ja>鮎子さんのタスク</span></h2>
     <p><span lang-en>Anything handed to you. Tap an owner chip on any task, anywhere on this site, to pass it back.</span><span lang-ja>お渡ししている項目です。担当チップをタップすると担当者を変更できます。</span></p></div>
   <div id="ayutasks" style="margin-bottom:1.8rem"></div>
 
-  <div class="ph"><h2>❓ <span lang-en>What Jay &amp; Hikaru have asked</span><span lang-ja>ジェイと光からの質問</span></h2>
-    <p><span lang-en>Answer straight onto a question, or tick it once it is settled.</span><span lang-ja>質問に直接ご回答いただくか、解決したらチェックを入れてください。</span></p></div>
+  <div class="ph" id="ayu-qhead"><h2>❓ <span lang-en>What Jay &amp; Hikaru have asked</span><span lang-ja>ジェイと光からの質問</span></h2>
+    <p><span lang-en>Type your answer into the box under each question — it saves as you go, grows as you write, and you can change it later. Tick a question once it is fully settled; it stays on the list either way.</span><span lang-ja>各質問の下の欄にご回答を入力してください。自動保存され、入力に合わせて広がり、後から修正もできます。解決したらチェックを入れてください（チェック後も一覧に残ります）。</span></p></div>
   <div id="ayuko" style="margin-bottom:1.8rem"></div>
+
+  <div class="ph"><h2>📤 <span lang-en>Tasks you are giving them</span><span lang-ja>おふたりへのお願い</span></h2>
+    <p><span lang-en>Anything you need from Jay or Hikaru. It lands on their board immediately.</span><span lang-ja>ジェイ・光にお願いしたいこと。追加するとすぐにおふたりの画面に表示されます。</span></p></div>
+  <div id="ayuadds" style="margin-bottom:1.8rem"></div>
 
   <div class="ph"><h2>📝 <span lang-en>Your notes</span><span lang-ja>ご連絡欄</span></h2></div>
   <div class="card pad" style="margin-bottom:1.4rem"><div id="ayunotes"></div></div>
@@ -4075,6 +4081,54 @@ function renderAyuNotes(){
   var ta=w.querySelector("#ayunotebox"),tm=null;
   ta.addEventListener("input",function(){ clearTimeout(tm); tm=setTimeout(function(){ save("ayu.notes",ta.value); },500); });
 }
+/* ---------- what Ayuko hands to Jay and Hikaru ----------
+   Three lists, because a task for the two of them is a different thing from a
+   task for one of them. "Both" leads, since that is the common case. Only the
+   tasks she created show here — this is her side of the conversation, not a
+   mirror of their boards. */
+var AYU_ADD=[
+ {o:"b",n:"For Jay &amp; Hikaru",nj:"ジェイと光へ",lead:true},
+ {o:"j",n:"For Jay only",nj:"ジェイのみ"},
+ {o:"h",n:"For Hikaru only",nj:"光のみ"}];
+function ayuMade(o){
+  return load("mytasks",[]).filter(function(x){ return x.by==="a" && x.o===o; });
+}
+function ayuAddRow(owner){
+  var wrap=el("div","addr");
+  wrap.innerHTML='<input class="a-n" placeholder="'+t("Add a task…","タスクを追加…")+'">'+
+    '<div class="a-m"><input type="date" class="duein a-d">'+
+    '<button class="btn a-go">＋ '+t("Add","追加")+'</button></div>';
+  var go=function(){
+    var nm=wrap.querySelector(".a-n"),v=nm.value.trim(); if(!v)return;
+    var a=load("mytasks",[]),np=biSet(null,v);
+    np.id="my_"+Date.now(); np.o=owner; np.by="a"; np.c=0;
+    np.due=wrap.querySelector(".a-d").value||"";
+    a.push(np); save("mytasks",a);
+    nm.value=""; wrap.querySelector(".a-d").value=""; renderAll();
+    if(typeof toast==="function")toast(t("Added — they will see it straight away","追加しました。すぐに反映されます"));
+  };
+  wrap.querySelector(".a-go").addEventListener("click",go);
+  wrap.querySelector(".a-n").addEventListener("keydown",function(e){if(e.key==="Enter")go();});
+  return wrap;
+}
+function renderAyuAdds(){
+  var w=document.getElementById("ayuadds"); if(!w) return; w.innerHTML="";
+  AYU_ADD.forEach(function(g){
+    var box=el("div","card pad");
+    box.style.cssText="margin-bottom:.9rem"+(g.lead?";border-color:var(--mint)":"");
+    var mine=ayuMade(g.o);
+    box.innerHTML='<div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.5rem">'+
+      '<h4 style="margin:0;font-size:'+(g.lead?".98rem":".88rem")+'">'+bi(g.n,g.nj)+'</h4>'+
+      '<span style="margin-left:auto;font-size:.74rem;color:var(--ink-faint)">'+
+      (mine.length?mine.length+t(" open"," 件"):t("none yet","まだありません"))+'</span></div>';
+    var list=el("div");
+    mine.forEach(function(tk){ list.appendChild(taskRow(tk,false)); });
+    box.appendChild(list);
+    box.appendChild(ayuAddRow(g.o));
+    w.appendChild(box);
+  });
+}
+
 function renderTent(){
   var w=document.getElementById("tentplan"); if(!w) return;
   var L=tentLayouts(),key=load("tentv","grid"); if(!L[key])key="grid";
@@ -5060,6 +5114,71 @@ function ayAnswer(x){
     (st==="gap"||st==="todo"||st==="park"?"":'<span style="display:block;margin-top:.3rem;font-size:.72rem;color:var(--ink-faint)">'+
     bi("Ayuko, 17 Aug 2026","鮎子さん・2026年8月17日")+'</span>')+'</div>';
 }
+/* ---------- Ayuko's questions: answering, not just ticking ----------
+   The board used to be read-only for her, which made the tick meaningless —
+   she could mark a question answered without anywhere to put the answer.
+   Now every question carries a box that grows with the text, saves as she
+   types, and can be edited afterwards. Ticking is separate and never hides
+   the row, and there is no delete: the question is Jay and Hikaru's. */
+function autoGrow(ta){
+  var fit=function(){ ta.style.height="auto"; ta.style.height=(ta.scrollHeight+2)+"px"; };
+  ta.addEventListener("input",fit); requestAnimationFrame(fit); return fit;
+}
+function ayuInbox(){
+  var w=document.getElementById("ayu-inbox"); if(!w) return; w.innerHTML="";
+  var done=load("ayqdone",{});
+  var open=ayList().filter(function(x){
+    var ov=load("ayans."+x.id,null);
+    var answered=done[x.id]||(ov&&(ov.n||"").trim());
+    return !answered;
+  }).length;
+  var mine=allTasks().filter(function(x){return taskOwner(x)==="a"&&!taskArch(x.id)&&!taskDone(x.id);}).length;
+  if(!open&&!mine) return;
+  var bits=[];
+  if(open) bits.push(bi(open+" question"+(open===1?"":"s")+" to answer", "未回答の質問 "+open+"件"));
+  if(mine) bits.push(bi(mine+" task"+(mine===1?"":"s")+" assigned to you", "担当タスク "+mine+"件"));
+  var b=el("div","inbox");
+  b.innerHTML='<span class="inbox-n">'+(open||mine)+'</span><span class="inbox-t">'+bits.join(" · ")+'</span>'+
+    '<span class="inbox-go">'+bi("Go ›","確認する ›")+'</span>';
+  b.addEventListener("click",function(){
+    var target=document.getElementById(open?"ayu-qhead":"ayu-thead");
+    if(target)requestAnimationFrame(function(){
+      window.scrollTo(0,Math.max(0,target.getBoundingClientRect().top+window.pageYOffset-70));});
+  });
+  w.appendChild(b);
+}
+function ayuAnswerBox(x){
+  var wrap=el("div");
+  wrap.style.cssText="margin-top:.55rem";
+  var ov=load("ayans."+x.id,null), seeded=(!ov&&(x.a||x.aj))?decodeEnt(plainSeed(t(x.a||"",x.aj||""))):"";
+  var cur=ov?(ov.src==="ja"?ov.nj:ov.n)||"":seeded;
+  var lbl=el("div");
+  lbl.style.cssText="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.25rem";
+  lbl.innerHTML=bi("Your answer","ご回答");
+  var ta=el("textarea");
+  ta.value=cur;
+  ta.placeholder=t("Type your answer here — it saves as you go and you can come back and change it.",
+                   "こちらにご回答を入力してください。自動保存され、後から修正もできます。");
+  ta.style.cssText="width:100%;min-height:3.4rem;font:inherit;font-size:.86rem;line-height:1.7;padding:.6rem .75rem;"+
+    "border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink);resize:none;overflow:hidden";
+  var fit=autoGrow(ta);
+  var stamp=el("div");
+  stamp.style.cssText="font-size:.7rem;color:var(--ink-faint);margin-top:.25rem;min-height:1em";
+  var tm=null;
+  ta.addEventListener("input",function(){
+    clearTimeout(tm);
+    tm=setTimeout(function(){
+      var p=biSet(null,ta.value);
+      save("ayans."+x.id,{n:p.n,nj:p.nj,src:p.src,st:ta.value.trim()?"ok":"her"});
+      stamp.innerHTML=bi("Saved","保存しました");
+      setTimeout(function(){stamp.innerHTML="";},1800);
+    },600);
+  });
+  wrap.appendChild(lbl);wrap.appendChild(ta);wrap.appendChild(stamp);
+  setTimeout(fit,0);
+  return wrap;
+}
+
 function renderAyuko(){
   var w=document.getElementById("ayuko"); if(!w) return; w.innerHTML="";
   var done=load("ayqdone",{});
@@ -5068,10 +5187,11 @@ function renderAyuko(){
     d.innerHTML='<input type="checkbox" '+(done[x.id]?"checked":"")+' title="'+t("tick when she has answered","回答済みになったらチェック")+'">'+
       '<div class="tk-b"><div class="tk-n" style="font-weight:600">'+(x.mine?biUser({n:x.q,nj:x.qj,src:x.src}):bi(x.q,x.qj))+
       (done[x.id]?'<span class="dtag">'+bi("Answered","回答済み")+'</span>':'')+'</div>'+ayAnswer(x)+'</div>'+
-      '<button class="del" data-dq="'+x.id+'">✕</button>';
+      (window.ROLE==="planner"?'':'<button class="del" data-dq="'+x.id+'">✕</button>');
+    d.querySelector(".tk-b").appendChild(ayuAnswerBox(x));
     d.querySelector("input").addEventListener("change",function(e){
       var m=load("ayqdone",{});m[x.id]=e.target.checked;save("ayqdone",m);renderAll();});
-    armDanger(d.querySelector("[data-dq]"),function(){
+    if(d.querySelector("[data-dq]"))armDanger(d.querySelector("[data-dq]"),function(){
       if(x.mine) save("ayq",load("ayq",[]).filter(function(y){return y.id!==x.id;}));
       else { var dl=load("ayqdel",{});dl[x.id]=1;save("ayqdel",dl); }
       renderAll();});
@@ -5088,9 +5208,10 @@ function renderAyuko(){
 }
 /* ---------- tabs ---------- */
 var TABS=[["home","🏠","Home","ホーム","--coral"],["cal","🗓","Calendar","カレンダー","--teal"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","Hikaru","光","--pink"],["jay","💙","Jay","ジェイ","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["inv","💌","Invites","招待状","--pink"],["feed","📥","For Claude","クロードへ","--mint"]];
+var PLANNER_HIDE=["us","jay"];
 function buildTabs(){
   var w=document.getElementById("tabs");w.innerHTML="";
-  TABS.forEach(function(tb){var b=el("button","tab");b.type="button";b.setAttribute("role","tab");b.dataset.go=tb[0];
+  TABS.filter(function(tb){return window.ROLE!=="planner"||PLANNER_HIDE.indexOf(tb[0])<0;}).forEach(function(tb){var b=el("button","tab");b.type="button";b.setAttribute("role","tab");b.dataset.go=tb[0];
     b.innerHTML='<span class="ic">'+tb[1]+'</span>'+bi(tb[2],tb[3]);
     b.addEventListener("click",function(){go(tb[0],true);});w.appendChild(b);});
 }
@@ -5148,7 +5269,7 @@ function toast(msg){
   var x=document.createElement("div");x.className="toastx";x.textContent=msg;
   document.body.appendChild(x);setTimeout(function(){x.remove();},2000);
 }
-window.renderAll=renderAll;window.toast=toast;
+window.renderAll=renderAll;window.toast=toast;window.buildTabs=buildTabs;window.go=go;
 document.addEventListener("keydown",function(e){
   if(!(e.metaKey||e.ctrlKey)||e.key!=="z"||e.shiftKey)return;
   var a=document.activeElement;
@@ -5176,7 +5297,7 @@ function renderAll(){
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
   renderHeroShot();renderCal();renderInbox();renderFeed();renderDecor2();renderBeauty();
   renderStay();renderSeat();renderTent();renderPalette();renderSanto();renderDrive();
-  renderTaskBoxes("ayutasks","a");renderAyuNotes();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
+  renderTaskBoxes("ayutasks","a");renderAyuAdds();renderAyuNotes();ayuInbox();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
   document.querySelectorAll(".m").forEach(function(e){e.textContent=money(parseFloat(e.dataset.yen));});
@@ -5304,6 +5425,12 @@ if(window.FBCONFIG){
         const ja=document.documentElement.getAttribute("data-lang")==="ja";
         w.textContent=signedIn?(u.email||"").split("@")[0]:(ja?"サインイン":"Sign in");
         w.classList.toggle("owner",signedIn);
+      }
+      if(typeof window.buildTabs==="function"){
+        window.buildTabs();
+        const cur=localStorage.getItem("lt4.tab");
+        const hidden=!document.querySelector('.tab[data-go="'+JSON.parse(cur||'"home"')+'"]');
+        window.go(hidden?"home":JSON.parse(cur||'"home"'));
       }
       if(typeof renderAll==="function")renderAll();
     };
