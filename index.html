@@ -121,6 +121,39 @@ a{color:var(--sky)}
 .slb .slb-x{top:1rem;right:1rem;font-size:1rem}
 .slb .slb-p{left:1rem;top:50%;transform:translateY(-50%)}
 .slb .slb-n{right:1rem;top:50%;transform:translateY(-50%)}
+.whoami{font:inherit;font-family:var(--disp);font-weight:800;font-size:.72rem;border:2px solid var(--line-2);background:var(--card);color:var(--ink-soft);border-radius:999px;padding:.32rem .8rem;cursor:pointer;white-space:nowrap}
+.whoami.owner{border-color:var(--mint);color:var(--mint)}
+.signin{position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:1.2rem}
+.signin[hidden]{display:none}
+.signin-card{background:var(--card);border:2px solid var(--line-2);border-radius:20px;padding:1.3rem;width:min(100%,24rem);box-shadow:var(--shadow)}
+.signin-card h3{margin:0 0 .3rem;font-size:1.05rem}
+.signin-card p{margin:0 0 .9rem;font-size:.79rem;color:var(--ink-soft);line-height:1.6}
+.signin-card input{width:100%;font:inherit;font-size:.9rem;padding:.6rem .8rem;margin-bottom:.55rem;border:2px solid var(--line-2);border-radius:12px;background:var(--ground);color:var(--ink)}
+.signin-row{display:flex;gap:.5rem}
+.signin-row .btn{margin-top:.3rem}
+#si-msg{font-size:.78rem;line-height:1.55;color:var(--coral);min-height:1.1rem}
+.si-link{display:block;margin-top:.7rem;font:inherit;font-size:.78rem;background:none;border:0;color:var(--sky);text-decoration:underline;cursor:pointer;padding:0}
+/* read-only: the controls that change shared data simply are not offered */
+:root[data-role="planner"] .page:not([data-planner-edit]) .bul-edit,
+:root[data-role="planner"] .page:not([data-planner-edit]) .bul-x,
+:root[data-role="planner"] .page:not([data-planner-edit]) .del,
+:root[data-role="planner"] .page:not([data-planner-edit]) .arch,
+:root[data-role="planner"] .page:not([data-planner-edit]) .buladd,
+:root[data-role="planner"] .page:not([data-planner-edit]) .psw-x,
+:root[data-role="planner"] .page:not([data-planner-edit]) .qx,
+:root[data-role="planner"] .page:not([data-planner-edit]) [data-delmy],
+:root[data-role="planner"] .page:not([data-planner-edit]) .pen-n,
+:root[data-role="planner"] .page:not([data-planner-edit]) .pen-d,
+:root[data-role="planner"] .page:not([data-planner-edit]) .own,
+:root[data-role="planner"] .page:not([data-planner-edit]) .sendo,
+:root[data-role="planner"] .page:not([data-planner-edit]) .ph2{display:none!important}
+:root[data-role="planner"] .page:not([data-planner-edit]) .grip{opacity:.25;cursor:default;pointer-events:none}
+:root[data-role="planner"] .page:not([data-planner-edit]) .chip{cursor:default}
+:root[data-role="planner"] .page:not([data-planner-edit]) input[type=checkbox],
+:root[data-role="planner"] .page:not([data-planner-edit]) input[type=date],
+:root[data-role="planner"] .page:not([data-planner-edit]) input[type=text],
+:root[data-role="planner"] .page:not([data-planner-edit]) textarea{pointer-events:none;opacity:.6}
+:root[data-role="planner"] .page:not([data-planner-edit]) .sel{cursor:default}
 .gal{position:relative;aspect-ratio:3/2;background:var(--sunk)}
 .gal img{width:100%;height:100%;object-fit:cover;display:block}
 .gal .nav{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 .4rem}
@@ -624,7 +657,22 @@ a{color:var(--sky)}
   <div class="brand">🌸 Lake&nbsp;Toya&nbsp;HQ <span id="syncdot" style="display:none;margin-left:.15rem;font-size:.68rem;font-weight:800;color:var(--mint)">● <span lang-en>live</span><span lang-ja>同期中</span></span></div>
   <div class="seg" role="group" aria-label="Language"><button type="button" data-lang-set="en" aria-pressed="false">EN</button><button type="button" data-lang-set="ja" aria-pressed="false">日本語</button></div>
   <div class="seg" role="group" aria-label="Currency"><button type="button" data-cur-set="jpy" aria-pressed="false">¥</button><button type="button" data-cur-set="usd" aria-pressed="false">$</button></div>
+  <button type="button" id="whoami" class="whoami"></button>
 </div></div>
+<div id="signin" class="signin" hidden>
+  <div class="signin-card">
+    <h3><span lang-en>Sign in</span><span lang-ja>サインイン</span></h3>
+    <p><span lang-en>Jay and Hikaru only. Everyone else can read the site and write on the Ayuko and For Claude tabs without signing in.</span><span lang-ja>ジェイと光専用です。それ以外の方はサインインなしで閲覧でき、「鮎子さんのダッシュボード」と「クロードへ」に書き込めます。</span></p>
+    <input id="si-mail" type="email" autocomplete="username" placeholder="email">
+    <input id="si-pass" type="password" autocomplete="current-password" placeholder="password">
+    <div id="si-msg"></div>
+    <div class="signin-row">
+      <button type="button" id="si-go" class="btn"><span lang-en>Sign in</span><span lang-ja>サインイン</span></button>
+      <button type="button" id="si-x" class="btn"><span lang-en>Cancel</span><span lang-ja>キャンセル</span></button>
+    </div>
+    <button type="button" id="si-new" class="si-link" hidden></button>
+  </div>
+</div>
 
 <div class="wrap">
 
@@ -993,13 +1041,23 @@ a{color:var(--sky)}
 
 </div>
 
-<div class="page" id="p-ayu">
-  <div class="ph"><h2>📮 <span lang-en>Questions for Ayuko</span><span lang-ja>鮎子さんへの質問</span></h2>
-    <p><span lang-en>Pile them up here — either of you — and tick each one once she answers. When you&rsquo;re ready to send, ask Claude to draft the email from whatever is open.</span><span lang-ja>ふたりで質問をためて、回答が来たらチェック。送るときはクロードに「未回答分でメールを書いて」と頼んでください。</span></p></div>
+<div class="page notes-wide" id="p-ayu" data-planner-edit>
+  <div class="ph"><h2>📮 <span lang-en>Ayuko&rsquo;s dashboard</span><span lang-ja>鮎子さんのダッシュボード</span></h2>
+    <p><span lang-en>Everything on your plate in one place — what Jay and Hikaru have asked, what you are handling, and somewhere to write back.</span><span lang-ja>ご対応いただく内容をひとまとめに。ジェイと光からの質問、担当いただいている項目、そしてご連絡欄です。</span></p></div>
+
+  <div class="ph"><h2>✅ <span lang-en>Yours to do</span><span lang-ja>鮎子さんのタスク</span></h2>
+    <p><span lang-en>Anything handed to you. Tap an owner chip on any task, anywhere on this site, to pass it back.</span><span lang-ja>お渡ししている項目です。担当チップをタップすると担当者を変更できます。</span></p></div>
+  <div id="ayutasks" style="margin-bottom:1.8rem"></div>
+
+  <div class="ph"><h2>❓ <span lang-en>What Jay &amp; Hikaru have asked</span><span lang-ja>ジェイと光からの質問</span></h2>
+    <p><span lang-en>Answer straight onto a question, or tick it once it is settled.</span><span lang-ja>質問に直接ご回答いただくか、解決したらチェックを入れてください。</span></p></div>
   <div id="ayuko" style="margin-bottom:1.8rem"></div>
+
+  <div class="ph"><h2>📝 <span lang-en>Your notes</span><span lang-ja>ご連絡欄</span></h2></div>
+  <div class="card pad" style="margin-bottom:1.4rem"><div id="ayunotes"></div></div>
 </div>
 
-<div class="page" id="p-feed">
+<div class="page" id="p-feed" data-planner-edit>
   <div class="ph"><h2>📥 <span lang-en>For Claude</span><span lang-ja>クロードへ</span></h2>
     <p><span lang-en>Drop anything here that Claude should know — screenshots, quotes, PDFs, messages from a vendor, or just a note. Jay asks Claude to read it, everything gets written into the right places on this site, and then this page is emptied.</span><span lang-ja>クロードに知っておいてほしいものは何でもここへ。スクリーンショット、見積もり、PDF、業者とのやりとり、メモなど。ジェイがクロードに読み込みを頼み、内容はサイトの各所に反映されたあと、このページは空にします。</span></p></div>
 
@@ -1108,7 +1166,21 @@ var FBCONFIG=window.FBCONFIG={"apiKey": "AIzaSyAAnT69AtL-m53iQ-DuCF0PRNrdHcmvZaM
 /* keys that are personal viewing preferences stay per-device; everything else syncs */
 var SYNCSKIP=window.SYNCSKIP=/^(tab|lang|cur|curbind|imgsplit|l3ids|hseed|jseed|hseed2|lastedit|moreopen|driveday|nextfilter|tboxopen|tentv|fwopen|hpopen|jpopen|hopen|jopen|dock\.)/;
 var UNDO=[];
+/* Ayuko signs in as nobody, Jay and Hikaru sign in with an email. A visitor
+   who is not signed in may only write inside her own namespace — the UI hides
+   the rest anyway, this is the belt to that pair of braces, and the Firestore
+   rules are the third. */
+var PLANNER_WRITES=/^(ayu\.|ayans\.|ayqdone$|ayqdel$|asked$|askedj$|hans\.|jans\.|mytasks$|feed$|feedblob\.)/;
+function canWrite(k){
+  if(window.ROLE!=="planner")return true;
+  if(SYNCSKIP.test(k))return true;              /* view prefs never leave the device */
+  return PLANNER_WRITES.test(k);
+}
 function save(k,v){try{
+  if(!canWrite(k)){
+    if(typeof toast==="function")toast(t("View only — ask Jay or Hikaru to change this","閲覧のみ — 変更はジェイか光にご依頼ください"));
+    return;
+  }
   if(k!=="lastedit"&&k!=="tab"&&k!=="moreopen"){
     UNDO.push({k:k,prev:localStorage.getItem("lt4."+k)});
     if(UNDO.length>80)UNDO.shift();
@@ -1117,6 +1189,7 @@ function save(k,v){try{
   if(window.__fbWrite&&!SYNCSKIP.test(k))window.__fbWrite(k,localStorage.getItem("lt4."+k));
   if(k!=="lastedit"&&k!=="tab")localStorage.setItem("lt4.lastedit",JSON.stringify(Date.now()));}catch(e){}}
 function load(k,d){try{var v=localStorage.getItem("lt4."+k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
+window.canWrite=canWrite;window.__save=save;window.__load=load;
 
 function chef(c,p){return '<svg width="50" height="56" viewBox="0 0 52 58" aria-hidden="true"><ellipse cx="26" cy="55" rx="15" ry="3" fill="rgba(0,0,0,.09)"/><path d="M12 20c-5 0-8-4-6-8 1-4 5-5 7-4 1-4 5-6 9-5 3-4 9-4 12 0 4-1 8 1 9 5 2-1 6 0 7 4 2 4-1 8-6 8z" fill="#fff" stroke="'+c+'" stroke-width="2" stroke-linejoin="round"/><rect x="12" y="19" width="28" height="6" rx="2" fill="'+c+'"/><path d="M14 26h24v10a12 12 0 0 1-24 0z" fill="#FFE2CC"/><circle cx="21" cy="32" r="2.1" fill="#3E3348"/><circle cx="31" cy="32" r="2.1" fill="#3E3348"/><ellipse cx="16.5" cy="35.5" rx="2.6" ry="1.7" fill="#FFB3B3" opacity=".75"/><ellipse cx="35.5" cy="35.5" rx="2.6" ry="1.7" fill="#FFB3B3" opacity=".75"/><path d="M23 36.5c1.6 1.8 4.4 1.8 6 0" stroke="#3E3348" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M18 46h16a8 8 0 0 1 8 8H10a8 8 0 0 1 8-8z" fill="'+c+'"/>'+p+'</svg>';}
 var P={steak:'<g transform="translate(34,40)"><path d="M0 4c0-3 3-5 6-5s6 2 6 5-3 5-6 5-6-2-6-5z" fill="#C1503F" stroke="#8E3628" stroke-width="1.4"/></g>',
@@ -1440,20 +1513,20 @@ var CHEFS=[
      "<b>「ゲスト」タブの実人数で自動再計算</b> — 見積書の大人40名＋子ども6名はあくまで仮の人数です",
      "スタイル：前菜はビュッフェ、メインは着席・和牛（エゾ但馬）、仔羊、ホタテ、甘エビ、アスパラ",
      "<b>カクテルパーティ・アフターパーティはいずれも別料金</b>。寺西さんへの依頼はディナーの2時間（16:30〜18:30）のみとし、ウェルカムと夜遅い時間帯は自前のドリンクで対応する方針です"],
-  hik:"Hikaru&rsquo;s first choice. She likes that he&rsquo;s worked at the Lakehouse — but it depends on how the food looks and tastes. On the phone he came across as &ldquo;a slightly troublesome older man,&rdquo; so she&rsquo;s unsure how easy he&rsquo;ll be to work with.",
-  hikj:"光の第一希望。レイクハウスでの実績を評価。ただし見た目と味次第。電話では「ちょっとめんどくさそうなおじさん」の印象で、やりとりのしやすさが気になるとのこと。",
+  hik:"Hikaru&rsquo;s first choice. She likes that he&rsquo;s worked at the Lakehouse — but it depends on how the food looks and tastes. From the phone call her impression was of someone with firm ideas and his own way of working, so she&rsquo;d like a clearer sense of how the collaboration would go.",
+  hikj:"光の第一希望。レイクハウスでの実績を評価。ただし見た目と味次第。お電話では、こだわりがしっかりある方という印象で、進め方のすり合わせがどの程度必要かを知りたいとのこと。",
   tags:[["Her #1","光の1位","yes"],["Drinks included","ドリンク込み","yes"],["Quote in hand","見積もり受領","yes"],["Cocktail hour extra","カクテル別途","no"]]},
  {id:"ohkawa",n:"Chef Ohkawa",nj:"大川シェフ",c:"#C97B3F",p:P.ramen,lo:1100000,hi:1200000,budget:1150000,drinksIncl:false,rank:2,short:1,
   f:["¥18–20,000 per head","Ramen and sushi brought in from other vendors","10 serving staff at ¥10,000 each","Closest to the buffet you sketched"],
   fj:["お一人様18,000〜20,000円","ラーメン・寿司は別業者から手配","サーブ10名（各10,000円）","構想中のビュッフェに一番近い"],
-  hik:"Her second choice. He works alone, so she&rsquo;s worried about consistency of quality.",
-  hikj:"光の第2希望。個人でやられている方なのでクオリティが気になるとのこと。",
+  hik:"Her second choice. He works on his own rather than with a kitchen brigade, so she&rsquo;d like to understand how he holds quality steady across 50 covers.",
+  hikj:"光の第2希望。チームではなくお一人で対応されるため、50名分でも品質を均一に保てるかを確認したいとのこと。",
   tags:[["Her #2","光の2位","yes"],["Ramen + sushi","ラーメン・寿司","yes"],["Drinks separate","ドリンク別","no"]]},
  {id:"aroi",n:"Aroi",nj:"Aroi（アロイ札幌）",c:"#E05C4B",p:P.steak,lo:819340,hi:null,budget:819340,drinksIncl:false,rank:3,cheap:true,
   f:["¥12,000 per head, wagyu steak included","10 serving staff, chef travel and lodging inside the price","Buffet style, about 8 dishes","<b>By far the cheapest</b> — roughly half of Teranishi"],
   fj:["お一人様12,000円・和牛ステーキ込み","サーブ10名＋シェフ出張費・宿泊費込み","ビュッフェ形式・約8品","<b>圧倒的に最安</b>・寺西さんの約半額"],
-  hik:"Her last choice. Long-established, but she finds the website dated and the arrangements a bit corporate-party — &ldquo;not exciting 笑&rdquo;. Worth weighing against the price gap.",
-  hikj:"光の第3希望。老舗だがサイトが古く、アレンジが会社のパーティーっぽくて「わくわくしなさそう笑」とのこと。価格差との天秤です。",
+  hik:"Her third choice. Long-established and dependable, but from the website the styling reads closer to a corporate event than a wedding, and she is hoping for something with more personality. Worth weighing against the price gap.",
+  hikj:"光の第3希望。老舗で安心感はあるものの、サイトを拝見する限り会社のパーティーに近い雰囲気で、もう少し個性のあるスタイルを希望とのこと。価格差との天秤です。",
   tags:[["Cheapest","最安","yes"],["Her #3","光の3位","no"],["Drinks separate","ドリンク別","no"]]},
  {id:"lux",n:"LUX",nj:"LUX",c:"#B5627A",p:P.scallop,lo:1450000,hi:null,budget:1450000,drinksIncl:true,
   f:["¥25,000 per head plus ¥4,000 drinks","Scallop and wagyu menu","Everything included","Already discounted from ¥29,800"],
@@ -1489,13 +1562,13 @@ var PHOTOG=[
  {id:"takayo",n:"Takayo Fujie",nj:"藤江 貴代",amt:56000,link:"https://takayofujie.myportfolio.com/wedding",linkl:"Portfolio",linkj:"ポートフォリオ",
   f:["Photography only — cheapest by a wide margin","Introduced by Ayuko via LINE","No package details given — worth asking what hours are covered"],
   fj:["撮影のみ・圧倒的に安価","鮎子さんがLINEで紹介","パッケージ内容未確認・撮影時間の確認を推奨"],
-  hik:"Hikaru finds this one underwhelming (&ldquo;微妙&rdquo;). Keep as a backup.",
-  hikj:"光は「微妙」との評価。バックアップとして保持。"},
+  hik:"Not quite Hikaru&rsquo;s style — the work didn&rsquo;t land for her the way Nom-san&rsquo;s does. Keeping as a backup on price.",
+  hikj:"光の好みとは少し方向性が違うとのこと。価格面でバックアップとして保持。"},
  {id:"niki",n:"Ayako Niki",nj:"ニキ 彩子",amt:180000,link:"https://instagram.com/247nikiimages",linkl:"Instagram",linkj:"インスタグラム",
   f:["A <b>package</b>, not just a shooting fee","Hair &amp; make-up included, worth ¥38,000 alone","Up to 6 hours of Lakehouse grounds access","Option to shoot at Ukimido, 5 minutes away","Day use of the Lavender Suite as a prep room"],
   fj:["撮影料ではなく<b>パッケージ</b>","下田真紀子さんのヘアメイク込み（単体38,000円相当）","レイクハウス敷地を最大6時間利用","浮見堂（車5分）での撮影オプション","ラベンダースイートを支度部屋としてデイユース"],
-  hik:"Hikaru also finds this one underwhelming. She&rsquo;s asked whether you should look for other photographers entirely.",
-  hikj:"光はこちらも「微妙」との評価。他のカメラマンを探すか検討中。"}];
+  hik:"Also not quite her style. She is wondering whether it is worth seeing a few more photographers before settling.",
+  hikj:"こちらも光の好みとは少し方向性が違うとのこと。決める前に他のカメラマンも何名か拝見したいと考えています。"}];
 
 var CHOICES={
  drinks:{def:"jp",opts:[
@@ -1661,7 +1734,7 @@ var TASKS=[
  /* ⑦ Photography & Videography */
  {id:"q1",  c:7,o:"b",n:"Decide on video, or drop it",nj:"映像を手配するか決める",due:"2026-12-01",d:"¥280,000 with no vendor attached. Video is on her spend-here list",dj:"280,000円・業者未定。映像は光が「お金をかける」側に挙げた項目"},
  {id:"t702",c:7,o:"b",n:"Videographer arrangements",nj:"ビデオグラファー手配",due:"2027-01-15",d:"",dj:""},
- {id:"p9",  c:7,o:"b",n:"Pick the photographer",nj:"カメラマンを決める",due:"2027-03-31",d:"Nom-san ¥120,000 is Hikaru&rsquo;s pick but unconfirmed until end of March. Takayo ¥56,000 and Niki ¥180,000 are backups she finds underwhelming",dj:"のむさん120,000円が光の希望だが3月末まで確定せず。Takayo 56,000円とNiki 180,000円は控えだが光の評価は低い"},
+ {id:"p9",  c:7,o:"b",n:"Pick the photographer",nj:"カメラマンを決める",due:"2027-03-31",d:"Nom-san ¥120,000 is Hikaru&rsquo;s pick but unconfirmed until end of March. Takayo ¥56,000 and Niki ¥180,000 are backups, though neither is quite her style",dj:"のむさん120,000円が光の希望だが3月末まで確定せず。Takayo 56,000円とNiki 180,000円は控えだが光の評価は低い"},
  {id:"t701",c:7,o:"b",n:"Photographer arrangements",nj:"カメラマン手配",due:"2027-04-01",d:"",dj:""},
  {id:"t703",c:7,o:"b",n:"Shot list / photography brief",nj:"撮影指示書作成",due:"2027-04-15",d:"",dj:""},
  {id:"t705",c:7,o:"b",n:"Photo spot planning",nj:"フォトスポット検討",due:"2027-04-15",d:"",dj:""},
@@ -1810,11 +1883,11 @@ function fmtDue(iso){ if(!iso) return t("no date","期日なし");
   return t(p[2].replace(/^0/,"")+" "+M[+p[1]-1]+" "+p[0], +p[0]+"年"+(+p[1])+"月"+(+p[2])+"日"); }
 function dueTone(iso,done){ if(done) return "calm"; var n=daysTo(iso);
   if(n===null) return "calm"; if(n<0) return "late"; if(n<=30) return "soon"; return "calm"; }
-var OWN={j:{l:"Jay",lj:"ジェイ",c:"--sky"},h:{l:"Hikaru",lj:"光",c:"--pink"},b:{l:"Both",lj:"ふたり",c:"--mint"}};
+var OWN={j:{l:"Jay",lj:"ジェイ",c:"--sky"},h:{l:"Hikaru",lj:"光",c:"--pink"},b:{l:"Both",lj:"ふたり",c:"--mint"},a:{l:"Ayuko",lj:"鮎子さん",c:"--amber"}};
 /* a pending hand-over, held in memory only — tapping the chip proposes,
    the Send button next to the date is what actually moves it */
 var PENDOWN={};
-function nextOwner(o){ return o==="j"?"h":(o==="h"?"b":"j"); }
+function nextOwner(o){ return o==="j"?"h":(o==="h"?"b":(o==="b"?"a":"j")); }
 function ownerChip(tk){
   var o=taskOwner(tk),p=PENDOWN[tk.id],k=OWN[p||o];
   var lbl=p?('→ '+t(k.l,k.lj)):t(k.l,k.lj);
@@ -3411,7 +3484,7 @@ var CUTS=[
  ["Send invitations digitally","招待状をデジタルに",60000,"You already built the invitation website. Printed stationery duplicates it.","招待サイトは既に完成しています。紙の招待状は重複です。"],
  ["Merge welcome bags into the souvenir sweets","ウェルカムギフトを引き菓子に統合",75000,"Two gifts to the same guest. One good Hokkaido gift lands better than two thin ones.","同じゲストへの贈り物が2つ。北海道らしい良いものを1つの方が印象に残ります。"],
  ["Skip the welcome dinner","前夜の会食をやめる",150000,"Guests arriving Friday can eat in Toyako on their own. Optional by design.","金曜到着のゲストは各自で洞爺の店へ。もともと任意の項目です。"],
- ["Takayo instead of Nom-san","カメラマンをTakayoさんに",64000,"Cheapest option, but Hikaru finds her work underwhelming — this is a real trade-off, not a free saving.","最安ですが、光は作品を「微妙」と評価。無料の削減ではなく明確なトレードオフです。"],
+ ["Takayo instead of Nom-san","カメラマンをTakayoさんに",64000,"Cheapest option, but the style is not Hikaru&rsquo;s favourite — this is a real trade-off, not a free saving.","最安ですが、作品の方向性は光の好みとは少し違います。無料の削減ではなく明確なトレードオフです。"],
  ["Aroi instead of Teranishi","ケータリングをAroiに",555660,"By far the biggest single saving available — and Hikaru&rsquo;s least favourite. Worth deciding on merit, not price alone.","単独で最大の削減効果。ただし光の第3希望です。価格だけで決めない方がよい項目。"],
  ["No videographer","映像なし",280000,"Higuchi-san is Hikaru&rsquo;s pick and video is one of the two things she said she wants to spend on. Cut this last.","ヒグチさんは光の希望で、映像は光が「お金をかけたい」と明言した2つのうちの1つ。最後に検討すべき項目です。"]];
 
@@ -3987,6 +4060,23 @@ function santoLightbox(i){
   paint(); document.body.appendChild(box);
 }
 
+
+/* ---------- Ayuko's own board ----------
+   Same shape as Jay's and Hikaru's: what she owes, what she is owed, and
+   somewhere to write. Everything here is inside her editable namespace. */
+function renderAyuNotes(){
+  var w=document.getElementById("ayunotes"); if(!w) return;
+  var cur=load("ayu.notes","");
+  w.innerHTML='<textarea id="ayunotebox" placeholder="'+
+    t("Anything you want Jay and Hikaru to see — availability, vendor news, reminders…",
+      "ジェイと光に共有したいことをご自由に — ご予定、業者さんからの連絡、リマインドなど…")+
+    '" style="width:100%;min-height:8rem;font:inherit;font-size:.88rem;line-height:1.7;padding:.7rem .85rem;'+
+    'border:2px solid var(--line-2);border-radius:14px;background:var(--card);color:var(--ink);resize:vertical">'+esc(cur)+'</textarea>'+
+    '<div style="font-size:.74rem;color:var(--ink-faint);margin-top:.35rem">'+
+    t("Saves as you type. Jay and Hikaru see it straight away.","入力すると自動保存され、ジェイと光にすぐ反映されます。")+'</div>';
+  var ta=w.querySelector("#ayunotebox"),tm=null;
+  ta.addEventListener("input",function(){ clearTimeout(tm); tm=setTimeout(function(){ save("ayu.notes",ta.value); },500); });
+}
 function renderTent(){
   var w=document.getElementById("tentplan"); if(!w) return;
   var L=tentLayouts(),key=load("tentv","grid"); if(!L[key])key="grid";
@@ -5087,7 +5177,8 @@ function renderAll(){
   renderBudget();renderUpdates();
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
   renderHeroShot();renderCal();renderInbox();renderFeed();renderDecor2();renderBeauty();
-  renderStay();renderSeat();renderTent();renderPalette();renderSanto();renderDrive();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
+  renderStay();renderSeat();renderTent();renderPalette();renderSanto();renderDrive();
+  renderTaskBoxes("ayutasks","a");renderAyuNotes();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
   document.querySelectorAll(".m").forEach(function(e){e.textContent=money(parseFloat(e.dataset.yen));});
@@ -5184,12 +5275,66 @@ renderAll();
 <script type="module">
 if(window.FBCONFIG){
   try{
-    const [{initializeApp},{getFirestore,doc,setDoc,onSnapshot,collection},{getAuth,signInAnonymously}]=await Promise.all([
+    const [{initializeApp},{getFirestore,doc,setDoc,onSnapshot,collection},
+           {getAuth,signInAnonymously,signInWithEmailAndPassword,createUserWithEmailAndPassword,
+            onAuthStateChanged,setPersistence,browserLocalPersistence,signOut}]=await Promise.all([
       import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
       import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
       import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")]);
-    const app=initializeApp(FBCONFIG), db=getFirestore(app);
-    await signInAnonymously(getAuth(app));
+    const app=initializeApp(FBCONFIG), db=getFirestore(app), auth=getAuth(app);
+    await setPersistence(auth,browserLocalPersistence);
+
+    /* Jay and Hikaru carry an email account; everyone else rides in anonymously
+       and lands in the planner role. The role drives what save() will accept. */
+    const setRole=u=>{
+      const owner=!!(u&&!u.isAnonymous);
+      window.ROLE=owner?"owner":"planner";
+      document.documentElement.dataset.role=window.ROLE;
+      const w=document.getElementById("whoami");
+      if(w){
+        const ja=document.documentElement.getAttribute("data-lang")==="ja";
+        w.textContent=owner?(u.email||"").split("@")[0]:(ja?"サインイン":"Sign in");
+        w.classList.toggle("owner",owner);
+      }
+      if(typeof renderAll==="function")renderAll();
+    };
+    onAuthStateChanged(auth,u=>{ if(u)setRole(u); });
+    if(!auth.currentUser) await signInAnonymously(auth);
+
+    const panel=document.getElementById("signin"),
+          msg=document.getElementById("si-msg"),
+          mkNew=document.getElementById("si-new");
+    const shut=()=>{ panel.hidden=true; msg.textContent=""; mkNew.hidden=true; };
+    document.getElementById("whoami").addEventListener("click",()=>{
+      if(window.ROLE==="owner"){ signOut(auth).then(()=>signInAnonymously(auth)); return; }
+      panel.hidden=false; document.getElementById("si-mail").focus();
+    });
+    document.getElementById("si-x").addEventListener("click",shut);
+    panel.addEventListener("click",e=>{ if(e.target===panel)shut(); });
+    const creds=()=>[document.getElementById("si-mail").value.trim(),
+                     document.getElementById("si-pass").value];
+    document.getElementById("si-go").addEventListener("click",async()=>{
+      const [m,pw]=creds();
+      if(!m||!pw){ msg.textContent="Enter an email and a password."; return; }
+      msg.textContent="…"; mkNew.hidden=true;
+      try{ await signInWithEmailAndPassword(auth,m,pw); shut(); }
+      catch(err){
+        if(err.code==="auth/user-not-found"||err.code==="auth/invalid-credential"){
+          msg.textContent="No account matched, or the password was wrong.";
+          mkNew.textContent="Create an account for "+m;
+          mkNew.hidden=false;
+        } else if(err.code==="auth/operation-not-allowed"){
+          msg.textContent="Email sign-in is not switched on in Firebase yet.";
+        } else if(err.code==="auth/weak-password"){
+          msg.textContent="That password is too short — six characters minimum.";
+        } else { msg.textContent=err.code||String(err.message); }
+      }
+    });
+    mkNew.addEventListener("click",async()=>{
+      const [m,pw]=creds(); msg.textContent="…";
+      try{ await createUserWithEmailAndPassword(auth,m,pw); shut(); }
+      catch(err){ msg.textContent=err.code||String(err.message); }
+    });
     const enc=k=>k.replace(/\//g,"%2F"), dec=s=>s.replace(/%2F/g,"/");
     window.__fbWrite=(k,raw)=>{
       setDoc(doc(db,"kv",enc(k)),{v:(raw==null?"null":raw),t:Date.now()}).catch(e=>{
