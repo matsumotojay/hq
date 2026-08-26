@@ -5259,7 +5259,12 @@ var AYST={ok:["Answered","回答済み","--leaf"],her:["Checking","確認中","-
           you:["Needs you","要ご対応","--sky"],gap:["Not answered","未回答","--coral"],
           todo:["Not sent yet","未送信","--grape"],park:["Parked","保留","--ink-faint"]};
 function ayuAnsOf(x){ return load("ayans."+x.id,null); }
-function ayuSeedText(x){ return (x.a||x.aj)?decodeEnt(plainSeed(t(x.a||"",x.aj||""))).trim():""; }
+function ayuSeedText(x){
+  /* only a settled answer belongs in her box. The pending ones were written as
+     status about her — "she is checking" — which reads wrong on her own page. */
+  if(x.st&&x.st!=="ok") return "";
+  return (x.a||x.aj)?decodeEnt(plainSeed(t(x.a||"",x.aj||""))).trim():"";
+}
 function ayuAnsText(x){
   var o=ayuAnsOf(x);
   if(o) return ((o.src==="ja"?o.nj:o.n)||o.n||o.nj||"").trim();
