@@ -148,9 +148,7 @@ a{color:var(--sky)}
 :root[data-role="planner"] .page:not([data-planner-edit]) .sendo,
 :root[data-role="planner"] .page:not([data-planner-edit]) .ph2{display:none!important}
 :root[data-role="planner"] .page:not([data-planner-edit]) .grip{opacity:.25;cursor:default;pointer-events:none}
-:root[data-role="planner"] .page:not([data-planner-edit]) .chip{cursor:default;touch-action:auto;user-select:text}
-:root[data-role="planner"] .page:not([data-planner-edit]) .zone,
-:root[data-role="planner"] .page:not([data-planner-edit]) .seatz{cursor:default}
+
 :root[data-role="planner"] .page:not([data-planner-edit]) input[type=checkbox],
 :root[data-role="planner"] .page:not([data-planner-edit]) input[type=date],
 :root[data-role="planner"] .page:not([data-planner-edit]) input[type=text],
@@ -171,6 +169,10 @@ a{color:var(--sky)}
 .ayatt{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
 .ayatt a{display:inline-flex;align-items:center;gap:.35rem;font-size:.76rem;text-decoration:none;color:var(--ink-soft);background:var(--sunk);border:1.5px solid var(--line-2);border-radius:999px;padding:.24rem .6rem}
 .ayatt a:hover{border-color:var(--accent);color:var(--ink)}
+.qadd-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;border:2px dashed var(--line-2);background:transparent;cursor:pointer;color:var(--ink-faint)}
+.qadd-tile span{font-size:1.2rem;font-weight:800;line-height:1}
+.qadd-tile small{font-size:.62rem;text-align:center;line-height:1.2;padding:0 .2rem}
+.qadd-tile:hover{border-color:var(--accent);color:var(--accent)}
 .aychip{display:inline-block;font-size:.63rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid currentColor;border-radius:999px;padding:.04rem .45rem;margin-left:.45rem;vertical-align:.12em}
 .aypills{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
 .ayp{font:inherit;font-family:var(--disp);font-weight:800;font-size:.76rem;background:var(--card);border:2px solid var(--line-2);border-radius:999px;padding:.4rem .85rem;cursor:pointer}
@@ -5027,13 +5029,9 @@ function armMarquee(scope){
   });
 }
 function armZone(scope,onDrop){
-  /* The planner could pick a name up and carry it across the room before the
-     save was refused. Rejecting the write was never the point — offering the
-     gesture was. So on a board she cannot change, the drag is never armed. */
-  if(window.ROLE==="planner"){
-    var host=document.querySelector(scope);
-    if(host&&!host.closest("[data-planner-edit]")) return;
-  }
+  /* The planner CAN lift a name and move it — that is how she learns what the
+     board does. The write is refused, so it springs back where it came from and
+     a toast says who to ask. Seeing the mechanism is the point. */
   armMarquee(scope);
   var sel=selSet(scope);
   var live={}; document.querySelectorAll(scope+" .chip").forEach(function(c){live[c.dataset.pid]=1;});
@@ -5254,7 +5252,8 @@ var AYST={ok:["Answered","回答済み","--leaf"],her:["Checking","確認中","-
           todo:["Not sent yet","未送信","--grape"],park:["Parked","保留","--ink-faint"]};
 function ayuAnsOf(x){ return load("ayans."+x.id,null); }
 function ayuAnsText(x){ var o=ayuAnsOf(x); if(!o)return ""; return ((o.src==="ja"?o.nj:o.n)||o.n||o.nj||"").trim(); }
-function ayuIsAnswered(x){ return !!ayuAnsText(x); }
+function ayuIsAnswered(x){ var d=load("ayqdone",{}); return !!d[x.id]; }
+function ayuHasText(x){ return !!ayuAnsText(x); }
 function autoGrow(ta){
   var fit=function(){ ta.style.height="auto"; ta.style.height=(ta.scrollHeight+2)+"px"; };
   ta.addEventListener("input",fit); requestAnimationFrame(fit); return fit;
@@ -5281,26 +5280,31 @@ function ayuInbox(){
       if(t2)window.scrollTo(0,Math.max(0,t2.getBoundingClientRect().top+window.pageYOffset-70));});});
   w.appendChild(box);
 }
-var AYU_ROOMS={ay1:[{k:"r1",n:"The first unlisted room",nj:"掲載のないお部屋 1"},
-                    {k:"r2",n:"The second unlisted room",nj:"掲載のないお部屋 2"}]};
+var AYU_ROOMS={
+ ay1:[{k:"r1",n:"The first unlisted room",nj:"掲載のないお部屋 1",name:true},
+      {k:"r2",n:"The second unlisted room",nj:"掲載のないお部屋 2",name:true}],
+ ay8:[{k:"menu",n:"Menus &amp; food photos",nj:"メニュー・お料理の写真"}]};
 function ayuRoomShots(qid){
   var wrap=el("div"); wrap.style.cssText="margin-top:.7rem;display:grid;gap:.6rem";
   AYU_ROOMS[qid].forEach(function(rm){
-    var nk="ayu.roomname."+qid+"."+rm.k;
     var box=el("div");
     box.style.cssText="border:2px dashed var(--line-2);border-radius:12px;padding:.6rem .7rem";
     var lab=el("div");
     lab.style.cssText="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.35rem";
     lab.innerHTML=bi(rm.n,rm.nj);
-    var nm=el("input");
-    nm.value=load(nk,"");
-    nm.placeholder=t("Room name — e.g. Tulip","お部屋の名称（例：チューリップ）");
-    nm.style.cssText="width:100%;font:inherit;font-size:.84rem;padding:.45rem .6rem;margin-bottom:.45rem;"+
-      "border:2px solid var(--line-2);border-radius:10px;background:var(--card);color:var(--ink)";
-    var tmr=null;
-    nm.addEventListener("input",function(){ clearTimeout(tmr);
-      tmr=setTimeout(function(){ save(nk,nm.value); },500); });
-    box.appendChild(lab); box.appendChild(nm);
+    box.appendChild(lab);
+    if(rm.name){
+      var nk="ayu.roomname."+qid+"."+rm.k;
+      var nm=el("input");
+      nm.value=load(nk,"");
+      nm.placeholder=t("Room name — e.g. Tulip","お部屋の名称（例：チューリップ）");
+      nm.style.cssText="width:100%;font:inherit;font-size:.84rem;padding:.45rem .6rem;margin-bottom:.5rem;"+
+        "border:2px solid var(--line-2);border-radius:10px;background:var(--card);color:var(--ink)";
+      var tmr=null;
+      nm.addEventListener("input",function(){ clearTimeout(tmr);
+        tmr=setTimeout(function(){ save(nk,nm.value); },500); });
+      box.appendChild(nm);
+    }
     var key=qImgKey("ayu",qid+rm.k), arr=imgList(key);
     var strip=el("div","qimgs");
     arr.forEach(function(o){
@@ -5309,13 +5313,20 @@ function ayuRoomShots(qid){
       b.querySelector("img").addEventListener("click",function(){ lightbox(imgList(key),o.id); });
       armDanger(b.querySelector(".qx"),function(){ imgDrop(key,o.id); renderAll(); });
       strip.appendChild(b);});
-    var add=el("label","qadd");
-    add.innerHTML='<span>📷 '+t("Upload a photo of this room","このお部屋の写真をアップロード")+'</span>'+
+    /* one dashed tile that always sits after the last photo — pick as many as
+       you like in one go, and it is still there for the next batch */
+    var add=el("label","qth qadd-tile");
+    add.innerHTML='<span>＋</span><small>'+
+      (arr.length?t("Add more","追加する"):t("Add photos","写真を追加"))+'</small>'+
       '<input type="file" accept="image/*" multiple hidden>';
     var inp=add.querySelector("input");
     inp.addEventListener("change",function(){ addImgsTo(key,inp.files,1200,0.7,renderAll); inp.value=""; });
     strip.appendChild(add);
     box.appendChild(strip);
+    var hint=el("div");
+    hint.style.cssText="font-size:.7rem;color:var(--ink-faint);margin-top:.35rem";
+    hint.innerHTML=bi("You can choose several photos at once.","一度に複数枚を選択できます。");
+    box.appendChild(hint);
     wrap.appendChild(box);
   });
   return wrap;
@@ -5334,7 +5345,7 @@ function ayuAnswerBox(x){
   autoGrow(ta);
   var row=el("div"); row.style.cssText="display:flex;align-items:center;gap:.5rem;margin-top:.45rem;flex-wrap:wrap";
   var btn=el("button","btn"); btn.style.margin="0";
-  btn.innerHTML=answered?bi("Update","更新する"):bi("Send","送信");
+  btn.innerHTML=answered?bi("Update","更新する"):bi("Submit","送信する");
   var note=el("span"); note.style.cssText="font-size:.72rem;color:var(--ink-faint)";
   btn.addEventListener("click",function(){
     var v=ta.value.trim();
@@ -5343,9 +5354,29 @@ function ayuAnswerBox(x){
     save("ayans."+x.id,{n:pp.n,nj:pp.nj,src:pp.src,st:"ok"});
     var m=load("ayqdone",{}); m[x.id]=true; save("ayqdone",m);
     renderAll();
-    if(typeof toast==="function")toast(t("Answer sent","回答を送信しました"));
+    if(typeof toast==="function")toast(t("Submitted","送信しました"));
   });
-  row.appendChild(btn); row.appendChild(note);
+  row.appendChild(btn);
+  /* every state has a way back: undo the submit, or clear the lot */
+  if(answered){
+    var un=el("button","btn"); un.style.margin="0";
+    un.innerHTML=bi("Undo submit","送信を取り消す");
+    un.addEventListener("click",function(){
+      var m=load("ayqdone",{}); delete m[x.id]; save("ayqdone",m); renderAll();
+      if(typeof toast==="function")toast(t("Back to unanswered — your text is still here","未回答に戻しました。入力内容は残っています"));
+    });
+    row.appendChild(un);
+  }
+  if(cur){
+    var cl=el("button","btn danger"); cl.style.margin="0";
+    cl.innerHTML=bi("Clear","消去");
+    armDanger(cl,function(){
+      save("ayans."+x.id,null);
+      var m=load("ayqdone",{}); delete m[x.id]; save("ayqdone",m); renderAll();
+    });
+    row.appendChild(cl);
+  }
+  row.appendChild(note);
   wrap.appendChild(lbl); wrap.appendChild(ta); wrap.appendChild(row);
   if(AYU_ROOMS[x.id]) wrap.appendChild(ayuRoomShots(x.id));
   return wrap;
@@ -5360,24 +5391,21 @@ function ayuStatusChip(x){
 function renderAyuko(){
   var w=document.getElementById("ayuko"); if(!w) return; w.innerHTML="";
   var done=load("ayqdone",{});
-  var list=ayList().slice().sort(function(p,q){        /* answered sink to the bottom */
-    return (ayuIsAnswered(p)?1:0)-(ayuIsAnswered(q)?1:0);
-  });
+  var list=ayList();          /* order never changes — a row moving under her thumb is worse than a tidy list */
   list.forEach(function(x){
     var answered=ayuIsAnswered(x);
     var d=el("div","tk ayq"+(answered?" ansd":""));
-    d.innerHTML='<input type="checkbox" '+(answered?"checked":"")+(answered?"":" disabled")+
-      ' title="'+t("ticks itself once you send an answer","回答を送信すると自動でチェックされます")+'">'+
+    d.innerHTML='<input type="checkbox" '+(answered?"checked":"")+
+      ' title="'+t("tick when this is settled — you can untick it again","解決したらチェック（解除も可能です）")+'">'+
       '<div class="tk-b"><div class="tk-n" style="font-weight:600">'+(x.mine?biUser({n:x.q,nj:x.qj,src:x.src}):bi(x.q,x.qj))+
       ayuStatusChip(x)+(answered?'<span class="dtag ansd-tag">✓ '+bi("Answered","回答済み")+'</span>':'')+'</div></div>'+
       (window.ROLE==="planner"?'':'<button class="del" data-dq="'+x.id+'">✕</button>');
     d.querySelector(".tk-b").appendChild(ayuAnswerBox(x));
     var cb=d.querySelector("input");
     cb.addEventListener("change",function(e){
-      if(!ayuIsAnswered(x)){ e.target.checked=false;
-        if(typeof toast==="function")toast(t("Write an answer first, then press Send","先にご回答を入力し、送信してください"));
-        return; }
-      var m=load("ayqdone",{});m[x.id]=e.target.checked;save("ayqdone",m);renderAll();});
+      var m=load("ayqdone",{});
+      if(e.target.checked) m[x.id]=true; else delete m[x.id];
+      save("ayqdone",m);renderAll();});
     if(d.querySelector("[data-dq]"))armDanger(d.querySelector("[data-dq]"),function(){
       if(x.mine) save("ayq",load("ayq",[]).filter(function(y){return y.id!==x.id;}));
       else { var dl=load("ayqdel",{});dl[x.id]=1;save("ayqdel",dl); }
