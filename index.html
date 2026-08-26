@@ -1558,18 +1558,15 @@ var PHOTOG=[
  {id:"nom",n:"Nom-san",nj:"のむさん",amt:120000,link:"https://www.instagram.com/nom.photo/",linkl:"Instagram",linkj:"インスタグラム",front:true,
   f:["<b>¥130,000, or ¥120,000 if he can post on social media</b>","Shot Wataru&rsquo;s wedding","Lives in Asahikawa","Covers getting-ready, first look, ceremony and reception <b>to the very end</b>","Staying overnight at Lake Toya, so <b>no cut-off time</b>","Delivers 300–600 photos","⚠️ Works at a nursery — <b>won&rsquo;t know until end of March</b> whether 5 June is free"],
   fj:["<b>130,000円、SNS掲載OKなら120,000円</b>","ワタルさんの結婚式のカメラマン","旭川在住","支度・ファーストミート・挙式・披露宴の<b>最後まで</b>撮影","当日は洞爺湖に宿泊予定のため<b>終了時間の制限なし</b>","納品300〜600枚","⚠️ 保育園勤務のため<b>3月末まで</b>6/5の可否がわからない"],
-  hik:"Hikaru&rsquo;s pick. Because his date isn&rsquo;t confirmed until March, she wants backup candidates lined up.",
-  hikj:"光の希望。3月末まで確定しないため、他の候補も用意しておきたいとのこと。"},
+  hik:"",hikj:""},
  {id:"takayo",n:"Takayo Fujie",nj:"藤江 貴代",amt:56000,link:"https://takayofujie.myportfolio.com/wedding",linkl:"Portfolio",linkj:"ポートフォリオ",
   f:["Photography only — cheapest by a wide margin","Introduced by Ayuko via LINE","No package details given — worth asking what hours are covered"],
   fj:["撮影のみ・圧倒的に安価","鮎子さんがLINEで紹介","パッケージ内容未確認・撮影時間の確認を推奨"],
-  hik:"Not quite Hikaru&rsquo;s style — the work didn&rsquo;t land for her the way Nom-san&rsquo;s does. Keeping as a backup on price.",
-  hikj:"光の好みとは少し方向性が違うとのこと。価格面でバックアップとして保持。"},
+  hik:"",hikj:""},
  {id:"niki",n:"Ayako Niki",nj:"ニキ 彩子",amt:180000,link:"https://instagram.com/247nikiimages",linkl:"Instagram",linkj:"インスタグラム",
   f:["A <b>package</b>, not just a shooting fee","Hair &amp; make-up included, worth ¥38,000 alone","Up to 6 hours of Lakehouse grounds access","Option to shoot at Ukimido, 5 minutes away","Day use of the Lavender Suite as a prep room"],
   fj:["撮影料ではなく<b>パッケージ</b>","下田真紀子さんのヘアメイク込み（単体38,000円相当）","レイクハウス敷地を最大6時間利用","浮見堂（車5分）での撮影オプション","ラベンダースイートを支度部屋としてデイユース"],
-  hik:"Also not quite her style. She is wondering whether it is worth seeing a few more photographers before settling.",
-  hikj:"こちらも光の好みとは少し方向性が違うとのこと。決める前に他のカメラマンも何名か拝見したいと考えています。"}];
+  hik:"",hikj:""}];
 
 var CHOICES={
  drinks:{def:"jp",opts:[
@@ -1735,7 +1732,7 @@ var TASKS=[
  /* ⑦ Photography & Videography */
  {id:"q1",  c:7,o:"b",n:"Decide on video, or drop it",nj:"映像を手配するか決める",due:"2026-12-01",d:"¥280,000 with no vendor attached. Video is on her spend-here list",dj:"280,000円・業者未定。映像は光が「お金をかける」側に挙げた項目"},
  {id:"t702",c:7,o:"b",n:"Videographer arrangements",nj:"ビデオグラファー手配",due:"2027-01-15",d:"",dj:""},
- {id:"p9",  c:7,o:"b",n:"Pick the photographer",nj:"カメラマンを決める",due:"2027-03-31",d:"Nom-san ¥120,000 is Hikaru&rsquo;s pick but unconfirmed until end of March. Takayo ¥56,000 and Niki ¥180,000 are backups, though neither is quite her style",dj:"のむさん120,000円が光の希望だが3月末まで確定せず。Takayo 56,000円とNiki 180,000円は控えだが光の評価は低い"},
+ {id:"p9",  c:7,o:"b",n:"Pick the photographer",nj:"カメラマンを決める",due:"2027-03-31",d:"Nom-san ¥120,000 is the front-runner but unconfirmed until end of March. Takayo ¥56,000 and Niki ¥180,000 are the other two — compare the portfolios and decide together",dj:"のむさん120,000円が光の希望だが3月末まで確定せず。Takayo 56,000円とNiki 180,000円は控えだが光の評価は低い"},
  {id:"t701",c:7,o:"b",n:"Photographer arrangements",nj:"カメラマン手配",due:"2027-04-01",d:"",dj:""},
  {id:"t703",c:7,o:"b",n:"Shot list / photography brief",nj:"撮影指示書作成",due:"2027-04-15",d:"",dj:""},
  {id:"t705",c:7,o:"b",n:"Photo spot planning",nj:"フォトスポット検討",due:"2027-04-15",d:"",dj:""},
@@ -3485,7 +3482,7 @@ var CUTS=[
  ["Send invitations digitally","招待状をデジタルに",60000,"You already built the invitation website. Printed stationery duplicates it.","招待サイトは既に完成しています。紙の招待状は重複です。"],
  ["Merge welcome bags into the souvenir sweets","ウェルカムギフトを引き菓子に統合",75000,"Two gifts to the same guest. One good Hokkaido gift lands better than two thin ones.","同じゲストへの贈り物が2つ。北海道らしい良いものを1つの方が印象に残ります。"],
  ["Skip the welcome dinner","前夜の会食をやめる",150000,"Guests arriving Friday can eat in Toyako on their own. Optional by design.","金曜到着のゲストは各自で洞爺の店へ。もともと任意の項目です。"],
- ["Takayo instead of Nom-san","カメラマンをTakayoさんに",64000,"Cheapest option, but the style is not Hikaru&rsquo;s favourite — this is a real trade-off, not a free saving.","最安ですが、作品の方向性は光の好みとは少し違います。無料の削減ではなく明確なトレードオフです。"],
+ ["Takayo instead of Nom-san","カメラマンをTakayoさんに",64000,"Cheapest option. Compare the portfolios first — this is a real trade-off, not a free saving.","最安の選択肢。まず作品を見比べてください。無料の削減ではなく明確なトレードオフです。"],
  ["Aroi instead of Teranishi","ケータリングをAroiに",555660,"By far the biggest single saving available — and Hikaru&rsquo;s least favourite. Worth deciding on merit, not price alone.","単独で最大の削減効果。ただし光の第3希望です。価格だけで決めない方がよい項目。"],
  ["No videographer","映像なし",280000,"Higuchi-san is Hikaru&rsquo;s pick and video is one of the two things she said she wants to spend on. Cut this last.","ヒグチさんは光の希望で、映像は光が「お金をかけたい」と明言した2つのうちの1つ。最後に検討すべき項目です。"]];
 
