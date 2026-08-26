@@ -671,6 +671,7 @@ a{color:var(--sky)}
       <button type="button" id="si-x" class="btn"><span lang-en>Cancel</span><span lang-ja>キャンセル</span></button>
     </div>
     <button type="button" id="si-new" class="si-link" hidden></button>
+    <button type="button" id="si-exit" class="si-link" hidden><span lang-en>Leave planner view — I am Jay or Hikaru</span><span lang-ja>プランナー表示を解除（ジェイ・光用）</span></button>
   </div>
 </div>
 
@@ -5292,7 +5293,9 @@ if(window.FBCONFIG){
          anything else                    -> owner    (today's behaviour)
        Once Jay and Hikaru have accounts, the last line becomes planner and
        the URL flag stops mattering. */
-    if(new URLSearchParams(location.search).has("planner")) localStorage.setItem("lt4.plannerlink","1");
+    const qs=new URLSearchParams(location.search);
+    if(qs.has("owner")) localStorage.removeItem("lt4.plannerlink");
+    if(qs.has("planner")) localStorage.setItem("lt4.plannerlink","1");
     const plannerLink=localStorage.getItem("lt4.plannerlink")==="1";
     const setRole=u=>{
       const signedIn=!!(u&&!u.isAnonymous);
@@ -5316,9 +5319,11 @@ if(window.FBCONFIG){
     const shut=()=>{ panel.hidden=true; msg.textContent=""; mkNew.hidden=true; };
     document.getElementById("whoami").addEventListener("click",()=>{
       if(window.ROLE==="owner"){ signOut(auth).then(()=>signInAnonymously(auth)); return; }
-      panel.hidden=false; document.getElementById("si-mail").focus();
+      panel.hidden=false; exitBtn.hidden=!plannerLink; document.getElementById("si-mail").focus();
     });
     document.getElementById("si-x").addEventListener("click",shut);
+    const exitBtn=document.getElementById("si-exit");
+    exitBtn.addEventListener("click",()=>{ localStorage.removeItem("lt4.plannerlink"); location.replace(location.pathname); });
     panel.addEventListener("click",e=>{ if(e.target===panel)shut(); });
     const creds=()=>[document.getElementById("si-mail").value.trim(),
                      document.getElementById("si-pass").value];
