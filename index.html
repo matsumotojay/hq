@@ -1188,7 +1188,7 @@ var UNDO=[];
    who is not signed in may only write inside her own namespace — the UI hides
    the rest anyway, this is the belt to that pair of braces, and the Firestore
    rules are the third. */
-var PLANNER_WRITES=/^(ayu\.|ayans\.|ayqdone$|ayqdel$|asked$|askedj$|hans\.|jans\.|mytasks$|feed$|feedblob\.|qimg\.ayu\.|imgblob\.|tdesc$|tdone$)/;
+var PLANNER_WRITES=/^(ayu\.|ayans\.|ayqdone$|ayqdel$|asked$|askedj$|hans\.|jans\.|mytasks$|ttrash$|feed$|feedblob\.|qimg\.ayu\.|imgblob\.|tdesc$|tdone$)/;
 function canWrite(k){
   if(window.ROLE!=="planner")return true;
   if(SYNCSKIP.test(k))return true;              /* view prefs never leave the device */
@@ -1893,7 +1893,7 @@ function taskCat(tk){ var m=load("tcat",{}); return m[tk.id]!=null?m[tk.id]:tk.c
 function setTaskCat(id,v){ var m=load("tcat",{});m[id]=v;save("tcat",m);renderAll(); }
 function myTasks(){ return load("mytasks",[]).map(function(x,i){
   var p=biNorm({n:x.n,nj:x.nj,src:x.src});
-  return {id:x.id||("my"+i),c:(x.c==null?0:x.c),o:x.o||"b",n:p.n,nj:p.nj,src:p.src,due:x.due||"",d:"",dj:"",mine:true}; }); }
+  return {id:x.id||("my"+i),c:(x.c==null?0:x.c),o:x.o||"b",n:p.n,nj:p.nj,src:p.src,due:x.due||"",d:"",dj:"",mine:true,by:x.by||""}; }); }
 function allTasks(){ return TASKS.concat(myTasks()); }
 function daysTo(iso){ if(!iso) return null;
   var p=iso.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]),n=new Date();
@@ -2011,7 +2011,7 @@ function taskRow(tk,showCat){
         (done?'<button class="arch">'+bi("File it away","完了リストへ")+'</button>':'')+
       '</div>'+
     '</div>'+
-    (tk.mine?'<button class="del" data-delmy="'+tk.id+'">✕</button>':'');
+    ((tk.mine&&(window.ROLE!=="planner"||tk.by==="a"))?'<button class="del" data-delmy="'+tk.id+'">✕</button>':'');
   d.querySelector(".tkchk").addEventListener("change",function(e){
     setTaskDone(tk.id,e.target.checked); renderAll(); });
   d.querySelector("[data-own]").addEventListener("click",function(){
@@ -2038,7 +2038,9 @@ function taskRow(tk,showCat){
     mine=mine.filter(function(y){ if(y.id===tk.id){gone=y;return false;} return true; });
     if(gone){ var tr=load("ttrash",[]); tr.push(gone); save("ttrash",tr); }
     save("mytasks",mine); renderAll();
-    if(typeof toast==="function") toast(t("Moved to the trash — find it under 🗑 on Home","ゴミ箱へ移動しました（ホームの🗑）")); });
+    if(typeof toast==="function") toast(window.ROLE==="planner"
+      ? t("Deleted","削除しました")
+      : t("Deleted — recoverable from 🗑 on Home","削除しました（ホームの🗑から復元できます）"),3500); });
   return d;
 }
 
@@ -4177,7 +4179,7 @@ function renderAyuNotes(){
    Left: what Jay and Hikaru have handed her. Right: what she has asked of
    them. Three rows each, then Show more in threes, and the two columns hold
    the same height so the page does not stagger. */
-function ayuMade(){ return load("mytasks",[]).filter(function(x){ return x.by==="a"; }); }
+function ayuMade(){ return myTasks().filter(function(x){ return x.by==="a"; }); }
 function ayuOpenN(k,d){ var o=load("ayuopen",{}); return o[k]||d; }
 function ayuMoreBtn(key,total,shown){
   if(total<=shown) {
