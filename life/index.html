@@ -308,6 +308,8 @@
   .legend .sw{width:10px;height:10px;border-radius:3px;border:1px solid var(--line);display:inline-block}
   .legend .sw.new{background:var(--surface2)}
   .legend .sw.emailed{background:var(--owed-soft);border-color:var(--owed)}
+  .bookcube.booked{background:var(--good-soft);border-color:var(--good)}
+  .bookcube.booked .bn,.bookcube.booked .bd,.bookcube.booked .bp{color:var(--good)}
   .legend .sw.confirmed{background:var(--good-soft);border-color:var(--good)}
   .legend .sw.sel{background:var(--pers);border-color:var(--pers)}
   .pickgrid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;align-items:stretch}
@@ -2672,12 +2674,12 @@ function bulkDraft(fest,from,to){
       m+='ALREADY PITCHED FOR '+fest.toUpperCase()+':\n';
       dupe.forEach(function(e){
         const r=sentForFest(e,fest);
-        const st=sendState(e);
-        m+='  '+e+'\n     '+(st==='sent'?'SENT (confirmed in Gmail)':'drafted, NOT confirmed sent')
-          +' on '+r.when+' about '+r.artists.join(', ')+'\n';
+        m+='  '+e+'\n     emailed on '+r.when+' about '+r.artists.join(', ')+'\n';
       });
-      m+='\nAnything marked "drafted" may never have left your outbox — check Gmail.\n'
-        +'A confirmed send going out twice is what reads as automated.\n\n';
+      /* Jay's rule (2026-08-26): opening a draft IS sending. Yellow means emailed, and
+         un-marking is his job if he abandons one. The "may not have left your outbox"
+         hedge was noise — the useful part is only that this address was already pitched. */
+      m+='\nWriting to the same person twice about one festival is what reads as automated.\n\n';
     }
     if(other.length){
       m+='WRITTEN TO BEFORE, BUT ABOUT A DIFFERENT FESTIVAL:\n';
@@ -2847,8 +2849,7 @@ function chipFor(n){
         const fs=Object.keys(r.fests||{}).map(f=>f+' '+r.fests[f].when+' ('+r.fests[f].artists.join(', ')+')');
         const confirmed=r.status==='sent';
         return '<i class="sent'+(confirmed?' ok':'')+'" title="'
-          +(confirmed?'SENT (confirmed in Gmail'+(r.sentOn?' '+r.sentOn:'')+') to '
-                     :'drafted but NOT confirmed sent \u2014 ')
+          +'Emailed '+(confirmed?(r.sentOn||r.last||''):(r.last||''))+' \u2014 '
           +esc(e)+' \u2014 '+esc(fs.join(' | '))+'">'+(confirmed?'\u2709':'\u270e')+'</i>';
       })()
     +(f?'<i class="fc">'+fmtFollowers(f)+'</i>':'')
@@ -2860,7 +2861,7 @@ function legendHTML(artists){
   return '<div class="legend">'
     +'<span><i class="sw new"></i>not contacted '+counts['new']+'</span>'
     +'<span><i class="sw emailed"></i>emailed '+counts['emailed']+'</span>'
-    +'<span><i class="sw confirmed"></i>confirmed '+counts['confirmed']+'</span>'
+    +(counts['confirmed']?'<span><i class="sw confirmed"></i>booked '+counts['confirmed']+'</span>':'')
     +'<span><i class="sw sel"></i>selected</span></div>';
 }
 function pickBarHTML(fest,artists,from,to){
@@ -3133,9 +3134,18 @@ function renderGroups(){
       fest.innerHTML='<div class="secthead"><h2>🎪 Festivals</h2><span class="ct">'+keys.length+'</span></div>'
         +'<div class="card">'+(keys.length?keys.map(function(k){
           const rows=g[k], dates=rows.map(x=>x.date).filter(Boolean).sort();
-          const booked=rows.filter(x=>x.status==='booked').length;
-          const asked=rows.filter(x=>x.status==='emailed'||x.status==='replied').length;
-          const open=rows.length-booked-asked;
+          /* Count the LINEUP where one exists, not the outreach rows carrying this
+             event. Marking from the lineup grid leaves event:'' so 25 of 26 emailed
+             acts were invisible and Lost Lands read "1 emailed" while the grid showed
+             24 yellow. The chips are the truth; these chips must agree with them. */
+          const lu=lineupFor(k);
+          const pool=(lu&&lu.length)?lu:rows.map(x=>x.name);
+          let booked=0, asked=0;
+          pool.forEach(function(nm){
+            const st=artistStatus(nm);
+            if(st==='confirmed')booked++; else if(st==='emailed')asked++;
+          });
+          const open=Math.max(0,pool.length-booked-asked);
           const fm=(state.festMeta||{})[k];
           return '<details class="grp"'+(/lost lands/i.test(k)?' open':'')+'><summary>'
             +'<span class="gname">'+esc(k)+'</span>'
@@ -3195,7 +3205,7 @@ function renderLostLands(){
       +'</div><div class="llsub">Tap to open, then tap again to zoom in and read the small print. No per-day posters published yet — I’ll add them when they drop.</div>';
   }
   h+='<div class="llsec">Already booked</div>';
-  h+=booked.length?'<div class="bookgrid">'+booked.map(e=>'<div class="bookcube">'
+  h+=booked.length?'<div class="bookgrid">'+booked.map(e=>'<div class="bookcube booked">'
       +'<div class="bn">'+esc(e.client)+'</div>'
       +'<div class="bd">'+fmtDate(e.date)+(e.start?' · '+fmtTime(e.start):'')+'</div>'
       +(e.gross>0?'<div class="bp">'+fmt$(e.gross)+'</div>':'')
