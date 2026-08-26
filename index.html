@@ -5363,12 +5363,36 @@ function ayuRoomShots(qid){
   });
   return wrap;
 }
+function ayuQNote(x){
+  var cur=load("ayqnote."+x.id,""), owner=(window.ROLE!=="planner");
+  if(!cur&&!owner) return null;
+  var w=el("div");
+  w.style.cssText="margin-top:.5rem;padding:.5rem .7rem;border-left:3px solid var(--sky);"+
+    "background:color-mix(in srgb,var(--sky) 8%,transparent);border-radius:0 10px 10px 0";
+  var lab=el("div");
+  lab.style.cssText="font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--sky);margin-bottom:.2rem";
+  lab.innerHTML=bi("Note from Jay &amp; Hikaru","ジェイと光より");
+  w.appendChild(lab);
+  var body=el("div","qnbody");
+  body.style.cssText="font-size:.83rem;line-height:1.6"+(cur?"":";color:var(--ink-faint)");
+  body.textContent=cur||t("(add a note)","（メモを追加）");
+  w.appendChild(body);
+  if(owner){
+    var pen=el("button","bul-edit",t("edit","編集"));
+    pen.style.marginLeft=".4rem";
+    pen.addEventListener("click",function(){
+      inlineEdit(body,cur,function(v){ save("ayqnote."+x.id,v.trim()); renderAll(); },true);});
+    lab.appendChild(pen);
+  }
+  return w;
+}
 function ayuAnswerBox(x){
   var wrap=el("div"); wrap.style.cssText="margin-top:.6rem";
   var answered=ayuIsAnswered(x), cur=ayuAnsText(x);
+  var qn=ayuQNote(x); if(qn) wrap.appendChild(qn);
   var lbl=el("div");
-  lbl.style.cssText="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.28rem";
-  lbl.innerHTML=bi(answered?"Your answer":"Your answer","ご回答");
+  lbl.style.cssText="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.28rem;margin-top:.55rem";
+  lbl.innerHTML=bi("Ayuko&rsquo;s answer","鮎子さんのご回答");
   var ta=el("textarea");
   ta.value=cur;                                   /* blank unless she has written one */
   ta.placeholder=t("Type your answer here…","こちらにご回答を入力してください…");
