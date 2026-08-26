@@ -1196,7 +1196,8 @@ function canWrite(k){
 }
 function save(k,v){try{
   if(!canWrite(k)){
-    if(typeof toast==="function")toast(t("View only — ask Jay or Hikaru to change this","閲覧のみ — 変更はジェイか光にご依頼ください"));
+    if(typeof toast==="function")toast(t("View only — ask Jay or Hikaru to change this","閲覧のみ — 変更はジェイか光にご依頼ください"),4500);
+    if(typeof renderAll==="function") setTimeout(renderAll,0);
     return;
   }
   if(k!=="lastedit"&&k!=="tab"&&k!=="moreopen"){
@@ -5210,7 +5211,6 @@ var AYUKOQ=[
  {id:"ay3",q:"Wedding-day transport. We&rsquo;re renting the van for a round trip from the airport — the day before the wedding and the day after — but the wedding day itself is still open. All our guests are staying within about 10–15 minutes of the Lakehouse. Could we hire a vehicle to collect everyone from their accommodation and bring them to the venue before the ceremony? Then for the journey home: anyone who wants to leave earlier, from around 19:30, can take a taxi. But for guests leaving later, roughly between 21:00 and midnight, could the van do a run to drop people back at their accommodation? One trip would be enough rather than several. Could we have an estimate for hiring the van on the wedding day itself?",qj:"挙式当日の送迎についてご相談です。空港との往復（式の前日と翌日）はバンをお借りする予定ですが、当日の移動が未定です。ゲストは全員レイクハウスから10〜15分圏内に宿泊しております。<br>①挙式前に、各宿泊先を回って会場までお送りいただく車両を手配することは可能でしょうか。<br>②お帰りについては、19:30頃から早めに戻られる方はタクシーをご利用いただく想定です。一方で21:00〜24:00頃に戻られる方について、バンで各宿泊先までお送りいただくことは可能でしょうか。複数便ではなく1便で構いません。<br>挙式当日にバンを手配する場合のお見積もりをいただけますでしょうか。"},
  {id:"ay8",q:"Could you share the menu for each catering option? Photos would be wonderful if they have them.",qj:"各ケータリングのメニュー内容をご共有いただけますでしょうか。お写真があれば嬉しいです。",st:"you",a:"There is no fixed menu — it is built around what you ask for. She already has Hokkaido specialities lined up: <b>scallops and wagyu</b>. <b>She is waiting on your list of anything else to add.</b>",aj:"決まったメニューはなく、こちらの希望に合わせて組み立てる形とのこと。北海道の名物として<b>ホタテと和牛</b>は既に押さえてくださっています。<b>他に加えたいものがあれば返信が必要です。</b>"},
  {id:"ay9",q:"Santo&rsquo;s staff fees — what is charged on top of the ¥15,000 a head? Teranishi&rsquo;s quote lists ¥450,000 for kitchen car, chef, cooks, service staff, sommelier and travel, so we&rsquo;d like to compare on the same terms.",qj:"Santoさんについて、お一人様15,000円に加えてかかる費用（スタッフ・出張費など）を教えてください。寺西さんの見積もりでは諸経費が450,000円（キッチンカー・シェフ・調理／サービススタッフ・ソムリエ・交通費）でしたので、同じ条件で比較したく存じます。",st:"ok",a:"<b>Nothing on top.</b> The ¥15,000 a head is all-inclusive — no staff and no travel fees — and <b>10% consumption tax</b> is the only addition. At 50 that is <b>¥825,000</b>.",aj:"<b>追加費用なし。</b>お一人様15,000円がオールインクルーシブで、スタッフ費用・出張費はかかりません。追加は<b>消費税10%</b>のみ。50名なら<b>825,000円</b>です。"},
- {id:"ay16",q:"For the outsourced sushi and ramen — we&rsquo;re thinking sushi for all 50, and ramen for around 30, since we don&rsquo;t expect everyone to have a bowl. We&rsquo;re imagining the ramen as self-serve. Roughly what would that come to? And could you confirm whether Teranishi-san is able to provide either of them himself?",qj:"外部手配の寿司とラーメンについて、寿司は50名分、ラーメンは全員は召し上がらない想定で30食程度を考えております。ラーメンはセルフサービス形式をイメージしております。概算でいくらほどになりますでしょうか。また、寺西さんご自身で対応可能かどうかもあわせて教えていただけますでしょうか。",st:"park",a:"<b>Parked — not chasing this.</b> Never asked, and Jay is happy for the wedding to go ahead without sushi or ramen. Left here in case it comes back.",aj:"<b>保留 — 追いかけません。</b>未送信のままですが、ジェイは寿司・ラーメンなしでも問題ないとのこと。復活する場合に備えて残してあります。"},
  {id:"ay10",q:"For the outdoor dining area under the tent — how many tables fit lengthwise and widthwise? We&rsquo;re planning the arrangement in the attached picture: four rows of two tables joined end-to-end, seven seats each. Does that look workable to you, and will it fit under the tent?",qj:"テント下のお食事スペースについて、縦・横それぞれテーブルが何卓入りますでしょうか。添付の図のような配置を考えております（テーブル2台を縦に連結した列を4列、各テーブル7席）。この配置で問題なさそうでしょうか、またテント内に収まりますでしょうか。",st:"you",a:"<b>The tent is 10m × 15m (150m²), and the configuration works.</b> The four rows sit across the 10m width and stack along the 15m length — about 39m² of the 150m², leaving a 10m × 4m strip clear at one end. <b>She has asked two things back:</b> do you want a dance floor, and she needs a buffet station — she suggests the corner near table 2.",aj:"<b>テントは10m×15m（150㎡）、この配置で問題なし。</b>4列を10m幅の方向に並べ、15mの長さ方向に重ねる形です。ダイニング部分は150㎡のうち約39㎡で、片側に10m×4mのスペースが残ります。<b>鮎子さんから2点ご質問:</b> ダンスフロアは必要か、そしてビュッフェ台の設置場所（2番テーブル横の角を提案）。"},
  {id:"ay17",q:"Could we see Teranishi&rsquo;s full drink menu? The quote lists sparkling, red and white wine and soft drinks, but we&rsquo;d like to see everything that&rsquo;s included.",qj:"寺西さんのドリンクメニューを一覧で拝見できますでしょうか。見積書にはスパークリング・赤・白ワイン・ソフトドリンクとございますが、含まれる内容をすべて確認したく存じます。",st:"her",a:"Checking with Teranishi-san.",aj:"寺西さんに確認中とのこと。"},
  {id:"ay18",q:"We&rsquo;re planning for Teranishi&rsquo;s drink service to begin at 16:30. As quoted that covers 120 minutes, to 18:30 — could it run through to 19:30 instead? What would that additional hour cost if it were drinks only?",qj:"寺西さんのドリンクサービスは16:30開始を予定しております。ご提示の120分では18:30までとなりますが、19:30まで延長していただくことは可能でしょうか。ドリンクのみの延長とした場合、追加1時間の料金を教えていただけますでしょうか。",st:"todo",a:"<b>This one never went out</b> — the email of 17 Aug 2026 asked only for Teranishi&rsquo;s drink menu, not for the extension to 19:30. Add it to the next message.",aj:"<b>この質問は未送信です</b> — 2026年8月17日のメールでは寺西さんのドリンクメニューのみお伺いし、19:30への延長は含めていませんでした。次回のメールに追加しましょう。"},
@@ -5251,9 +5251,32 @@ var AYST={ok:["Answered","回答済み","--leaf"],her:["Checking","確認中","-
           you:["Needs you","要ご対応","--sky"],gap:["Not answered","未回答","--coral"],
           todo:["Not sent yet","未送信","--grape"],park:["Parked","保留","--ink-faint"]};
 function ayuAnsOf(x){ return load("ayans."+x.id,null); }
-function ayuAnsText(x){ var o=ayuAnsOf(x); if(!o)return ""; return ((o.src==="ja"?o.nj:o.n)||o.n||o.nj||"").trim(); }
-function ayuIsAnswered(x){ var d=load("ayqdone",{}); return !!d[x.id]; }
+function ayuSeedText(x){ return (x.a||x.aj)?decodeEnt(plainSeed(t(x.a||"",x.aj||""))).trim():""; }
+function ayuAnsText(x){
+  var o=ayuAnsOf(x);
+  if(o) return ((o.src==="ja"?o.nj:o.n)||o.n||o.nj||"").trim();
+  return ayuSeedText(x);                     /* what she has already told us */
+}
+function ayuIsAnswered(x){
+  var d=load("ayqdone",{});
+  if(Object.prototype.hasOwnProperty.call(d,x.id)) return !!d[x.id];
+  var ov=ayuAnsOf(x);
+  return !ov && x.st==="ok" && !!ayuSeedText(x);   /* already settled before she ever opened this */
+}
 function ayuHasText(x){ return !!ayuAnsText(x); }
+/* a question counts as answerable only once everything it asks for is there */
+function ayuComplete(x){
+  if(!ayuAnsText(x)) return {ok:false,why:bi("Write an answer first","先にご回答を入力してください")};
+  var groups=(AYU_ROOMS[x.id]||[]).filter(function(g){return g.req;});
+  for(var i=0;i<groups.length;i++){
+    var g=groups[i];
+    if(g.name && !String(load("ayu.roomname."+x.id+"."+g.k,"")).trim())
+      return {ok:false,why:bi("Add the room name for "+g.n.replace(/&amp;/g,"&"),"「"+g.nj+"」の名称をご入力ください")};
+    if(!imgList(qImgKey("ayu",x.id+g.k)).length)
+      return {ok:false,why:bi("Add a photo for "+g.n.replace(/&amp;/g,"&"),"「"+g.nj+"」の写真をご追加ください")};
+  }
+  return {ok:true};
+}
 function autoGrow(ta){
   var fit=function(){ ta.style.height="auto"; ta.style.height=(ta.scrollHeight+2)+"px"; };
   ta.addEventListener("input",fit); requestAnimationFrame(fit); return fit;
@@ -5281,9 +5304,10 @@ function ayuInbox(){
   w.appendChild(box);
 }
 var AYU_ROOMS={
- ay1:[{k:"r1",n:"The first unlisted room",nj:"掲載のないお部屋 1",name:true},
-      {k:"r2",n:"The second unlisted room",nj:"掲載のないお部屋 2",name:true}],
- ay8:[{k:"menu",n:"Menus &amp; food photos",nj:"メニュー・お料理の写真"}]};
+ ay1:[{k:"r1",n:"The first unlisted room",nj:"掲載のないお部屋 1",name:true,req:true},
+      {k:"r2",n:"The second unlisted room",nj:"掲載のないお部屋 2",name:true,req:true}],
+ ay8:[{k:"menu",n:"Menus &amp; food photos",nj:"メニュー・お料理の写真"}],
+ ay17:[{k:"drinks",n:"The drink list",nj:"ドリンクメニュー"}]};
 function ayuRoomShots(qid){
   var wrap=el("div"); wrap.style.cssText="margin-top:.7rem;display:grid;gap:.6rem";
   AYU_ROOMS[qid].forEach(function(rm){
@@ -5350,6 +5374,10 @@ function ayuAnswerBox(x){
   btn.addEventListener("click",function(){
     var v=ta.value.trim();
     if(!v){ note.innerHTML=bi("Write something first","内容を入力してください"); return; }
+    var pp0=biSet(null,v);
+    save("ayans."+x.id,{n:pp0.n,nj:pp0.nj,src:pp0.src,st:"ok"});
+    var chk=ayuComplete(x);
+    if(!chk.ok){ note.innerHTML=chk.why; renderAll(); return; }
     var pp=biSet(null,v);
     save("ayans."+x.id,{n:pp.n,nj:pp.nj,src:pp.src,st:"ok"});
     var m=load("ayqdone",{}); m[x.id]=true; save("ayqdone",m);
@@ -5368,10 +5396,10 @@ function ayuAnswerBox(x){
     row.appendChild(un);
   }
   if(cur){
-    var cl=el("button","btn danger"); cl.style.margin="0";
+    var cl=el("button","btn"); cl.style.margin="0";
     cl.innerHTML=bi("Clear","消去");
-    armDanger(cl,function(){
-      save("ayans."+x.id,null);
+    cl.addEventListener("click",function(){
+      save("ayans."+x.id,{n:"",nj:"",src:"en",st:x.st||"her"});
       var m=load("ayqdone",{}); delete m[x.id]; save("ayqdone",m); renderAll();
     });
     row.appendChild(cl);
@@ -5404,7 +5432,13 @@ function renderAyuko(){
     var cb=d.querySelector("input");
     cb.addEventListener("change",function(e){
       var m=load("ayqdone",{});
-      if(e.target.checked) m[x.id]=true; else delete m[x.id];
+      if(e.target.checked){
+        var chk=ayuComplete(x);
+        if(!chk.ok){ e.target.checked=false;
+          if(typeof toast==="function")toast(chk.why.replace(/<[^>]*>/g,""));
+          return; }
+        m[x.id]=true;
+      } else m[x.id]=false;
       save("ayqdone",m);renderAll();});
     if(d.querySelector("[data-dq]"))armDanger(d.querySelector("[data-dq]"),function(){
       if(x.mine) save("ayq",load("ayq",[]).filter(function(y){return y.id!==x.id;}));
@@ -5602,9 +5636,9 @@ function applyDocks(){
     var f=load("dock."+b.dataset.dock,false);
     d.classList.toggle("folded",f);dockLabel(b,f);});
 }
-function toast(msg){
+function toast(msg,ms){
   var x=document.createElement("div");x.className="toastx";x.textContent=msg;
-  document.body.appendChild(x);setTimeout(function(){x.remove();},2000);
+  document.body.appendChild(x);setTimeout(function(){x.remove();},ms||2000);
 }
 window.renderAll=renderAll;window.toast=toast;window.buildTabs=buildTabs;window.go=go;
 document.addEventListener("keydown",function(e){
