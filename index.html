@@ -155,6 +155,13 @@ a{color:var(--sky)}
 :root[data-role="planner"] .page:not([data-planner-edit]) textarea{pointer-events:none;opacity:.6}
 :root[data-role="planner"] #p-ayu .del{display:none!important}
 :root[data-role="planner"] .page:not([data-planner-edit]) .sel{cursor:default}
+.aychip{display:inline-block;font-size:.63rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid currentColor;border-radius:999px;padding:.04rem .45rem;margin-left:.45rem;vertical-align:.12em}
+.aypills{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.ayp{font:inherit;font-family:var(--disp);font-weight:800;font-size:.76rem;background:var(--card);border:2px solid var(--line-2);border-radius:999px;padding:.4rem .85rem;cursor:pointer}
+.ayp b{font-size:.95rem;margin-right:.2rem}
+.tk.ayq{align-items:flex-start;padding:.7rem .8rem}
+.tk.ayq.done .tk-n{opacity:.55}
+.aypost .bul-edit{font-size:.7rem}
 .gal{position:relative;aspect-ratio:3/2;background:var(--sunk)}
 .gal img{width:100%;height:100%;object-fit:cover;display:block}
 .gal .nav{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 .4rem}
@@ -1045,22 +1052,22 @@ a{color:var(--sky)}
 
 <div class="page notes-wide" id="p-ayu" data-planner-edit>
   <div id="ayu-inbox"></div>
-  <div class="ph"><h2>📮 <span lang-en>Ayuko&rsquo;s dashboard</span><span lang-ja>鮎子さんのダッシュボード</span></h2>
-    <p><span lang-en>Everything on your plate in one place — what Jay and Hikaru have asked, what you are handling, and somewhere to write back.</span><span lang-ja>ご対応いただく内容をひとまとめに。ジェイと光からの質問、担当いただいている項目、そしてご連絡欄です。</span></p></div>
+  <div class="ph"><h2>📮 <span lang-en>Ayuko&rsquo;s dashboard</span><span lang-ja>鮎子さんのダッシュボード</span></h2></div>
 
-  <div class="ph" id="ayu-thead"><h2>✅ <span lang-en>Yours to do</span><span lang-ja>鮎子さんのタスク</span></h2>
-    <p><span lang-en>Anything handed to you. Tap an owner chip on any task, anywhere on this site, to pass it back.</span><span lang-ja>お渡ししている項目です。担当チップをタップすると担当者を変更できます。</span></p></div>
-  <div id="ayutasks" style="margin-bottom:1.8rem"></div>
+  <div id="ayu-thead"></div>
+  <div id="ayutasks" style="margin-bottom:1.6rem"></div>
 
-  <div class="ph" id="ayu-qhead"><h2>❓ <span lang-en>What Jay &amp; Hikaru have asked</span><span lang-ja>ジェイと光からの質問</span></h2>
-    <p><span lang-en>Type your answer into the box under each question — it saves as you go, grows as you write, and you can change it later. Tick a question once it is fully settled; it stays on the list either way.</span><span lang-ja>各質問の下の欄にご回答を入力してください。自動保存され、入力に合わせて広がり、後から修正もできます。解決したらチェックを入れてください（チェック後も一覧に残ります）。</span></p></div>
-  <div id="ayuko" style="margin-bottom:1.8rem"></div>
+  <div class="ph" id="ayu-ghead"><h2>📤 <span lang-en>Tasks you are giving them</span><span lang-ja>おふたりへのお願い</span></h2></div>
+  <div id="ayuadds" style="margin-bottom:2.2rem"></div>
 
-  <div class="ph"><h2>📤 <span lang-en>Tasks you are giving them</span><span lang-ja>おふたりへのお願い</span></h2>
-    <p><span lang-en>Anything you need from Jay or Hikaru. It lands on their board immediately.</span><span lang-ja>ジェイ・光にお願いしたいこと。追加するとすぐにおふたりの画面に表示されます。</span></p></div>
-  <div id="ayuadds" style="margin-bottom:1.8rem"></div>
+  <div class="qa-frame">
+  <div class="ph" id="ayu-qhead"><h2>❓ <span lang-en>Jay &amp; Hikaru&rsquo;s questions to you</span><span lang-ja>ジェイと光からの質問</span></h2>
+    <p><span lang-en>Write your answer and press Send — it ticks itself and drops to the bottom. You can change it any time.</span><span lang-ja>ご回答を入力して「送信」を押してください。自動でチェックが入り、一覧の下に移動します。後からいつでも修正できます。</span></p></div>
+  <div id="ayuko" style="margin-bottom:1.4rem"></div>
+  </div>
 
-  <div class="ph"><h2>📝 <span lang-en>Your notes</span><span lang-ja>ご連絡欄</span></h2></div>
+  <div class="ph"><h2>📝 <span lang-en>Your notes</span><span lang-ja>ご連絡欄</span></h2>
+    <p><span lang-en>Posts stay with the date you wrote them. Jay and Hikaru see them straight away.</span><span lang-ja>投稿は日付とともに残ります。ジェイと光にすぐ反映されます。</span></p></div>
   <div class="card pad" style="margin-bottom:1.4rem"><div id="ayunotes"></div></div>
 </div>
 
@@ -1177,7 +1184,7 @@ var UNDO=[];
    who is not signed in may only write inside her own namespace — the UI hides
    the rest anyway, this is the belt to that pair of braces, and the Firestore
    rules are the third. */
-var PLANNER_WRITES=/^(ayu\.|ayans\.|ayqdone$|ayqdel$|asked$|askedj$|hans\.|jans\.|mytasks$|feed$|feedblob\.)/;
+var PLANNER_WRITES=/^(ayu\.|ayans\.|ayqdone$|ayqdel$|asked$|askedj$|hans\.|jans\.|mytasks$|feed$|feedblob\.|qimg\.ayu\.|imgblob\.|tdesc$|tdone$)/;
 function canWrite(k){
   if(window.ROLE!=="planner")return true;
   if(SYNCSKIP.test(k))return true;              /* view prefs never leave the device */
@@ -2092,6 +2099,10 @@ function renderTaskBoxes(holder,who){
     grid.appendChild(box);
   });
   w.appendChild(grid);
+  if(who==="a"){
+    if(!any) w.appendChild(el("div","card pad",bi("Nothing for you at the moment — anything Jay or Hikaru hands over will appear here.","現在お願いしている項目はありません。ジェイまたは光からお渡しした際にこちらに表示されます。")));
+    return;                                   /* hers arrive from them; no filing to herself */
+  }
   if(!any) w.appendChild(el("div","card pad",bi("Nothing assigned here yet — tap an owner chip on any task to move it across.","まだ担当タスクがありません。タスクの担当チップをタップすると移せます。")));
   var ph=el("div","ph2",bi("Add a task to any category","カテゴリを選んでタスクを追加"));
   w.appendChild(ph); w.appendChild(addRow(null,who));
@@ -4096,6 +4107,7 @@ function ayuMade(o){
 function ayuAddRow(owner){
   var wrap=el("div","addr");
   wrap.innerHTML='<input class="a-n" placeholder="'+t("Add a task…","タスクを追加…")+'">'+
+    '<textarea class="a-note" rows="2" placeholder="'+t("Details… (optional)","詳細…（任意）")+'"></textarea>'+
     '<div class="a-m"><input type="date" class="duein a-d">'+
     '<button class="btn a-go">＋ '+t("Add","追加")+'</button></div>';
   var go=function(){
@@ -4104,7 +4116,9 @@ function ayuAddRow(owner){
     np.id="my_"+Date.now(); np.o=owner; np.by="a"; np.c=0;
     np.due=wrap.querySelector(".a-d").value||"";
     a.push(np); save("mytasks",a);
-    nm.value=""; wrap.querySelector(".a-d").value=""; renderAll();
+    var nt=wrap.querySelector(".a-note"), note=nt.value.trim();
+    if(note){ var mm=load("tdesc",{}); mm[np.id]=biSet(null,note); save("tdesc",mm); }
+    nm.value=""; nt.value=""; wrap.querySelector(".a-d").value=""; renderAll();
     if(typeof toast==="function")toast(t("Added — they will see it straight away","追加しました。すぐに反映されます"));
   };
   wrap.querySelector(".a-go").addEventListener("click",go);
@@ -4113,21 +4127,23 @@ function ayuAddRow(owner){
 }
 function renderAyuAdds(){
   var w=document.getElementById("ayuadds"); if(!w) return; w.innerHTML="";
+  var grid=el("div","tgrid");
   AYU_ADD.forEach(function(g){
-    var box=el("div","card pad");
-    box.style.cssText="margin-bottom:.9rem"+(g.lead?";border-color:var(--mint)":"");
-    var mine=ayuMade(g.o);
-    box.innerHTML='<div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.5rem">'+
-      '<h4 style="margin:0;font-size:'+(g.lead?".98rem":".88rem")+'">'+bi(g.n,g.nj)+'</h4>'+
-      '<span style="margin-left:auto;font-size:.74rem;color:var(--ink-faint)">'+
-      (mine.length?mine.length+t(" open"," 件"):t("none yet","まだありません"))+'</span></div>';
-    var list=el("div");
-    mine.forEach(function(tk){ list.appendChild(taskRow(tk,false)); });
-    box.appendChild(list);
+    var mine=ayuMade(g.o), k=OWN[g.o];
+    var box=el("div","tbox");
+    if(g.lead) box.style.borderColor="var("+k.c+")";
+    box.innerHTML='<div class="tbox-h"><span class="tbox-i">'+(g.o==="b"?"🤝":(g.o==="j"?"💙":"💛"))+'</span>'+
+      '<span class="tbox-n">'+bi(g.n,g.nj)+'</span>'+
+      '<span class="tbox-c">'+(mine.length||"—")+'</span></div>';
+    var body=el("div","tbox-b");
+    mine.forEach(function(tk){ body.appendChild(taskRow(tk,false)); });
+    box.appendChild(body);
     box.appendChild(ayuAddRow(g.o));
-    w.appendChild(box);
+    grid.appendChild(box);
   });
+  w.appendChild(grid);
 }
+
 
 function renderTent(){
   var w=document.getElementById("tentplan"); if(!w) return;
@@ -5114,97 +5130,161 @@ function ayAnswer(x){
     (st==="gap"||st==="todo"||st==="park"?"":'<span style="display:block;margin-top:.3rem;font-size:.72rem;color:var(--ink-faint)">'+
     bi("Ayuko, 17 Aug 2026","鮎子さん・2026年8月17日")+'</span>')+'</div>';
 }
-/* ---------- Ayuko's questions: answering, not just ticking ----------
-   The board used to be read-only for her, which made the tick meaningless —
-   she could mark a question answered without anywhere to put the answer.
-   Now every question carries a box that grows with the text, saves as she
-   types, and can be edited afterwards. Ticking is separate and never hides
-   the row, and there is no delete: the question is Jay and Hikaru's. */
+/* ---------- Ayuko's questions ----------
+   Her page, so the status reads as her own: "Checking", "Waiting on you".
+   The status line is a short chip and nothing more — the detail belongs in the
+   answer she writes. Answering is deliberate: type, press Send, and the row
+   flips to Answered, ticks itself and drops to the bottom. Editable forever
+   after, and never deletable — the question is Jay and Hikaru's. */
+var AYST={ok:["Answered","回答済み","--leaf"],her:["Checking","確認中","--amber"],
+          you:["Needs you","要ご対応","--sky"],gap:["Not answered","未回答","--coral"],
+          todo:["Not sent yet","未送信","--grape"],park:["Parked","保留","--ink-faint"]};
+function ayuAnsOf(x){ return load("ayans."+x.id,null); }
+function ayuAnsText(x){ var o=ayuAnsOf(x); if(!o)return ""; return ((o.src==="ja"?o.nj:o.n)||o.n||o.nj||"").trim(); }
+function ayuIsAnswered(x){ return !!ayuAnsText(x); }
 function autoGrow(ta){
   var fit=function(){ ta.style.height="auto"; ta.style.height=(ta.scrollHeight+2)+"px"; };
   ta.addEventListener("input",fit); requestAnimationFrame(fit); return fit;
 }
 function ayuInbox(){
   var w=document.getElementById("ayu-inbox"); if(!w) return; w.innerHTML="";
-  var done=load("ayqdone",{});
-  var open=ayList().filter(function(x){
-    var ov=load("ayans."+x.id,null);
-    var answered=done[x.id]||(ov&&(ov.n||"").trim());
-    return !answered;
-  }).length;
   var mine=allTasks().filter(function(x){return taskOwner(x)==="a"&&!taskArch(x.id)&&!taskDone(x.id);}).length;
-  if(!open&&!mine) return;
-  var bits=[];
-  if(open) bits.push(bi(open+" question"+(open===1?"":"s")+" to answer", "未回答の質問 "+open+"件"));
-  if(mine) bits.push(bi(mine+" task"+(mine===1?"":"s")+" assigned to you", "担当タスク "+mine+"件"));
-  var b=el("div","inbox");
-  b.innerHTML='<span class="inbox-n">'+(open||mine)+'</span><span class="inbox-t">'+bits.join(" · ")+'</span>'+
-    '<span class="inbox-go">'+bi("Go ›","確認する ›")+'</span>';
-  b.addEventListener("click",function(){
-    var target=document.getElementById(open?"ayu-qhead":"ayu-thead");
-    if(target)requestAnimationFrame(function(){
-      window.scrollTo(0,Math.max(0,target.getBoundingClientRect().top+window.pageYOffset-70));});
-  });
-  w.appendChild(b);
+  var open=ayList().filter(function(x){return !ayuIsAnswered(x);}).length;
+  var given=load("mytasks",[]).filter(function(x){return x.by==="a"&&!taskDone(x.id)&&!taskArch(x.id);}).length;
+  if(!mine&&!open&&!given) return;
+  function pill(n,en,ja,anchor,col){
+    if(!n) return "";
+    return '<button class="ayp" data-jump="'+anchor+'" style="border-color:var('+col+');color:var('+col+')">'+
+      '<b>'+n+'</b> '+bi(en,ja)+'</button>';
+  }
+  var box=el("div","aypills");
+  box.innerHTML=
+    pill(mine,"task"+(mine===1?"":"s")+" for you","件 あなたのタスク","ayu-thead","--amber")+
+    pill(open,"question"+(open===1?"":"s")+" to answer","件 未回答の質問","ayu-qhead","--coral")+
+    pill(given,"still open with them","件 おふたりで対応中","ayu-ghead","--sky");
+  box.querySelectorAll("[data-jump]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var t2=document.getElementById(b.dataset.jump);
+      if(t2)window.scrollTo(0,Math.max(0,t2.getBoundingClientRect().top+window.pageYOffset-70));});});
+  w.appendChild(box);
 }
 function ayuAnswerBox(x){
-  var wrap=el("div");
-  wrap.style.cssText="margin-top:.55rem";
-  var ov=load("ayans."+x.id,null), seeded=(!ov&&(x.a||x.aj))?decodeEnt(plainSeed(t(x.a||"",x.aj||""))):"";
-  var cur=ov?(ov.src==="ja"?ov.nj:ov.n)||"":seeded;
+  var wrap=el("div"); wrap.style.cssText="margin-top:.6rem";
+  var answered=ayuIsAnswered(x), cur=ayuAnsText(x);
   var lbl=el("div");
-  lbl.style.cssText="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.25rem";
-  lbl.innerHTML=bi("Your answer","ご回答");
+  lbl.style.cssText="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.28rem";
+  lbl.innerHTML=bi(answered?"Your answer":"Your answer","ご回答");
   var ta=el("textarea");
-  ta.value=cur;
-  ta.placeholder=t("Type your answer here — it saves as you go and you can come back and change it.",
-                   "こちらにご回答を入力してください。自動保存され、後から修正もできます。");
-  ta.style.cssText="width:100%;min-height:3.4rem;font:inherit;font-size:.86rem;line-height:1.7;padding:.6rem .75rem;"+
+  ta.value=cur;                                   /* blank unless she has written one */
+  ta.placeholder=t("Type your answer here…","こちらにご回答を入力してください…");
+  ta.style.cssText="width:100%;min-height:3.2rem;font:inherit;font-size:.86rem;line-height:1.7;padding:.6rem .75rem;"+
     "border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink);resize:none;overflow:hidden";
-  var fit=autoGrow(ta);
-  var stamp=el("div");
-  stamp.style.cssText="font-size:.7rem;color:var(--ink-faint);margin-top:.25rem;min-height:1em";
-  var tm=null;
-  ta.addEventListener("input",function(){
-    clearTimeout(tm);
-    tm=setTimeout(function(){
-      var p=biSet(null,ta.value);
-      save("ayans."+x.id,{n:p.n,nj:p.nj,src:p.src,st:ta.value.trim()?"ok":"her"});
-      stamp.innerHTML=bi("Saved","保存しました");
-      setTimeout(function(){stamp.innerHTML="";},1800);
-    },600);
+  autoGrow(ta);
+  var row=el("div"); row.style.cssText="display:flex;align-items:center;gap:.5rem;margin-top:.45rem;flex-wrap:wrap";
+  var btn=el("button","btn"); btn.style.margin="0";
+  btn.innerHTML=answered?bi("Update","更新する"):bi("Send","送信");
+  var note=el("span"); note.style.cssText="font-size:.72rem;color:var(--ink-faint)";
+  btn.addEventListener("click",function(){
+    var v=ta.value.trim();
+    if(!v){ note.innerHTML=bi("Write something first","内容を入力してください"); return; }
+    var pp=biSet(null,v);
+    save("ayans."+x.id,{n:pp.n,nj:pp.nj,src:pp.src,st:"ok"});
+    var m=load("ayqdone",{}); m[x.id]=true; save("ayqdone",m);
+    renderAll();
+    if(typeof toast==="function")toast(t("Answer sent","回答を送信しました"));
   });
-  wrap.appendChild(lbl);wrap.appendChild(ta);wrap.appendChild(stamp);
-  setTimeout(fit,0);
+  row.appendChild(btn); row.appendChild(note);
+  wrap.appendChild(lbl); wrap.appendChild(ta); wrap.appendChild(row);
+  var th=qThumbs("ayu",x.id,true);               /* photos ride along with the answer */
+  if(th){ var ph=el("div"); ph.style.cssText="margin-top:.55rem";
+    var pl=el("div"); pl.style.cssText="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.28rem";
+    pl.innerHTML=bi("Photos","写真"); ph.appendChild(pl); ph.appendChild(th); wrap.appendChild(ph); }
   return wrap;
 }
-
+function ayuStatusChip(x){
+  if(ayuIsAnswered(x)) return "";                 /* answered says it all — no status */
+  var ov=ayuAnsOf(x), st=(ov&&ov.st)||x.st;
+  if(!st||st==="ok") return "";
+  var k=AYST[st]; if(!k) return "";
+  return '<span class="aychip" style="color:var('+k[2]+');border-color:var('+k[2]+')">'+bi(k[0],k[1])+'</span>';
+}
 function renderAyuko(){
   var w=document.getElementById("ayuko"); if(!w) return; w.innerHTML="";
   var done=load("ayqdone",{});
-  ayList().forEach(function(x){
-    var d=el("div","tk"+(done[x.id]?" done":""));
-    d.innerHTML='<input type="checkbox" '+(done[x.id]?"checked":"")+' title="'+t("tick when she has answered","回答済みになったらチェック")+'">'+
+  var list=ayList().slice().sort(function(p,q){        /* answered sink to the bottom */
+    return (ayuIsAnswered(p)?1:0)-(ayuIsAnswered(q)?1:0);
+  });
+  list.forEach(function(x){
+    var answered=ayuIsAnswered(x);
+    var d=el("div","tk ayq"+(answered?" done":""));
+    d.innerHTML='<input type="checkbox" '+(answered?"checked":"")+(answered?"":" disabled")+
+      ' title="'+t("ticks itself once you send an answer","回答を送信すると自動でチェックされます")+'">'+
       '<div class="tk-b"><div class="tk-n" style="font-weight:600">'+(x.mine?biUser({n:x.q,nj:x.qj,src:x.src}):bi(x.q,x.qj))+
-      (done[x.id]?'<span class="dtag">'+bi("Answered","回答済み")+'</span>':'')+'</div>'+ayAnswer(x)+'</div>'+
+      ayuStatusChip(x)+(answered?'<span class="dtag">'+bi("Answered","回答済み")+'</span>':'')+'</div></div>'+
       (window.ROLE==="planner"?'':'<button class="del" data-dq="'+x.id+'">✕</button>');
     d.querySelector(".tk-b").appendChild(ayuAnswerBox(x));
-    d.querySelector("input").addEventListener("change",function(e){
+    var cb=d.querySelector("input");
+    cb.addEventListener("change",function(e){
+      if(!ayuIsAnswered(x)){ e.target.checked=false;
+        if(typeof toast==="function")toast(t("Write an answer first, then press Send","先にご回答を入力し、送信してください"));
+        return; }
       var m=load("ayqdone",{});m[x.id]=e.target.checked;save("ayqdone",m);renderAll();});
     if(d.querySelector("[data-dq]"))armDanger(d.querySelector("[data-dq]"),function(){
       if(x.mine) save("ayq",load("ayq",[]).filter(function(y){return y.id!==x.id;}));
       else { var dl=load("ayqdel",{});dl[x.id]=1;save("ayqdel",dl); }
       renderAll();});
     w.appendChild(d);});
-  var row=el("div");row.style.cssText="display:flex;gap:.5rem;margin-top:.6rem";
-  var inp=el("input");inp.placeholder=t("Add a question for Ayuko…","鮎子さんへの質問を追加…");
-  inp.style.cssText="flex:1;font:inherit;padding:.55rem .85rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink)";
-  var btn=el("button","btn","＋");btn.style.marginTop="0";
-  btn.addEventListener("click",function(){var v=inp.value.trim();if(!v)return;
-    var a=load("ayq",[]),qp=biSet(null,v);
-    a.push({id:"ay_"+Date.now(),n:qp.n,nj:qp.nj,src:qp.src});save("ayq",a);renderAll();});
-  inp.addEventListener("keydown",function(e){if(e.key==="Enter")btn.click();});
-  row.appendChild(inp);row.appendChild(btn);w.appendChild(row);
+  if(window.ROLE!=="planner"){
+    var row=el("div");row.style.cssText="display:flex;gap:.5rem;margin-top:.8rem";
+    var inp=el("input");inp.placeholder=t("Add a question for Ayuko…","鮎子さんへの質問を追加…");
+    inp.style.cssText="flex:1;font:inherit;padding:.55rem .85rem;border:2px solid var(--line-2);border-radius:12px;background:var(--card);color:var(--ink)";
+    var btn=el("button","btn","＋");btn.style.marginTop="0";
+    btn.addEventListener("click",function(){var v=inp.value.trim();if(!v)return;
+      var a2=load("ayq",[]),qp=biSet(null,v);
+      a2.push({id:"ay_"+Date.now(),n:qp.n,nj:qp.nj,src:qp.src});save("ayq",a2);renderAll();});
+    inp.addEventListener("keydown",function(e){if(e.key==="Enter")btn.click();});
+    row.appendChild(inp);row.appendChild(btn);w.appendChild(row);
+  }
+}
+/* ---------- her notes: a dated bulletin, newest first ---------- */
+function renderAyuNotes(){
+  var w=document.getElementById("ayunotes"); if(!w) return; w.innerHTML="";
+  var posts=load("ayu.posts",[]);
+  var form=el("div");
+  var ta=el("textarea");
+  ta.placeholder=t("Anything for Jay and Hikaru — availability, vendor news, a reminder…",
+                   "ジェイと光へのご連絡 — ご予定、業者さんからの情報、リマインドなど…");
+  ta.style.cssText="width:100%;min-height:3.4rem;font:inherit;font-size:.88rem;line-height:1.7;padding:.65rem .8rem;"+
+    "border:2px solid var(--line-2);border-radius:14px;background:var(--card);color:var(--ink);resize:none;overflow:hidden";
+  autoGrow(ta);
+  var send=el("button","btn"); send.style.margin=".5rem 0 0"; send.innerHTML=bi("Send","投稿する");
+  send.addEventListener("click",function(){
+    var v=ta.value.trim(); if(!v)return;
+    var a2=load("ayu.posts",[]);
+    a2.unshift({id:"ap_"+Date.now(),t:v,d:new Date().toISOString().slice(0,10)});
+    save("ayu.posts",a2); ta.value=""; renderAll();
+    if(typeof toast==="function")toast(t("Posted","投稿しました"));
+  });
+  form.appendChild(ta); form.appendChild(send); w.appendChild(form);
+  if(!posts.length){
+    w.appendChild(el("div","",'<div style="font-size:.82rem;color:var(--ink-faint);margin-top:.9rem">'+
+      bi("Nothing posted yet.","まだ投稿はありません。")+'</div>')); return; }
+  var listw=el("div"); listw.style.cssText="margin-top:1rem;display:flex;flex-direction:column;gap:.55rem";
+  posts.forEach(function(pst){
+    var c=el("div","card pad aypost");
+    c.innerHTML='<div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.3rem">'+
+      '<span style="font-size:.72rem;font-weight:800;color:var(--ink-faint)">'+fmtDue(pst.d)+'</span>'+
+      '<button class="bul-edit" data-ed="'+pst.id+'" style="margin-left:auto">'+t("edit","編集")+'</button>'+
+      '<button class="bul-edit danger" data-rm="'+pst.id+'">'+t("delete","削除")+'</button></div>'+
+      '<div class="apbody" style="font-size:.87rem;line-height:1.75;white-space:pre-wrap">'+esc(pst.t)+'</div>';
+    c.querySelector("[data-ed]").addEventListener("click",function(){
+      inlineEdit(c.querySelector(".apbody"),pst.t,function(v){
+        var a2=load("ayu.posts",[]).map(function(y){return y.id===pst.id?Object.assign({},y,{t:v}):y;});
+        save("ayu.posts",a2);renderAll();},true);});
+    armDanger(c.querySelector("[data-rm]"),function(){
+      save("ayu.posts",load("ayu.posts",[]).filter(function(y){return y.id!==pst.id;}));renderAll();});
+    listw.appendChild(c);});
+  w.appendChild(listw);
 }
 /* ---------- tabs ---------- */
 var TABS=[["home","🏠","Home","ホーム","--coral"],["cal","🗓","Calendar","カレンダー","--teal"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","Hikaru","光","--pink"],["jay","💙","Jay","ジェイ","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["inv","💌","Invites","招待状","--pink"],["feed","📥","For Claude","クロードへ","--mint"]];
