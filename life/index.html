@@ -969,6 +969,14 @@ function migrate(){
     if(!Array.isArray(i.chases))i.chases=[];
   });
   state.contacts=state.contacts||{};
+  /* Some contacts were stored as a bare address STRING instead of {email,cc,phone}.
+     Electrik Seoul was one, which made c.email undefined and silently defeated the
+     existing-relationship guard for a client who owes $1,700. Normalise on every
+     load rather than via a patch flag — cheap, and a re-introduced string self-heals. */
+  Object.keys(state.contacts).forEach(function(k){
+    if(typeof state.contacts[k]==='string')
+      state.contacts[k]={email:state.contacts[k],cc:'',phone:'',note:''};
+  });
   /* an inserting patch can run twice when a cloud adopt lands mid-flight, so
      collapse duplicate leads on every load rather than trusting the guard alone */
   if(Array.isArray(state.leads)){
@@ -2277,6 +2285,41 @@ function festSubject(name,fest,from){
   const who=a.length>1?a.slice(0,-1).join(', ')+' + '+a[a.length-1]:a[0];
   return fest+(yr?' '+yr:'')+': '+who+' (media inquiry)';
 }
+/* ═══════ IS THIS THE ARTIST'S OWN INBOX, OR A THIRD PARTY'S? (2026-08-26) ═══════
+   The pitch asks "to see if HERSHE needs any media" — correct into a management
+   inbox, absurd when the address IS HERSHE. Most of these are managers, but a
+   handful are the act's own mailbox (dabinmusic@gmail.com, allenwattsmusic@gmail.com).
+   Direct only when the address carries the artist's own name AND no other human or
+   company is attached: subtronics@redlightmanagement.com is an agency alias FOR him,
+   not him, and barry@allenwattsmusic.com is a person at the artist's own company. */
+function isArtistDirect(names,email){
+  const a=Array.isArray(names)?names:[names];
+  if(a.length!==1)return false;                       /* merged = a manager, by definition */
+  const e=String(email||'').toLowerCase(); if(e.indexOf('@')<0)return false;
+  const nm=String(a[0]||'').toLowerCase().replace(/[^a-z0-9]/g,''); if(nm.length<3)return false;
+  const rec=(state.artistEmails||{})[nm]||{};
+  if(rec.p) return false;                              /* a named human answers it */
+  const org=String(rec.o||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(org&&org!==nm) return false;                      /* a company answers it */
+  const local=e.split('@')[0].replace(/[^a-z0-9]/g,'');
+  const dom=(e.split('@')[1]||'').toLowerCase();
+  const domCore=dom.split('.')[0].replace(/[^a-z0-9]/g,'');
+  /* A ROLE mailbox is never the artist, even on the artist's own domain:
+     mgmt@allthereasonmusic.com, bookings@blacktigersexmachine.com and
+     management@diontimmer.com all carry the act's name and none of them is the act. */
+  const ROLE=['mgmt','management','manager','booking','book','info','contact','press',
+              'media','demos','demo','submission','team','office','support','admin',
+              'agency','talent','sales','hello','inquiries','enquiries'];
+  if(ROLE.some(function(r){return local.indexOf(r)>-1}))return false;
+  /* The act's name on an AGENCY domain is an alias for them, not them:
+     lyny@unitedtalent.com, infekt@littleempiremusic.com. Only a free mail host or
+     the artist's own domain can be the artist's own inbox. */
+  const FREE=['gmail.com','googlemail.com','outlook.com','hotmail.com','yahoo.com',
+              'icloud.com','me.com','protonmail.com','proton.me','aol.com','live.com','msn.com'];
+  const ownDomain=domCore.indexOf(nm)>-1;
+  if(FREE.indexOf(dom)<0&&!ownDomain)return false;
+  return local.indexOf(nm)>-1;
+}
 const SHOT_BEFORE=['lost lands'];
 function shotBefore(fest){
   const f=String(fest||'').toLowerCase();
@@ -2293,13 +2336,17 @@ function onsiteWindow(fest,from,to){
   return fmtDate(from)+' to '+fmtDate(to);
 }
 /* The wording Jay approved. Do not re-voice this copy. */
-function festPitch(name,fest,from,to){
+function festPitch(name,fest,from,to,email){
   const yr=String(from||'').slice(0,4);
   const yrs=yr?(+yr-2018):8;
+  /* Writing to the act themselves: say "you", not their own stage name at them. */
+  const direct=isArtistDirect(name,email);
+  const subj=direct?'you':artistList(name);
+  const verb=direct?' need':((Array.isArray(name)&&name.length>1)?' need':' needs');
   return 'Hello,\n\n'
     +'My name is Jay and I\u2019ve been shooting photo/video in the EDM industry for the past '
-    +yrs+' years, and I\u2019m reaching out to see if '+artistList(name)
-    +((Array.isArray(name)&&name.length>1)?' need':' needs')+' any media at '+fest+' this year.\n'
+    +yrs+' years, and I\u2019m reaching out to see if '+subj
+    +verb+' any media at '+fest+' this year.\n'
     +emph('I\u2019m already credentialed and on site '+onsiteWindow(fest,from,to))
     +', so there\u2019s nothing to arrange on the credential side.'
     +(shotBefore(fest)?' I\u2019ve shot '+fest+' before, so I know the run of show and the venue layout.':'')
@@ -2427,6 +2474,65 @@ function sendState(email){
   const r=sentBefore(email); if(!r)return '';
   return r.status==='sent'?'sent':'drafted';
 }
+/* ═══════════ EXISTING-RELATIONSHIP GUARD (2026-08-26) ═══════════
+   sentLog only knows about mail DRAFTED IN THIS APP. Every real email Jay sends
+   from Gmail is invisible to it. That blind spot nearly sent Brianna Irvin a cold
+   CHOZEN pitch while he was mid-thread with her about Chelsea, Escape and an
+   unpaid invoice — she manages CHOZEN, HerShe and Twopercent, and the tracker
+   already knew she was live in two places it never consulted when drafting:
+   state.contacts (she is Chelsea's cc) and state.outreach (warm:'worked').
+   A cold pitch to someone you already work with is the single worst-reading
+   email this tool can produce, so this outranks every other warning. */
+function relationshipWith(email){
+  const e=String(email||'').toLowerCase().trim(); if(!e)return null;
+  const hits=[];
+  /* 1. an existing CLIENT's own address or their manager's cc */
+  Object.keys(state.contacts||{}).forEach(function(client){
+    let c=state.contacts[client]||{};
+    if(typeof c==='string')c={email:c,cc:''};   /* tolerate the legacy string shape */
+    if(String(c.email||'').toLowerCase()===e) hits.push({kind:'client',who:client,how:'their own address'});
+    else if(String(c.cc||'').toLowerCase()===e) hits.push({kind:'client',who:client,how:'their manager / cc'});
+  });
+  /* 2. a warm lead already in the pipeline at this address */
+  (state.outreach||[]).forEach(function(o){
+    if(String(o.email||'').toLowerCase()!==e)return;
+    if(o.warm==='worked'||o.warm==='owes')
+      hits.push({kind:o.warm,who:o.name,how:o.warm==='owes'?'owes you money':'you have worked together',ev:o.event||''});
+  });
+  /* 3. SAME COMPANY, different mailbox. Optimystic manages 12 of these acts; writing
+     info@ or loper@ there is not as bad as cold-pitching Brianna directly, but Jay
+     should still know he is writing to a shop he already works with. */
+  if(!hits.length){
+    const dom=e.split('@')[1]||'';
+    if(!dom) return null;
+    const known=[];
+    Object.keys(state.contacts||{}).forEach(function(client){
+      let c=state.contacts[client]||{}; if(typeof c==='string')c={email:c,cc:''};
+      [c.email,c.cc].forEach(function(a){
+        a=String(a||'').toLowerCase();
+        if(a&&a.split('@')[1]===dom&&a!==e) known.push({client:client,addr:a});
+      });
+    });
+    if(!known.length) return null;
+    return {company:dom, hits:known.map(function(k){
+      return {kind:'company',who:k.client,how:'you already deal with '+k.addr+' at '+dom};
+    }), owed:0};
+  }
+  /* 4. money outstanding with any of those clients makes it urgent */
+  const names={}; hits.forEach(h=>names[h.who]=1);
+  let owed=0;
+  (state.events||[]).forEach(function(ev){
+    if(ev.gig&&!ev.paid&&ev.gross&&names[ev.client]) owed+=ev.gross;
+  });
+  return {hits:hits,owed:owed};
+}
+/* One-line summary for the UI pill. */
+function relationshipNote(email){
+  const r=relationshipWith(email); if(!r)return '';
+  const h=r.hits[0];
+  return 'You already work with '+h.who+' at this address ('+h.how+')'
+       +(r.owed?' · $'+r.owed.toLocaleString()+' outstanding':'');
+}
 /* Did this address already get a pitch for THIS festival? */
 function sentForFest(email,fest){
   const r=sentBefore(email); if(!r||!r.fests)return null;
@@ -2546,8 +2652,22 @@ function bulkDraft(fest,from,to){
   const addrs=Object.keys(groups);
   const dupe=addrs.filter(e=>sentForFest(e,fest));      /* same festival = real repeat */
   const other=addrs.filter(e=>!sentForFest(e,fest)&&sentOtherFest(e,fest).length);
-  if(dupe.length||other.length){
+  const known=addrs.filter(e=>relationshipWith(e));    /* someone he ALREADY works with */
+  if(dupe.length||other.length||known.length){
     let m='';
+    if(known.length){
+      m+='\u26A0 YOU ALREADY WORK WITH '+(known.length>1?'THESE PEOPLE':'THIS PERSON')+':\n';
+      known.forEach(function(e){
+        const r=relationshipWith(e);
+        m+='  '+e+'  (pitching: '+groups[e].join(', ')+')\n';
+        r.hits.forEach(function(h){
+          m+='     \u2192 '+h.who+' — '+h.how+(h.ev?' · '+h.ev:'')+'\n';
+        });
+        if(r.owed) m+='     \u2192 $'+r.owed.toLocaleString()+' still outstanding with them\n';
+      });
+      m+='\nSend a NORMAL note in your existing thread instead — a templated pitch to\n'
+        +'someone you are mid-conversation with is the thing that reads as a bot.\n\n';
+    }
     if(dupe.length){
       m+='ALREADY PITCHED FOR '+fest.toUpperCase()+':\n';
       dupe.forEach(function(e){
@@ -2573,7 +2693,7 @@ function bulkDraft(fest,from,to){
     return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
       +'&to='+encodeURIComponent(e)
       +'&su='+encodeURIComponent(festSubject(who,fest,from))
-      +'&body='+encodeURIComponent(festPitch(who,fest,from,to));
+      +'&body='+encodeURIComponent(festPitch(who,fest,from,to,e));
   });
   if(runDraftQueue(urls,0)){
     addrs.forEach(e=>recordSent(e,groups[e],fest));
