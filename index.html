@@ -155,6 +155,11 @@ a{color:var(--sky)}
 :root[data-role="planner"] .page:not([data-planner-edit]) textarea{pointer-events:none;opacity:.6}
 :root[data-role="planner"] #p-ayu .del{display:none!important}
 :root[data-role="planner"] .page:not([data-planner-edit]) .sel{cursor:default}
+.rkb{font:inherit;font-size:.8rem;font-weight:800;line-height:1;border:2px solid var(--line-2);background:var(--card);color:var(--ink-soft);border-radius:9px;width:1.85rem;height:1.85rem;cursor:pointer}
+.rkb:hover:not([disabled]){border-color:var(--accent);color:var(--accent)}
+.rkb[disabled]{opacity:.28;cursor:default}
+.rkadd{font:inherit;font-size:.76rem;font-weight:700;border:2px dashed var(--line-2);background:transparent;color:var(--ink-soft);border-radius:999px;padding:.25rem .65rem;cursor:pointer}
+.rkadd:hover{border-color:var(--accent);color:var(--accent)}
 .aycols{display:grid;grid-template-columns:repeat(auto-fit,minmax(19rem,1fr));gap:.9rem;align-items:stretch}
 .aycol{display:flex;flex-direction:column}
 .aycol .tbox-b{flex:1}
@@ -730,6 +735,7 @@ a{color:var(--sky)}
 
 <div class="page" id="p-food">
   <div class="ph"><h2>🍽 <span lang-en>Food &amp; drink</span><span lang-ja>料理とドリンク</span></h2><p><span lang-en>Tap to choose. The budget follows you. Teranishi recalculates for your live headcount; the others are their quoted totals.</span><span lang-ja>タップで選択、予算に即反映。寺西さんは実人数で自動計算、他社は提示額です。</span></p></div>
+  <div id="chefrank" style="margin-bottom:1.1rem"></div>
   <div class="chefs" id="chefs"></div>
   <h3 style="margin:1.9rem 0 .3rem;font-size:1.05rem">📸 <span lang-en>Santo &mdash; how their food looks</span><span lang-ja>Santo の料理</span></h3>
   <p style="font-size:.84rem;color:var(--ink-soft);margin:0 0 .9rem"><span lang-en>Sent by Ayuko on 24 August 2026. Tap any photo to open it full size.</span><span lang-ja>2026年8月24日、鮎子さんより。写真をタップすると拡大表示できます。</span></p>
@@ -1563,17 +1569,21 @@ var CHEFS=[
 
 var PHOTOG=[
  {id:"nom",n:"Nom-san",nj:"のむさん",amt:120000,link:"https://www.instagram.com/nom.photo/",linkl:"Instagram",linkj:"インスタグラム",front:true,
+  place:"Asahikawa",placej:"旭川",
   f:["<b>¥130,000, or ¥120,000 if he can post on social media</b>","Shot Wataru&rsquo;s wedding","Lives in Asahikawa","Covers getting-ready, first look, ceremony and reception <b>to the very end</b>","Staying overnight at Lake Toya, so <b>no cut-off time</b>","Delivers 300–600 photos","⚠️ Works at a nursery — <b>won&rsquo;t know until end of March</b> whether 5 June is free"],
   fj:["<b>130,000円、SNS掲載OKなら120,000円</b>","ワタルさんの結婚式のカメラマン","旭川在住","支度・ファーストミート・挙式・披露宴の<b>最後まで</b>撮影","当日は洞爺湖に宿泊予定のため<b>終了時間の制限なし</b>","納品300〜600枚","⚠️ 保育園勤務のため<b>3月末まで</b>6/5の可否がわからない"],
-  hik:"",hikj:""},
- {id:"takayo",n:"Takayo Fujie",nj:"藤江 貴代",amt:56000,link:"https://takayofujie.myportfolio.com/wedding",linkl:"Portfolio",linkj:"ポートフォリオ",
+  hik:"Hikaru&rsquo;s pick. Because his date isn&rsquo;t confirmed until March, she wants backup candidates lined up.",
+  hikj:"光の希望。3月末まで確定しないため、他の候補も用意しておきたいとのこと。"},
+ {id:"takayo",n:"Takayo Fujie",nj:"藤江 貴代",amt:56000,place:"Hokkaido",placej:"北海道",link:"https://takayofujie.myportfolio.com/wedding",linkl:"Portfolio",linkj:"ポートフォリオ",
   f:["Photography only — cheapest by a wide margin","Introduced by Ayuko via LINE","No package details given — worth asking what hours are covered"],
   fj:["撮影のみ・圧倒的に安価","鮎子さんがLINEで紹介","パッケージ内容未確認・撮影時間の確認を推奨"],
-  hik:"",hikj:""},
+  hik:"Not quite Hikaru&rsquo;s style — the work didn&rsquo;t land for her the way Nom-san&rsquo;s does. Keeping as a backup on price.",
+  hikj:"光の好みとは少し方向性が違うとのこと。価格面でバックアップとして保持。"},
  {id:"niki",n:"Ayako Niki",nj:"ニキ 彩子",amt:180000,link:"https://instagram.com/247nikiimages",linkl:"Instagram",linkj:"インスタグラム",
   f:["A <b>package</b>, not just a shooting fee","Hair &amp; make-up included, worth ¥38,000 alone","Up to 6 hours of Lakehouse grounds access","Option to shoot at Ukimido, 5 minutes away","Day use of the Lavender Suite as a prep room"],
   fj:["撮影料ではなく<b>パッケージ</b>","下田真紀子さんのヘアメイク込み（単体38,000円相当）","レイクハウス敷地を最大6時間利用","浮見堂（車5分）での撮影オプション","ラベンダースイートを支度部屋としてデイユース"],
-  hik:"",hikj:""}];
+  hik:"Also not quite her style. She is wondering whether it is worth seeing a few more photographers before settling.",
+  hikj:"こちらも光の好みとは少し方向性が違うとのこと。決める前に他のカメラマンも何名か拝見したいと考えています。"}];
 
 var CHOICES={
  drinks:{def:"jp",opts:[
@@ -3019,6 +3029,65 @@ function renderHMU(){
     inlineEdit(host,cur!=null?cur:decodeEnt(t(c0.hik||"",c0.hikj||"")),function(v){
       save("hmu.hik."+id,v.trim());},true);});});
 }
+/* ---------- Hikaru's caterer order, hers to change ----------
+   Was hard-coded rank:1/2/3 on the vendor records, which meant it went stale
+   the moment she changed her mind — her own note on 26 Aug already read
+   Teranishi > Santo > Ohkawa while the site still said Teranishi > Ohkawa >
+   Aroi. It is a list now, and she can move things up and down. */
+var RANK_SEED=["tera","santo","ohkawa"];
+function rankList(){
+  var r=load("chefrank",null);
+  if(!r||!r.length) r=RANK_SEED.slice();
+  return r.filter(function(id){return !!chefById(id);});
+}
+function rankOf(id){ var i=rankList().indexOf(id); return i<0?null:i+1; }
+function rankMove(id,dir){
+  var r=rankList(),i=r.indexOf(id); if(i<0)return;
+  var j=i+dir; if(j<0||j>=r.length)return;
+  r.splice(j,0,r.splice(i,1)[0]); save("chefrank",r);
+}
+function renderRank(){
+  var w=document.getElementById("chefrank"); if(!w) return; w.innerHTML="";
+  var r=rankList(), rest=CHEFS.filter(function(c){return r.indexOf(c.id)<0;});
+  var box=el("div","card pad");
+  box.innerHTML='<div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.55rem">'+
+    '<h4 style="margin:0;font-size:.95rem">💛 '+bi("Hikaru&rsquo;s order","光の希望順")+'</h4>'+
+    '<span style="margin-left:auto;font-size:.74rem;color:var(--ink-faint)">'+
+    bi("Move them with the arrows","矢印で順番を入れ替えられます")+'</span></div>';
+  var list=el("div"); list.style.cssText="display:flex;flex-direction:column;gap:.4rem";
+  r.forEach(function(id,i){
+    var c=chefById(id);
+    var row=el("div");
+    row.style.cssText="display:flex;align-items:center;gap:.55rem;padding:.42rem .55rem;border:2px solid var(--line);border-radius:12px;background:var(--card)";
+    row.innerHTML='<span style="font-family:var(--disp);font-weight:800;font-size:.95rem;color:var(--accent);min-width:1.2rem">'+(i+1)+'</span>'+
+      '<span style="font-weight:700;font-size:.88rem">'+bi(c.n,c.nj)+'</span>'+
+      '<span style="margin-left:auto;display:flex;gap:.3rem">'+
+      '<button class="rkb" data-up="'+id+'"'+(i===0?" disabled":"")+' aria-label="up">▲</button>'+
+      '<button class="rkb" data-dn="'+id+'"'+(i===r.length-1?" disabled":"")+' aria-label="down">▼</button>'+
+      '<button class="rkb" data-rm="'+id+'" aria-label="remove">✕</button></span>';
+    list.appendChild(row);});
+  if(!r.length) list.innerHTML='<div style="font-size:.83rem;color:var(--ink-faint)">'+
+    bi("Nothing ranked yet — add one below.","まだ順位はありません。下から追加できます。")+'</div>';
+  box.appendChild(list);
+  if(rest.length){
+    var add=el("div"); add.style.cssText="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.6rem;align-items:center";
+    add.innerHTML='<span style="font-size:.76rem;color:var(--ink-faint)">'+bi("Add:","追加：")+'</span>';
+    rest.forEach(function(c){
+      var b=el("button","rkadd",bi(c.n,c.nj));
+      b.addEventListener("click",function(){ var q=rankList(); q.push(c.id); save("chefrank",q); renderAll(); });
+      add.appendChild(b);});
+    box.appendChild(add);
+  }
+  box.querySelectorAll("[data-up]").forEach(function(b){
+    b.addEventListener("click",function(){ rankMove(b.dataset.up,-1); renderAll(); });});
+  box.querySelectorAll("[data-dn]").forEach(function(b){
+    b.addEventListener("click",function(){ rankMove(b.dataset.dn,1); renderAll(); });});
+  box.querySelectorAll("[data-rm]").forEach(function(b){
+    b.addEventListener("click",function(){
+      save("chefrank",rankList().filter(function(x){return x!==b.dataset.rm;})); renderAll(); });});
+  w.appendChild(box);
+}
+
 function renderChefs(){
   var w=document.getElementById("chefs");w.innerHTML="";
   var sel=getChoice("caterer");
@@ -3026,7 +3095,8 @@ function renderChefs(){
     var price=c.lo==null?bi("No quote","未取得"):money(c.lo)+(c.hi?"–"+money(c.hi):"");
     var d=el("div","card chef sel"+(c.id===sel?" on":"")+(c.short?" short":" alsoran"));
     var sh=c.short?'<span class="badge" style="background:var(--leaf)">'+t("SHORTLIST","最終候補")+'</span>':'';
-    var rk=c.rank?'<span class="badge">'+t("HER #","光の")+c.rank+t("","位")+'</span>':'';
+    var rn=rankOf(c.id);
+    var rk=rn?'<span class="badge">'+t("HER #","光の")+rn+t("","位")+'</span>':'';
     var ch2=c.cheap?'<span class="badge" style="background:var(--sky)">'+t("CHEAPEST","最安")+'</span>':'';
     var fdel=load("chef.fdel."+c.id,[]),fadd=load("chef.fadd."+c.id,[]);
     var lis=c.f.map(function(x,i){
@@ -3102,13 +3172,20 @@ function renderFood2(){
 }
 function renderPhotog(){
   var w=document.getElementById("o-photo");w.innerHTML="";
-  var sel=getChoice("photo");
+  var sel=getChoice("photo"), lean=(window.ROLE==="planner");
   PHOTOG.forEach(function(p){
     var d=el("div","card chef sel"+(p.id===sel?" on":""));
+    /* Hikaru's note: on the planner's screen a photographer is a name, a place
+       and a link. The detail and her own read on the work stay on their side. */
+    var body = lean
+      ? (p.place?'<div style="font-size:.84rem;color:var(--ink-soft);margin:.2rem 0 .5rem">📍 '+bi(p.place,p.placej)+'</div>':'')
+      : '<ul>'+p.f.map(function(x,i){return '<li>'+bi(x,p.fj[i])+'</li>';}).join("")+'</ul>'+
+        (p.hik?'<div style="font-size:.79rem;background:color-mix(in srgb,var(--pink) 12%,transparent);border-radius:10px;padding:.5rem .65rem;line-height:1.5"><b>'+
+          t("Hikaru:","光：")+'</b> '+bi(p.hik,p.hikj)+'</div>':'');
     d.innerHTML='<div class="tick">✓</div><div class="chef-top">'+A("camera")+
-      '<div><h3>'+bi(p.n,p.nj)+(p.front?'<span class="badge">'+t("HER PICK","光の希望")+'</span>':'')+'</h3></div><div class="price"><b>'+money(p.amt)+'</b></div></div>'+
-      '<ul>'+p.f.map(function(x,i){return '<li>'+bi(x,p.fj[i])+'</li>';}).join("")+'</ul>'+
-      (p.hik?'<div style="font-size:.79rem;background:color-mix(in srgb,var(--pink) 12%,transparent);border-radius:10px;padding:.5rem .65rem;line-height:1.5"><b>'+t("Hikaru:","光：")+'</b> '+bi(p.hik,p.hikj)+'</div>':'')+
+      '<div><h3>'+bi(p.n,p.nj)+((p.front&&!lean)?'<span class="badge">'+t("HER PICK","光の希望")+'</span>':'')+'</h3></div>'+
+      (lean?'':'<div class="price"><b>'+money(p.amt)+'</b></div>')+'</div>'+
+      body+
       '<div><a href="'+p.link+'" target="_blank" rel="noopener">'+bi(p.linkl,p.linkj)+' ↗</a></div>';
     d.addEventListener("click",function(e){if(e.target.tagName==="A")return;setChoice("photo",p.id);});
     w.appendChild(d);});
@@ -5519,7 +5596,7 @@ function renderAll(){
   renderBudget();renderUpdates();
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
   renderHeroShot();renderCal();renderInbox();renderFeed();renderDecor2();renderBeauty();
-  renderStay();renderSeat();renderTent();renderPalette();renderSanto();renderDrive();
+  renderRank();renderStay();renderSeat();renderTent();renderPalette();renderSanto();renderDrive();
   renderAyuAdds();renderAyuNotes();ayuInbox();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
