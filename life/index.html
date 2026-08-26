@@ -1103,6 +1103,32 @@ function migrate(){
     state.patch39=true;
     state.artistIG={"ahundreddrums":"ahundreddrums","acslater":"djacslater","acyan":"acyanmusic","adamten":"adamten_","ahee":"iamahee","alienpark":"alienparkmusic","allenwatts":"allenwattsmusic","alok":"alok","artifakts":"artifaktsmusic","atliens":"atliensofficial","audien":"audien","barelyalive":"barelyalive","basstripper":"basstripper","beargrillz":"itsbeargrillz","benbhmer":"benbohmermusic","bennybenassi":"bennybenassi","blacktigersexmachine":"officialbtsm","skullmachineblacktigersexmachinexkaiwachi":"officialbtsm","blossom":"blossom.dj","boogiet":"mrboogiet","borgore":"borgore","brandicyrus":"brandicyrus","canabliss":"canablissss","capochino":"capochinomusic","caseyclub":"caseyclubofficial","caspa":"caspaofficial","champagnedrip":"champagnedrip","champion":"champion_dj","chassi":"chassimusic","chrislake":"chrislake","codddubz":"codd_dubz","coone":"djcoone","cooneb2bdjisaac":"djcoone","crankdat":"crankdat","craze":"crazearoni","crumbpit":"crumbpitmusic","cultureshock":"cultureshock","dabin":"dabinmusic","dailybread":"dailybreadmusic","darksiderz":"darksiderz","darrenstyles":"darrenstylesuk","deadcrow":"devdcrow","devault":"devaultmusic","diontimmer":"dion_timmer","dirtmonkey":"dirtmonkeymusic","dirtyphonics":"dirtyphonics","dirtysnatcha":"dirtysnatcha","discolines":"discolines","djisaac":"djisaacofficial","dodgefuski":"dodge_and_fuski","dopelemon":"dopelemonmusic","drfresch":"drfresch","eotofriends":"eotomusic","eptic":"eptic","excision":"excision","flavad":"flava_d","frontliner":"djfrontliner","frontlinerjourneyset":"djfrontliner","funtcase":"funtcaseuk","galantis":"wearegalantis","ganjawhitenight":"ganjawhitenight","geese":"geesebandnyc","ggmagree":"ggmagree","gorgoncity":"gorgoncity","gorgoncityb2bmph":"gorgoncity","gryffin":"gryffin","guerillatoss":"guerillatoss","hairitage":"hairitage_music","hedex":"hedexuk","hershe":"hershe","ihatemodels":"ihatemodels1","ianasher":"ianasher","illenium":"illenium","indirapaganotto":"indirapaganotto","ivylab":"ivylab","jamiejones":"jamiejonesmusic","jamiejonesb2bfrankyrizardo":"jamiejonesmusic","jessicaaudiffred":"jessica_audiffred","josephcapriati":"josephcapriati","josephcapriatib2bsosa":"josephcapriati","joshteed":"joshteedmusic","joyryde":"enjoyryde","joyrydesunsetset":"enjoyryde","kaiwachi":"kaiwachiofficial","kaskade":"kaskade","kaskadesunsetset":"kaskade","kompany":"kompanymusic","kream":"wearekream","leotrix":"leotrixofficial","levelup":"levelupdub","lewisofman":"lewisofman","liquidstranger":"liquidstranger","maddyoneal":"maddy_oneal","manicfocus":"manicfocus","moonstoneriders":"moonstone_riders","opiuo":"opiuo","pegboardnerds":"pegboardnerds","phaseone":"phaseoneau","ravenscoon":"ravenscoon","rayvolpe":"rayvolpe","riotten":"riottenmusic","shlump":"shlumpbass","sippy":"sippyau","spacelaces":"space_laces","subtronics":"subtronics","sullivanking":"sullivanking","superfuture":"superfuturedj","supertaste":"supertastemusic","taikinulight":"taikinulightuk","taperschoice":"taperschoice","telykast":"telykast","thaiboydigital":"bigthaiboy","tisto":"tiesto","tokyomachine":"tokyomachine","trivecta":"trivectamusic","trueloves":"truelovesband","trym":"trym","unknownmortalorchestra":"unknownmortalorchestra","virtualriot":"officialvirtualriot","waxmotif":"waxmotif","whethan":"whethan","williamblack":"williamblack","wooli":"woolimusic","xotix":"xotixbass","zomboy":"zomboy"};
   }
+  // patch 54 (2026-08-26): Electrik Seoul 3-show run is PRICED — $800 each, $2,400 total.
+  //   Jay settled it flat rather than per-night. Note that flat-$800 prices Nova SD $100
+  //   UNDER the $900 he got there in July; deliberate, for the volume. The $1,700 still
+  //   owed (LA $800 Jul 10 + SD $900 Jul 17) is untouched by this — taking the run to
+  //   $2,400 puts total exposure with them at $4,100 if that balance never clears.
+  if(!state.patch54){
+    state.patch54=true;
+    const RUN=[['2026-08-29','Nova SD'],['2026-09-04','Exchange LA'],['2026-09-06','Time Nightclub (OC)']];
+    RUN.forEach(function(r){
+      const ev=state.events.find(e=>e.client==='Electrik Seoul'&&e.date===r[0]);
+      if(ev&&ev.gross===null){
+        ev.gross=800;
+        ev.details=(ev.details?ev.details+'\n':'')+'RATE SET 2026-08-26: $800 — flat across all three shows ($2,400 for the run).';
+      }
+    });
+    const rt=state.tasks.find(t=>t.title.indexOf('Set the rate for the Electrik Seoul')>-1&&t.status==='open');
+    if(rt){
+      rt.status='done';
+      rt.completedAt=todayISO();
+      rt.notes='SETTLED 2026-08-26: $800 per show, flat across all three = $2,400 for the run.\n'
+        +'Aug 29 Nova SD · Sep 4 Exchange LA · Sep 6 Time OC — all three now carry the rate.\n'
+        +'Note: $800 at Nova SD is $100 under the $900 he paid there in July.\n'
+        +'STILL OWED separately: $1,700 (LA $800 Jul 10 + SD $900 Jul 17). Ask about it in the same thread before the Aug 29 show.\n'
+        +'Princess Labrador — princess.labrador@insomniacclubs.com · also nino.lee@insomniac.com';
+    }
+  }
   // patch 53 (2026-08-23): Codex round 6 — Instagram banned as evidence, so its
   //   corroborations are genuinely independent. Also flags 33 STALE addresses; a
   //   stale address is now sorted LAST so it can never be the one Jay emails.
