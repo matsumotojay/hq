@@ -155,6 +155,15 @@ a{color:var(--sky)}
 :root[data-role="planner"] .page:not([data-planner-edit]) textarea{pointer-events:none;opacity:.6}
 :root[data-role="planner"] #p-ayu .del{display:none!important}
 :root[data-role="planner"] .page:not([data-planner-edit]) .sel{cursor:default}
+.aycols{display:grid;grid-template-columns:repeat(auto-fit,minmax(19rem,1fr));gap:.9rem;align-items:stretch}
+.aycol{display:flex;flex-direction:column}
+.aycol .tbox-b{flex:1}
+.tk.ayq.ansd{border-color:var(--leaf);background:color-mix(in srgb,var(--leaf) 7%,var(--card))}
+.tk.ayq.ansd .tk-n{opacity:1}
+.dtag.ansd-tag{background:var(--leaf);color:#fff;border-color:var(--leaf)}
+.ayatt{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+.ayatt a{display:inline-flex;align-items:center;gap:.35rem;font-size:.76rem;text-decoration:none;color:var(--ink-soft);background:var(--sunk);border:1.5px solid var(--line-2);border-radius:999px;padding:.24rem .6rem}
+.ayatt a:hover{border-color:var(--accent);color:var(--ink)}
 .aychip{display:inline-block;font-size:.63rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid currentColor;border-radius:999px;padding:.04rem .45rem;margin-left:.45rem;vertical-align:.12em}
 .aypills{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
 .ayp{font:inherit;font-family:var(--disp);font-weight:800;font-size:.76rem;background:var(--card);border:2px solid var(--line-2);border-radius:999px;padding:.4rem .85rem;cursor:pointer}
@@ -813,18 +822,6 @@ a{color:var(--sky)}
   <div class="ph" style="margin-top:1.6rem"><h2>🎲 <span lang-en>If you pick a different caterer</span><span lang-ja>ケータリング別の総額</span></h2></div>
   <div class="grid g2" id="scen"></div>
 
-  <div class="ph" style="margin-top:1.8rem"><h2>🔢 <span lang-en>What one more guest costs</span><span lang-ja>ゲスト1名増えるといくら？</span></h2>
-    <p><span lang-en>Exact marginal cost, recalculated from your current choices.</span><span lang-ja>現在の選択に基づく実際の追加費用です。</span></p></div>
-  <div class="card pad" style="margin-bottom:.9rem">
-    <div class="calc" style="margin-bottom:.8rem">
-      <div class="fld"><label><span lang-en>Add this many guests</span><span lang-ja>追加する人数</span></label><input id="whatif" type="number" min="0" max="20" value="1"></div>
-      <div class="fld"><label><span lang-en>Do they fly in?</span><span lang-ja>空路で来る？</span></label>
-        <select id="whatiffly" style="font:inherit;font-weight:700;padding:.4rem .6rem;border:2px solid var(--line-2);border-radius:10px;background:var(--card);color:var(--ink)">
-          <option value="1"><span>Yes</span></option><option value="0">No</option></select></div>
-    </div>
-    <div id="whatifout"></div>
-  </div>
-
   <div class="ph" style="margin-top:1.8rem"><h2>✂️ <span lang-en>Where you could cut</span><span lang-ja>削減できるところ</span></h2>
     <p><span lang-en>Ranked by how little the guests would notice.</span><span lang-ja>ゲストが気づきにくい順に並べています。</span></p></div>
   <div class="grid g2" id="cuts"></div>
@@ -1054,10 +1051,7 @@ a{color:var(--sky)}
   <div id="ayu-inbox"></div>
   <div class="ph"><h2>📮 <span lang-en>Ayuko&rsquo;s dashboard</span><span lang-ja>鮎子さんのダッシュボード</span></h2></div>
 
-  <div id="ayu-thead"></div>
-  <div id="ayutasks" style="margin-bottom:1.6rem"></div>
-
-  <div class="ph" id="ayu-ghead"><h2>📤 <span lang-en>Tasks you are giving them</span><span lang-ja>おふたりへのお願い</span></h2></div>
+  <div class="ph" id="ayu-thead"><h2>✅ <span lang-en>Tasks</span><span lang-ja>タスク</span></h2></div>
   <div id="ayuadds" style="margin-bottom:2.2rem"></div>
 
   <div class="qa-frame">
@@ -4097,16 +4091,27 @@ function renderAyuNotes(){
    task for one of them. "Both" leads, since that is the common case. Only the
    tasks she created show here — this is her side of the conversation, not a
    mirror of their boards. */
-var AYU_ADD=[
- {o:"b",n:"For Jay &amp; Hikaru",nj:"ジェイと光へ",lead:true},
- {o:"j",n:"For Jay only",nj:"ジェイのみ"},
- {o:"h",n:"For Hikaru only",nj:"光のみ"}];
-function ayuMade(o){
-  return load("mytasks",[]).filter(function(x){ return x.by==="a" && x.o===o; });
+/* ---------- the two task columns ----------
+   Left: what Jay and Hikaru have handed her. Right: what she has asked of
+   them. Three rows each, then Show more in threes, and the two columns hold
+   the same height so the page does not stagger. */
+function ayuMade(){ return load("mytasks",[]).filter(function(x){ return x.by==="a"; }); }
+function ayuOpenN(k,d){ var o=load("ayuopen",{}); return o[k]||d; }
+function ayuMoreBtn(key,total,shown){
+  if(total<=shown) {
+    if(shown<=3) return null;
+    var b0=el("button","tmore",t("Show less","閉じる"));
+    b0.addEventListener("click",function(){ var o=load("ayuopen",{});o[key]=3;save("ayuopen",o);renderAll(); });
+    return b0;
+  }
+  var rest=total-shown;
+  var b=el("button","tmore",t("Show "+Math.min(rest,3)+" more ("+rest+" hidden)","他"+Math.min(rest,3)+"件を表示（残り"+rest+"件）"));
+  b.addEventListener("click",function(){ var o=load("ayuopen",{});o[key]=shown+3;save("ayuopen",o);renderAll(); });
+  return b;
 }
 function ayuAddRow(owner){
   var wrap=el("div","addr");
-  wrap.innerHTML='<input class="a-n" placeholder="'+t("Add a task…","タスクを追加…")+'">'+
+  wrap.innerHTML='<input class="a-n" placeholder="'+t("Ask Jay &amp; Hikaru for something…","ジェイと光へのお願いを追加…")+'">'+
     '<textarea class="a-note" rows="2" placeholder="'+t("Details… (optional)","詳細…（任意）")+'"></textarea>'+
     '<div class="a-m"><input type="date" class="duein a-d">'+
     '<button class="btn a-go">＋ '+t("Add","追加")+'</button></div>';
@@ -4127,22 +4132,44 @@ function ayuAddRow(owner){
 }
 function renderAyuAdds(){
   var w=document.getElementById("ayuadds"); if(!w) return; w.innerHTML="";
-  var grid=el("div","tgrid");
-  AYU_ADD.forEach(function(g){
-    var mine=ayuMade(g.o), k=OWN[g.o];
-    var box=el("div","tbox");
-    if(g.lead) box.style.borderColor="var("+k.c+")";
-    box.innerHTML='<div class="tbox-h"><span class="tbox-i">'+(g.o==="b"?"🤝":(g.o==="j"?"💙":"💛"))+'</span>'+
-      '<span class="tbox-n">'+bi(g.n,g.nj)+'</span>'+
-      '<span class="tbox-c">'+(mine.length||"—")+'</span></div>';
-    var body=el("div","tbox-b");
-    mine.forEach(function(tk){ body.appendChild(taskRow(tk,false)); });
-    box.appendChild(body);
-    box.appendChild(ayuAddRow(g.o));
-    grid.appendChild(box);
-  });
+  var grid=el("div","aycols");
+
+  /* left — hers to do */
+  var mine=allTasks().filter(function(x){return taskOwner(x)==="a"&&!taskArch(x.id);})
+             .sort(function(p1,q1){return (taskDue(p1)||"9999")<(taskDue(q1)||"9999")?-1:1;});
+  var nL=ayuOpenN("mine",3);
+  var L=el("div","tbox aycol");
+
+  L.innerHTML='<div class="tbox-h"><span class="tbox-i">📥</span>'+
+    '<span class="tbox-n">'+bi("Jay &amp; Hikaru asked you for","ジェイと光からのお願い")+'</span>'+
+    '<span class="tbox-c">'+(mine.filter(function(x){return !taskDone(x.id);}).length||"✓")+'</span></div>';
+  var Lb=el("div","tbox-b");
+  if(!mine.length) Lb.innerHTML='<div style="font-size:.82rem;color:var(--ink-faint);padding:.4rem 0">'+
+    bi("Nothing at the moment.","現在ありません。")+'</div>';
+  mine.slice(0,nL).forEach(function(tk){ Lb.appendChild(taskRow(tk,false)); });
+  L.appendChild(Lb);
+  var mb=ayuMoreBtn("mine",mine.length,nL); if(mb)L.appendChild(mb);
+
+  /* right — what she is asking of them */
+  var given=ayuMade().sort(function(p1,q1){return (taskDue(p1)||"9999")<(taskDue(q1)||"9999")?-1:1;});
+  var nR=ayuOpenN("given",3);
+  var R=el("div","tbox aycol");
+
+  R.innerHTML='<div class="tbox-h"><span class="tbox-i">📤</span>'+
+    '<span class="tbox-n">'+bi("You asked Jay &amp; Hikaru for","ジェイと光へのお願い")+'</span>'+
+    '<span class="tbox-c">'+(given.filter(function(x){return !taskDone(x.id);}).length||"—")+'</span></div>';
+  var Rb=el("div","tbox-b");
+  if(!given.length) Rb.innerHTML='<div style="font-size:.82rem;color:var(--ink-faint);padding:.4rem 0">'+
+    bi("Nothing yet — add one below.","まだありません。下から追加できます。")+'</div>';
+  given.slice(0,nR).forEach(function(tk){ Rb.appendChild(taskRow(tk,false)); });
+  R.appendChild(Rb);
+  var rb=ayuMoreBtn("given",given.length,nR); if(rb)R.appendChild(rb);
+  R.appendChild(ayuAddRow("b"));
+
+  grid.appendChild(L); grid.appendChild(R);
   w.appendChild(grid);
 }
+
 
 
 function renderTent(){
@@ -5159,14 +5186,53 @@ function ayuInbox(){
   }
   var box=el("div","aypills");
   box.innerHTML=
-    pill(mine,"task"+(mine===1?"":"s")+" for you","件 あなたのタスク","ayu-thead","--amber")+
-    pill(open,"question"+(open===1?"":"s")+" to answer","件 未回答の質問","ayu-qhead","--coral")+
-    pill(given,"still open with them","件 おふたりで対応中","ayu-ghead","--sky");
+    pill(mine,"task"+(mine===1?"":"s")+" for you","件 あなたのタスク","ayu-thead","--mint")+
+    pill(open,"question"+(open===1?"":"s")+" to answer","件 未回答の質問","ayu-qhead","--amber")+
+    pill(given,"you asked them for","件 おふたりへのお願い","ayu-thead","--mint");
   box.querySelectorAll("[data-jump]").forEach(function(b){
     b.addEventListener("click",function(){
       var t2=document.getElementById(b.dataset.jump);
       if(t2)window.scrollTo(0,Math.max(0,t2.getBoundingClientRect().top+window.pageYOffset-70));});});
   w.appendChild(box);
+}
+var AYU_ROOMS={ay1:[{k:"r1",n:"The first unlisted room",nj:"掲載のないお部屋 1"},
+                    {k:"r2",n:"The second unlisted room",nj:"掲載のないお部屋 2"}]};
+function ayuRoomShots(qid){
+  var wrap=el("div"); wrap.style.cssText="margin-top:.7rem;display:grid;gap:.6rem";
+  AYU_ROOMS[qid].forEach(function(rm){
+    var nk="ayu.roomname."+qid+"."+rm.k;
+    var box=el("div");
+    box.style.cssText="border:2px dashed var(--line-2);border-radius:12px;padding:.6rem .7rem";
+    var lab=el("div");
+    lab.style.cssText="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.35rem";
+    lab.innerHTML=bi(rm.n,rm.nj);
+    var nm=el("input");
+    nm.value=load(nk,"");
+    nm.placeholder=t("Room name — e.g. Tulip","お部屋の名称（例：チューリップ）");
+    nm.style.cssText="width:100%;font:inherit;font-size:.84rem;padding:.45rem .6rem;margin-bottom:.45rem;"+
+      "border:2px solid var(--line-2);border-radius:10px;background:var(--card);color:var(--ink)";
+    var tmr=null;
+    nm.addEventListener("input",function(){ clearTimeout(tmr);
+      tmr=setTimeout(function(){ save(nk,nm.value); },500); });
+    box.appendChild(lab); box.appendChild(nm);
+    var key=qImgKey("ayu",qid+rm.k), arr=imgList(key);
+    var strip=el("div","qimgs");
+    arr.forEach(function(o){
+      var b=el("div","qth");
+      b.innerHTML='<img src="'+o.src+'" alt="" loading="lazy"><button class="qx">✕</button>';
+      b.querySelector("img").addEventListener("click",function(){ lightbox(imgList(key),o.id); });
+      armDanger(b.querySelector(".qx"),function(){ imgDrop(key,o.id); renderAll(); });
+      strip.appendChild(b);});
+    var add=el("label","qadd");
+    add.innerHTML='<span>📷 '+t("Upload a photo of this room","このお部屋の写真をアップロード")+'</span>'+
+      '<input type="file" accept="image/*" multiple hidden>';
+    var inp=add.querySelector("input");
+    inp.addEventListener("change",function(){ addImgsTo(key,inp.files,1200,0.7,renderAll); inp.value=""; });
+    strip.appendChild(add);
+    box.appendChild(strip);
+    wrap.appendChild(box);
+  });
+  return wrap;
 }
 function ayuAnswerBox(x){
   var wrap=el("div"); wrap.style.cssText="margin-top:.6rem";
@@ -5195,10 +5261,7 @@ function ayuAnswerBox(x){
   });
   row.appendChild(btn); row.appendChild(note);
   wrap.appendChild(lbl); wrap.appendChild(ta); wrap.appendChild(row);
-  var th=qThumbs("ayu",x.id,true);               /* photos ride along with the answer */
-  if(th){ var ph=el("div"); ph.style.cssText="margin-top:.55rem";
-    var pl=el("div"); pl.style.cssText="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.28rem";
-    pl.innerHTML=bi("Photos","写真"); ph.appendChild(pl); ph.appendChild(th); wrap.appendChild(ph); }
+  if(AYU_ROOMS[x.id]) wrap.appendChild(ayuRoomShots(x.id));
   return wrap;
 }
 function ayuStatusChip(x){
@@ -5216,11 +5279,11 @@ function renderAyuko(){
   });
   list.forEach(function(x){
     var answered=ayuIsAnswered(x);
-    var d=el("div","tk ayq"+(answered?" done":""));
+    var d=el("div","tk ayq"+(answered?" ansd":""));
     d.innerHTML='<input type="checkbox" '+(answered?"checked":"")+(answered?"":" disabled")+
       ' title="'+t("ticks itself once you send an answer","回答を送信すると自動でチェックされます")+'">'+
       '<div class="tk-b"><div class="tk-n" style="font-weight:600">'+(x.mine?biUser({n:x.q,nj:x.qj,src:x.src}):bi(x.q,x.qj))+
-      ayuStatusChip(x)+(answered?'<span class="dtag">'+bi("Answered","回答済み")+'</span>':'')+'</div></div>'+
+      ayuStatusChip(x)+(answered?'<span class="dtag ansd-tag">✓ '+bi("Answered","回答済み")+'</span>':'')+'</div></div>'+
       (window.ROLE==="planner"?'':'<button class="del" data-dq="'+x.id+'">✕</button>');
     d.querySelector(".tk-b").appendChild(ayuAnswerBox(x));
     var cb=d.querySelector("input");
@@ -5246,26 +5309,104 @@ function renderAyuko(){
     row.appendChild(inp);row.appendChild(btn);w.appendChild(row);
   }
 }
-/* ---------- her notes: a dated bulletin, newest first ---------- */
+/* ---------- her notes: a dated bulletin with attachments ----------
+   Same chunked storage as the For Claude drop-box, in her own namespace so the
+   two queues never mix. Anything goes — PDF, image, Word, spreadsheet, deck. */
+function ayuBlobKey(id,i){ return "ayu.blob."+id+"."+i; }
+function ayuFileUrl(f){
+  var out="";
+  for(var i=0;i<f.n;i++){ var pt=load(ayuBlobKey(f.id,i),null); if(pt==null) return null; out+=pt; }
+  return out;
+}
+function ayuAttach(files,after){
+  var left=files.length, made=[];
+  if(!left){ after&&after(made); return; }
+  Array.prototype.forEach.call(files,function(f){
+    var done=function(){ if(!--left){ after&&after(made); } };
+    var r=new FileReader();
+    r.onload=function(ev){
+      var finish=function(u){
+        if(u.length>FEEDMAX){
+          if(typeof toast==="function")toast(t(f.name+" is too big — under 2 MB please","「"+f.name+"」が大きすぎます（2MBまで）"));
+          return done();
+        }
+        var rec={id:"aa_"+Date.now()+"_"+Math.round(Math.random()*1e4),
+                 name:f.name||"file",mime:f.type||"",size:u.length};
+        var parts=[];
+        for(var i=0;i<u.length;i+=FEEDCHUNK) parts.push(u.slice(i,i+FEEDCHUNK));
+        parts.forEach(function(pt,i){ save(ayuBlobKey(rec.id,i),pt); });
+        rec.n=parts.length; made.push(rec); done();
+      };
+      if(/^image\//.test(f.type)){
+        var im=new Image();
+        im.onload=function(){
+          var sc=Math.min(1,1600/Math.max(im.width,im.height));
+          var cv=document.createElement("canvas");
+          cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
+          cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+          finish(cv.toDataURL("image/jpeg",0.75));
+        };
+        im.onerror=function(){ finish(ev.target.result); };
+        im.src=ev.target.result;
+      } else finish(ev.target.result);
+    };
+    r.onerror=done;
+    r.readAsDataURL(f);
+  });
+}
+function ayuAttChips(files){
+  var w=el("div","ayatt");
+  (files||[]).forEach(function(f){
+    var url=ayuFileUrl(f);
+    var a2=el("a"); a2.textContent=feedIcon(f)+" "+f.name;
+    if(url){ a2.href=url; a2.download=f.name; a2.target="_blank"; a2.rel="noopener"; }
+    else { a2.style.opacity=".5"; a2.title=t("still syncing","同期中"); }
+    w.appendChild(a2);});
+  return w;
+}
 function renderAyuNotes(){
   var w=document.getElementById("ayunotes"); if(!w) return; w.innerHTML="";
   var posts=load("ayu.posts",[]);
+  var pend=[];                                   /* attachments staged for this post */
   var form=el("div");
   var ta=el("textarea");
-  ta.placeholder=t("Anything for Jay and Hikaru — availability, vendor news, a reminder…",
-                   "ジェイと光へのご連絡 — ご予定、業者さんからの情報、リマインドなど…");
+  ta.placeholder=t("Anything for Jay and Hikaru — availability, vendor news, a document to pass on…",
+                   "ジェイと光へのご連絡 — ご予定、業者さんからの情報、共有したい資料など…");
   ta.style.cssText="width:100%;min-height:3.4rem;font:inherit;font-size:.88rem;line-height:1.7;padding:.65rem .8rem;"+
     "border:2px solid var(--line-2);border-radius:14px;background:var(--card);color:var(--ink);resize:none;overflow:hidden";
   autoGrow(ta);
-  var send=el("button","btn"); send.style.margin=".5rem 0 0"; send.innerHTML=bi("Send","投稿する");
+  var staged=el("div","ayatt");
+  var row=el("div"); row.style.cssText="display:flex;align-items:center;gap:.5rem;margin-top:.5rem;flex-wrap:wrap";
+  var clip=el("label","qadd");
+  clip.innerHTML='<span>📎 '+t("Attach a file","ファイルを添付")+'</span><input type="file" multiple hidden>';
+  var inp=clip.querySelector("input");
+  inp.addEventListener("change",function(){
+    ayuAttach(inp.files,function(made){
+      pend=pend.concat(made); inp.value="";
+      staged.innerHTML=""; pend.forEach(function(f){
+        var c=el("span"); c.className="";
+        c.style.cssText="display:inline-flex;align-items:center;gap:.3rem;font-size:.76rem;background:var(--sunk);border:1.5px solid var(--line-2);border-radius:999px;padding:.24rem .6rem";
+        c.innerHTML=feedIcon(f)+" "+esc(f.name)+' <button class="qx" style="position:static;width:1rem;height:1rem;line-height:1">✕</button>';
+        c.querySelector("button").addEventListener("click",function(){
+          pend=pend.filter(function(y){return y.id!==f.id;});
+          for(var i=0;i<f.n;i++) save(ayuBlobKey(f.id,i),null);
+          c.remove();});
+        staged.appendChild(c);});
+      if(typeof toast==="function")toast(t("Attached","添付しました"));
+    });
+  });
+  var send=el("button","btn"); send.style.margin="0"; send.innerHTML=bi("Send","投稿する");
   send.addEventListener("click",function(){
-    var v=ta.value.trim(); if(!v)return;
+    var v=ta.value.trim();
+    if(!v&&!pend.length)return;
     var a2=load("ayu.posts",[]);
-    a2.unshift({id:"ap_"+Date.now(),t:v,d:new Date().toISOString().slice(0,10)});
-    save("ayu.posts",a2); ta.value=""; renderAll();
+    a2.unshift({id:"ap_"+Date.now(),t:v,d:new Date().toISOString().slice(0,10),files:pend});
+    save("ayu.posts",a2); ta.value=""; pend=[]; renderAll();
     if(typeof toast==="function")toast(t("Posted","投稿しました"));
   });
-  form.appendChild(ta); form.appendChild(send); w.appendChild(form);
+  row.appendChild(clip); row.appendChild(send);
+  form.appendChild(ta); form.appendChild(staged); form.appendChild(row); w.appendChild(form);
+
   if(!posts.length){
     w.appendChild(el("div","",'<div style="font-size:.82rem;color:var(--ink-faint);margin-top:.9rem">'+
       bi("Nothing posted yet.","まだ投稿はありません。")+'</div>')); return; }
@@ -5276,19 +5417,21 @@ function renderAyuNotes(){
       '<span style="font-size:.72rem;font-weight:800;color:var(--ink-faint)">'+fmtDue(pst.d)+'</span>'+
       '<button class="bul-edit" data-ed="'+pst.id+'" style="margin-left:auto">'+t("edit","編集")+'</button>'+
       '<button class="bul-edit danger" data-rm="'+pst.id+'">'+t("delete","削除")+'</button></div>'+
-      '<div class="apbody" style="font-size:.87rem;line-height:1.75;white-space:pre-wrap">'+esc(pst.t)+'</div>';
+      '<div class="apbody" style="font-size:.87rem;line-height:1.75;white-space:pre-wrap">'+esc(pst.t||"")+'</div>';
+    if(pst.files&&pst.files.length) c.appendChild(ayuAttChips(pst.files));
     c.querySelector("[data-ed]").addEventListener("click",function(){
-      inlineEdit(c.querySelector(".apbody"),pst.t,function(v){
-        var a2=load("ayu.posts",[]).map(function(y){return y.id===pst.id?Object.assign({},y,{t:v}):y;});
-        save("ayu.posts",a2);renderAll();},true);});
+      inlineEdit(c.querySelector(".apbody"),pst.t||"",function(v){
+        save("ayu.posts",load("ayu.posts",[]).map(function(y){return y.id===pst.id?Object.assign({},y,{t:v}):y;}));
+        renderAll();},true);});
     armDanger(c.querySelector("[data-rm]"),function(){
+      (pst.files||[]).forEach(function(f){ for(var i=0;i<f.n;i++) save(ayuBlobKey(f.id,i),null); });
       save("ayu.posts",load("ayu.posts",[]).filter(function(y){return y.id!==pst.id;}));renderAll();});
     listw.appendChild(c);});
   w.appendChild(listw);
 }
 /* ---------- tabs ---------- */
 var TABS=[["home","🏠","Home","ホーム","--coral"],["cal","🗓","Calendar","カレンダー","--teal"],["food","🍽","Food","料理","--amber"],["decor","🎀","Decor","装飾","--pink"],["beauty","💄","Beauty","ヘアメイク","--grape"],["money","💴","Budget","予算","--sky"],["extras","🎪","Extras","その他","--pink"],["guests","👥","Guests","ゲスト","--grape"],["stay","🛏","Stay","宿泊","--leaf"],["drive","🚐","Driving","送迎","--sun"],["seat","🪑","Tables","席次","--grape"],["day","📅","The day","当日","--teal"],["us","💛","Hikaru","光","--pink"],["jay","💙","Jay","ジェイ","--sky"],["notes","🤝","Between us","ふたりで","--mint"],["ayu","📮","Ayuko","鮎子さん","--amber"],["inv","💌","Invites","招待状","--pink"],["feed","📥","For Claude","クロードへ","--mint"]];
-var PLANNER_HIDE=["us","jay"];
+var PLANNER_HIDE=["us","jay","notes"];
 function buildTabs(){
   var w=document.getElementById("tabs");w.innerHTML="";
   TABS.filter(function(tb){return window.ROLE!=="planner"||PLANNER_HIDE.indexOf(tb[0])<0;}).forEach(function(tb){var b=el("button","tab");b.type="button";b.setAttribute("role","tab");b.dataset.go=tb[0];
@@ -5377,7 +5520,7 @@ function renderAll(){
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
   renderHeroShot();renderCal();renderInbox();renderFeed();renderDecor2();renderBeauty();
   renderStay();renderSeat();renderTent();renderPalette();renderSanto();renderDrive();
-  renderTaskBoxes("ayutasks","a");renderAyuAdds();renderAyuNotes();ayuInbox();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
+  renderAyuAdds();renderAyuNotes();ayuInbox();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
   document.querySelectorAll(".m").forEach(function(e){e.textContent=money(parseFloat(e.dataset.yen));});
