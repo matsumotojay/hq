@@ -5286,15 +5286,24 @@ if(window.FBCONFIG){
 
     /* Jay and Hikaru carry an email account; everyone else rides in anonymously
        and lands in the planner role. The role drives what save() will accept. */
+    /* Precedence, so nothing breaks before the accounts exist:
+         signed in with an email          -> owner
+         arrived on a ?planner link       -> planner  (Ayuko's link)
+         anything else                    -> owner    (today's behaviour)
+       Once Jay and Hikaru have accounts, the last line becomes planner and
+       the URL flag stops mattering. */
+    if(new URLSearchParams(location.search).has("planner")) localStorage.setItem("lt4.plannerlink","1");
+    const plannerLink=localStorage.getItem("lt4.plannerlink")==="1";
     const setRole=u=>{
-      const owner=!!(u&&!u.isAnonymous);
+      const signedIn=!!(u&&!u.isAnonymous);
+      const owner=signedIn||!plannerLink;
       window.ROLE=owner?"owner":"planner";
       document.documentElement.dataset.role=window.ROLE;
       const w=document.getElementById("whoami");
       if(w){
         const ja=document.documentElement.getAttribute("data-lang")==="ja";
-        w.textContent=owner?(u.email||"").split("@")[0]:(ja?"サインイン":"Sign in");
-        w.classList.toggle("owner",owner);
+        w.textContent=signedIn?(u.email||"").split("@")[0]:(ja?"サインイン":"Sign in");
+        w.classList.toggle("owner",signedIn);
       }
       if(typeof renderAll==="function")renderAll();
     };
