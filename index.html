@@ -1594,7 +1594,7 @@ var TCAT=[
 var TASKS=[
  /* ① Venue & Operations */
  {id:"t101",c:1,o:"j",n:"Venue contract",nj:"会場契約",due:"2026-12-01",d:"Holding deposit is paid; the 20% accommodation deposit lands on this date",dj:"予約金は支払い済み。宿泊費デポジット20%がこの日"},
- {id:"p10", c:1,o:"j",n:"Confirm the table layout with Makiko",nj:"テーブル配置をまきこさんに確認",due:"2027-03-01",d:"She has 8 guest tables on file and recommends four 1800×120 joined into two long rows. <b>Tent confirmed 10m × 15m (Ayuko, 17 Aug 2026).</b> Three a side on an 1800mm table is 60cm per person — comfortable. The problem is not the seats, it is the floor: four rows side by side need 10.8m across and the tent is 10m. See the scale plan on the Tables tab.",dj:"まきこさんはゲストテーブル8卓で認識。1800×120を4台繋げて2列を推奨。<b>テントは10m×15mで確定（鮎子さん・2026年8月17日）。</b>1800mmのテーブルに片側3名で1名あたり60cm — ゆとりがあります。問題は席幅ではなく床面積で、4列を横並びにすると10.8m必要ですがテントは10mです。「席次」タブの実寸プランをご覧ください。"},
+ {id:"p10", c:1,o:"j",n:"Confirm the table layout with Makiko",nj:"テーブル配置をまきこさんに確認",due:"2027-03-01",d:"She has 8 guest tables on file and recommends four 1800×120 joined into two long rows. <b>Both dimensions are settled: tent 10m × 15m (Ayuko, 17 Aug 2026), tables 1800 × 1200 (Makiko, who has the eight on file and is cutting runners to fit them).</b> Three a side on an 1800mm table is 60cm per person — comfortable. The scale plan on the Tables tab is built from these two numbers.",dj:"まきこさんはゲストテーブル8卓で認識。1800×120を4台繋げて2列を推奨。<b>テントは10m×15mで確定（鮎子さん・2026年8月17日）。</b>1800mmのテーブルに片側3名で1名あたり60cm — ゆとりがあります。問題は席幅ではなく床面積で、4列を横並びにすると10.8m必要ですがテントは10mです。「席次」タブの実寸プランをご覧ください。"},
  {id:"p4b", c:3,o:"b",n:"Choose between Teranishi, Ohkawa and Santo",nj:"寺西・大川・Santoの3社から決める",due:"2026-10-01",d:"Three in the running. <b>Teranishi</b> — written quote, ¥1,399,200 at 50, drinks and all staff included. <b>Santo</b> — ¥15,000 a head all-inclusive plus 10% tax, so ¥825,000 at 50, and the only one who has sent food photos and a sample menu; <b>but whether drinks are inside that ¥15,000 is still unconfirmed, and it decides the whole comparison.</b> <b>Ohkawa</b> — nothing on paper at all: ¥18–20,000 a head, ramen and sushi bought in, 10 staff at ¥10,000 each.",dj:"候補は3社。<b>寺西シェフ</b> — 見積もり済み、50名で税込1,399,200円、ドリンク・スタッフ全込み。<b>Santo</b> — お一人様15,000円オールインクルーシブ＋消費税10%（50名で825,000円）。料理写真とメニュー例を送ってくれた唯一の1社。<b>ただしドリンクが15,000円に含まれるかは未確認で、これが比較の分かれ目です。</b><b>大川シェフ</b> — 書面の資料は一切なし。お一人様18,000〜20,000円、ラーメン・寿司は外部手配、サーブ10名（各10,000円）。"},
  {id:"t103",c:1,o:"j",n:"Create the event timeline",nj:"タイムスケジュール作成",due:"2027-02-01",d:"The running order on The day tab is the draft — Ayuko finalises it",dj:"「当日」タブの進行が下書き。最終版は鮎子さんが作成"},
  {id:"t102",c:1,o:"j",n:"Layout design",nj:"レイアウト設計",due:"2027-03-01",d:"",dj:""},
@@ -3266,7 +3266,7 @@ var J2HER=[
   a:"",aj:""},
  {q:"Do you want an outfit change?",qj:"お色直しはする？",a:"",aj:""},
  {q:"Who do you want to speak, and in what order?",qj:"スピーチは誰に、どの順番で頼む？",a:"",aj:""},
- {q:"Final theme colour — which of the swatches?",qj:"テーマカラーは最終的にどれ？",a:"Decided 23 Aug 2026: sage #8B9B6E, forest #4E5D4C, white #FFFFFF, greige #C7C2B4, terracotta #E37A4F, apricot #F5C6A4. The Decor tab has them with a copy button for Makiko.",aj:"2026年8月23日決定：セージ #8B9B6E、フォレスト #4E5D4C、ホワイト #FFFFFF、グレージュ #C7C2B4、テラコッタ #E37A4F、アプリコット #F5C6A4。「装飾」タブにコピー用のボタンがあります。"},
+ {q:"Final theme colour — which of the swatches?",qj:"テーマカラーは最終的にどれ？",a:"Sampled from the swatch image itself: sage #94A07C, forest #768870, white #FFFFFF, greige #D4C8B6, terracotta #E6936D, apricot #F2C6AF. The Decor tab has them with a copy button for Makiko.",aj:"色見本画像から直接抽出：セージ #94A07C、フォレスト #768870、ホワイト #FFFFFF、グレージュ #D4C8B6、テラコッタ #E6936D、アプリコット #F2C6AF。「装飾」タブにコピー用のボタンがあります。"},
  {q:"How much travel support feels right for your family?",qj:"ご家族の交通費はどこまで出す？",a:"",aj:""}];
 function renderNotes(){
   renderQA("h",J2H.filter(function(x){return !x.a;}),"asked","waiting for Jay","ジェイの回答待ち");
@@ -3889,12 +3889,12 @@ function tentPlan(key){
    Decided 23 Aug 2026. Six shades, fixed — this card exists to hand Makiko the
    exact codes, not to browse alternatives, so there is no picker any more. */
 var THEME=[
- {hex:"#8B9B6E",n:"Sage",       nj:"セージ"},
- {hex:"#4E5D4C",n:"Forest",     nj:"フォレスト"},
+ {hex:"#94A07C",n:"Sage",       nj:"セージ"},
+ {hex:"#768870",n:"Forest",     nj:"フォレスト"},
  {hex:"#FFFFFF",n:"White",      nj:"ホワイト"},
- {hex:"#C7C2B4",n:"Greige",     nj:"グレージュ"},
- {hex:"#E37A4F",n:"Terracotta", nj:"テラコッタ"},
- {hex:"#F5C6A4",n:"Apricot",    nj:"アプリコット"}];
+ {hex:"#D4C8B6",n:"Greige",     nj:"グレージュ"},
+ {hex:"#E6936D",n:"Terracotta", nj:"テラコッタ"},
+ {hex:"#F2C6AF",n:"Apricot",    nj:"アプリコット"}];
 function themeCodes(){ return THEME.map(function(c){return c.hex;}).join("  "); }
 function renderPalette(){
   var w=document.getElementById("palwheel"); if(!w) return;
