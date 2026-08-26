@@ -1703,7 +1703,7 @@ var TASKS=[
  {id:"p7",  c:2,o:"j",n:"Ask who is flying into New Chitose",nj:"新千歳着のゲストを確認",due:"2026-12-15",d:"Decides how many buses you need",dj:"必要なバス台数が決まります"},
  {id:"t202",c:2,o:"j",n:"Design and send the invitations",nj:"招待状作成・発送",due:"2026-12-15",d:"International guests need lead time to book flights — earlier is cheaper for them",dj:"海外ゲストは航空券手配の時間が必要。早いほど安く済みます"},
  {id:"t203",c:2,o:"j",n:"RSVP management",nj:"出欠管理",due:"2027-02-28",d:"",dj:""},
- {id:"q10", c:2,o:"j",n:"Send Ayuko the final guest list",nj:"鮎子さんに最終ゲストリストを送付",due:"2027-03-01",d:"Drives catering headcount and seating",dj:"ケータリング人数と席次の基礎"},
+ {id:"q10", c:2,o:"a",n:"Send Ayuko the final guest list",nj:"鮎子さんに最終ゲストリストを送付",due:"2027-03-01",d:"Drives catering headcount and seating",dj:"ケータリング人数と席次の基礎"},
  {id:"t204",c:2,o:"j",n:"Collect dietary restrictions and allergies",nj:"アレルギー確認",due:"2027-03-01",d:"",dj:""},
  {id:"h2",c:2,o:"h",n:"Confirm who is actually coming",nj:"参加可否の確認",due:"",d:"Seven people are marked Maybe — Mami, Asahi, Haruka, Sayuri, Joichiro, Ivy, Nolan. Set each to Going or Not coming on the Guests tab when you know.",dj:"7名が「未定」です（真美・朝陽・遥・小百合・丈一郎・アイビー・ノーラン）。わかり次第「ゲスト」タブで参加／不参加に変更してください。"},
  {id:"h3",c:2,o:"h",n:"Add anything each guest needs",nj:"ゲストごとの注意点を記入",due:"",d:"The Notes column on the Guests tab is free text — allergies, mobility, who cannot drive.",dj:"「ゲスト」タブのメモ欄は自由記入です。アレルギー・移動の制約・運転可否など。"},
@@ -1774,8 +1774,6 @@ var TASKS=[
  {id:"t901",c:9,o:"b",n:"Hotel arrangements",nj:"ホテル手配",due:"2026-12-01",d:"20% deposit due on this date",dj:"この日に20%のデポジット"},
  {id:"t902",c:9,o:"b",n:"Shuttle bus arrangements",nj:"バス手配",due:"2027-02-01",d:"The Driving tab has the van planner",dj:"「送迎」タブに車両プランナーがあります"},
  {id:"t903",c:9,o:"b",n:"Designated driver service",nj:"運転代行手配",due:"2027-03-01",d:"Last cars leave at 23:00",dj:"最終便は23時"},
- {id:"t906",c:9,o:"j",n:"Ask Ayuko &amp; Jonny: van for the ceremony pick-up — and the cost",nj:"鮎子さん・ジョニーさんにバン送迎の可否と料金を確認",due:"2026-10-15",d:"Everything is within about 15 minutes, so one swift loop could deliver everyone to the ceremony together — that&rsquo;s the priority. Whether the same van brings people home at night is still the open question (see the task below).",dj:"各施設は15分圏内のため、1台の巡回で挙式前に全員を一度に送迎できるはず。これが最優先。夜の帰りも同じバンで対応できるかは未確定（下のタスク参照）。"},
- {id:"t905",c:9,o:"j",n:"Ask Ayuko how late a driver can run on the wedding night",nj:"当日夜の送迎が何時まで可能か鮎子さんに確認",due:"2026-11-01",d:"Whether a hired van can loop between the house and the hotels, whether fixed departure times work better, and the real last-call — nothing is known to run after about 23:00, and the tent &amp; sound licence ends at 21:00.",dj:"バンが会場とホテルを往復できるか、定時発車の方がよいか、最終が実際何時かを確認。23時以降の運行は不明で、テント・音響は21時までです。"},
  {id:"t904",c:9,o:"b",n:"Airport-to-hotel guide",nj:"空港〜ホテル案内",due:"2027-04-01",d:"CTS→Lakehouse 1h40m, Hakodate→Lakehouse 2h30m",dj:"新千歳→レイクハウス1時間40分、函館→2時間30分"},
 
  /* ⑩ Budget & Contracts */
@@ -2062,7 +2060,7 @@ function addRow(cid,who){
   var oB=wrap.querySelector(".a-o"),paint=function(){var k=OWN[oB.dataset.o];
     oB.style.borderColor="var("+k.c+")";oB.style.color="var("+k.c+")";oB.innerHTML=bi(k.l,k.lj);};
   paint();
-  oB.addEventListener("click",function(){var o=oB.dataset.o;oB.dataset.o=o==="j"?"h":(o==="h"?"b":"j");paint();});
+  oB.addEventListener("click",function(){oB.dataset.o=nextOwner(oB.dataset.o);paint();});
   var sel=wrap.querySelector(".a-c");
   if(sel) sel.innerHTML=catList().map(function(c){return '<option value="'+c.id+'">'+c.ic+' '+t(c.n,c.nj).replace(/&amp;/g,"&")+'</option>';}).join("");
   var go=function(){
