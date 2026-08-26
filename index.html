@@ -418,7 +418,12 @@ a{color:var(--sky)}
 .tk input[type=checkbox]:checked::after{transform:scale(1)}
 .tk-b{flex:1;min-width:0}
 .tk-n{font-size:.9rem;font-weight:700;line-height:1.35}
-.tk-d{font-size:.77rem;color:var(--ink-faint);margin-top:.15rem;line-height:1.5}
+.tk-d{font-size:.77rem;color:var(--ink-faint);margin-top:.15rem;line-height:1.6}
+.tk-d p{margin:.3rem 0}
+.tk-d p:first-child{margin-top:0}
+ul.tdl{margin:.3rem 0 .15rem;padding-left:1.05rem;list-style:disc}
+ul.tdl li{margin:.22rem 0;line-height:1.6}
+.tk-n ul.tdl{font-weight:400;font-size:.95em;margin-top:.4rem}
 .tk.done .tk-n{opacity:.5;text-decoration:line-through}
 .tk.done .tk-d{opacity:.42}
 .tk.done{border-style:dashed;background:color-mix(in srgb,var(--mint) 6%,var(--card))}
@@ -1753,7 +1758,7 @@ var TASKS=[
  /* ① Venue & Operations */
  {id:"t101",c:1,o:"j",n:"Venue contract",nj:"会場契約",due:"2026-12-01",d:"Holding deposit is paid; the 20% accommodation deposit lands on this date",dj:"予約金は支払い済み。宿泊費デポジット20%がこの日"},
  {id:"p10", c:1,o:"j",n:"Confirm the table layout with Makiko",nj:"テーブル配置をまきこさんに確認",due:"2027-03-01",d:"She has 8 guest tables on file and recommends four 1800×120 joined into two long rows. <b>Both dimensions are settled: tent 10m × 15m (Ayuko, 17 Aug 2026), tables 1800 × 1200 (Makiko, who has the eight on file and is cutting runners to fit them).</b> Three a side on an 1800mm table is 60cm per person — comfortable. The scale plan on the Tables tab is built from these two numbers.",dj:"まきこさんはゲストテーブル8卓で認識。1800×120を4台繋げて2列を推奨。<b>テントは10m×15mで確定（鮎子さん・2026年8月17日）。</b>1800mmのテーブルに片側3名で1名あたり60cm — ゆとりがあります。問題は席幅ではなく床面積で、4列を横並びにすると10.8m必要ですがテントは10mです。「席次」タブの実寸プランをご覧ください。"},
- {id:"p4b", c:3,o:"b",n:"Choose between Teranishi, Ohkawa and Santo",nj:"寺西・大川・Santoの3社から決める",due:"2026-10-01",d:"Three in the running. <b>Teranishi</b> — written quote, ¥1,399,200 at 50, drinks and all staff included. <b>Santo</b> — ¥15,000 a head all-inclusive of drinks and staff, plus 10% tax, so ¥825,000 at 50 — and the only one who has sent food photos and a sample menu. <b>Ohkawa</b> — nothing on paper at all: ¥18–20,000 a head, ramen and sushi bought in, 10 staff at ¥10,000 each.",dj:"候補は3社。<b>寺西シェフ</b> — 見積もり済み、50名で税込1,399,200円、ドリンク・スタッフ全込み。<b>Santo</b> — お一人様15,000円（ドリンク・スタッフ込み）＋消費税10%で、50名なら825,000円。料理写真とメニュー例を送ってくれた唯一の1社。<b>大川シェフ</b> — 書面の資料は一切なし。お一人様18,000〜20,000円、ラーメン・寿司は外部手配、サーブ10名（各10,000円）。"},
+ {id:"p4b", c:3,o:"b",n:"Choose between Teranishi, Ohkawa and Santo",nj:"寺西・大川・Santoの3社から決める",due:"2026-10-01",d:"Three in the running.<ul class=\"tdl\"><li><b>Teranishi</b> — written quote. ¥1,399,200 at 50, drinks and all staff included. No food photos.</li><li><b>Santo</b> — ¥15,000 a head all-inclusive, plus 10% tax, so ¥825,000 at 50. The only one who has sent photos and a sample menu.</li><li><b>Ohkawa</b> — nothing on paper at all. ¥18–20,000 a head, ramen and sushi bought in, 10 staff at ¥10,000 each.</li></ul>",dj:"候補は3社。<ul class=\"tdl\"><li><b>寺西シェフ</b> — 見積もり済み。50名で税込1,399,200円、ドリンク・スタッフ全込み。料理写真はなし。</li><li><b>Santo</b> — お一人様15,000円（オールインクルーシブ）＋消費税10%で、50名なら825,000円。写真とメニュー例を送ってくれた唯一の1社。</li><li><b>大川シェフ</b> — 書面の資料は一切なし。お一人様18,000〜20,000円、ラーメン・寿司は外部手配、サーブ10名（各10,000円）。</li></ul>"},
  {id:"t103",c:1,o:"j",n:"Create the event timeline",nj:"タイムスケジュール作成",due:"2027-02-01",d:"The running order on The day tab is the draft — Ayuko finalises it",dj:"「当日」タブの進行が下書き。最終版は鮎子さんが作成"},
  {id:"t102",c:1,o:"j",n:"Layout design",nj:"レイアウト設計",due:"2027-03-01",d:"",dj:""},
  {id:"t104",c:1,o:"j",n:"Rain backup plan",nj:"雨天時プラン",due:"2027-04-01",d:"Tent and sound are confirmed until 9pm — the plan is what moves indoors and when you call it",dj:"テントと音響は21時まで確認済み。何を屋内に移すか、いつ判断するかを決める"},
@@ -1767,7 +1772,7 @@ var TASKS=[
  {id:"p7",  c:2,o:"j",n:"Ask who is flying into New Chitose",nj:"新千歳着のゲストを確認",due:"2026-12-15",d:"Decides how many buses you need",dj:"必要なバス台数が決まります"},
  {id:"t202",c:2,o:"j",n:"Design and send the invitations",nj:"招待状作成・発送",due:"2026-12-15",d:"International guests need lead time to book flights — earlier is cheaper for them",dj:"海外ゲストは航空券手配の時間が必要。早いほど安く済みます"},
  {id:"t203",c:2,o:"j",n:"RSVP management",nj:"出欠管理",due:"2027-02-28",d:"",dj:""},
- {id:"q10", c:2,o:"a",n:"Send Ayuko the final guest list",nj:"鮎子さんに最終ゲストリストを送付",due:"2027-03-01",d:"Drives catering headcount and seating",dj:"ケータリング人数と席次の基礎"},
+ {id:"q10", c:2,o:"j",n:"Send Ayuko the final guest list",nj:"鮎子さんに最終ゲストリストを送付",due:"2027-03-01",d:"Drives catering headcount and seating",dj:"ケータリング人数と席次の基礎"},
  {id:"t204",c:2,o:"j",n:"Collect dietary restrictions and allergies",nj:"アレルギー確認",due:"2027-03-01",d:"",dj:""},
  {id:"h2",c:2,o:"h",n:"Confirm who is actually coming",nj:"参加可否の確認",due:"",d:"Seven people are marked Maybe — Mami, Asahi, Haruka, Sayuri, Joichiro, Ivy, Nolan. Set each to Going or Not coming on the Guests tab when you know.",dj:"7名が「未定」です（真美・朝陽・遥・小百合・丈一郎・アイビー・ノーラン）。わかり次第「ゲスト」タブで参加／不参加に変更してください。"},
  {id:"h3",c:2,o:"h",n:"Add anything each guest needs",nj:"ゲストごとの注意点を記入",due:"",d:"The Notes column on the Guests tab is free text — allergies, mobility, who cannot drive.",dj:"「ゲスト」タブのメモ欄は自由記入です。アレルギー・移動の制約・運転可否など。"},
@@ -1946,8 +1951,20 @@ function taskNamePlain(tk){ var m=load("tname",{})[tk.id];
   if(tk.mine) return biUserPlain({n:tk.n,nj:tk.nj,src:tk.src});
   return t(tk.n,tk.nj).replace(/&rsquo;/g,"’").replace(/&amp;/g,"&").replace(/&gt;/g,">"); }
 function setTaskName(id,v){ var m=load("tname",{});m[id]=biSet(m[id],v);save("tname",m);renderAll(); }
+function bulletize(html){
+  if(!html) return "";
+  if(/<(ul|ol|li|br)\b/i.test(html)) return html;          /* already formatted */
+  var lines=String(html).split(/\n+/).map(function(x){return x.trim();}).filter(Boolean);
+  if(lines.length<2) return html;
+  var items=lines.every(function(l){return /^[-–—•*]\s+|^\d+[.)]\s+/.test(l);});
+  if(items) return "<ul class=\"tdl\">"+lines.map(function(l){
+      return "<li>"+l.replace(/^[-–—•*]\s+|^\d+[.)]\s+/,"")+"</li>";}).join("")+"</ul>";
+  return lines.map(function(l){
+    return /^[-–—•*]\s+/.test(l) ? "<li>"+l.replace(/^[-–—•*]\s+/,"")+"</li>" : "<p>"+l+"</p>";
+  }).join("").replace(/(<li>.*?<\/li>)+/g, function(m0){return "<ul class=\"tdl\">"+m0+"</ul>";});
+}
 function taskDesc(tk){ var m=load("tdesc",{})[tk.id];
-  if(m!=null) return biUser(m); return bi(tk.d||"",tk.dj||""); }
+  if(m!=null) return bulletize(biUser(m)); return bulletize(bi(tk.d||"",tk.dj||"")); }
 function taskDescPlain(tk){ var m=load("tdesc",{})[tk.id];
   if(m!=null) return biUserPlain(m);
   return t(tk.d||"",tk.dj||"").replace(/&rsquo;/g,"\u2019").replace(/&amp;/g,"&").replace(/&gt;/g,">").replace(/&lt;/g,"<"); }
@@ -5277,7 +5294,7 @@ function renderInvNotes(){
 }
 /* ---------- questions for Ayuko: gather, then send as one email ---------- */
 var AYUKOQ=[
- {id:"ay1",q:"We have worked out the room layout from the photos — Hydrangea is two bedrooms (King + bunk) and the eighth is Daffodil, the room-only one. Three things, if you would: <b>(1)</b> could you open the <b>Stay</b> tab on this site and tell us if anything there is wrong or out of date — room names, bed types, or how many each sleeps? <b>(2)</b> Tulip: our photo shows a double and a single, but the booking site says twin. Which is right, and does it sleep two or three? <b>(3)</b> The floor plan you mentioned — could you still send it? And if any of the photos we have are out of date, please upload newer ones below.",qj:"お部屋の構成は写真から整理できました。あじさいはキングと2段ベッドの2寝室、8室目は客室のみ貸出のダフォディル、という理解です。3点お願いできますでしょうか。<b>①</b>本サイトの<b>「宿泊」</b>タブをご確認いただき、お部屋の名称・ベッド構成・定員に誤りや古い情報があればお知らせください。<b>②</b>チューリップについて、お写真ではダブル＋シングルに見えますが、予約サイトではツインとなっています。どちらが正しく、定員は2名／3名のどちらでしょうか。<b>③</b>以前お話のあった間取り図を、あらためてお送りいただけますでしょうか。また、こちらで掲載している写真が古いものがあれば、下記より新しいものをアップロードしていただけると助かります。",st:"her"},
+ {id:"ay1",q:"We have worked out the room layout from the photos — Hydrangea is two bedrooms (King + bunk) and the eighth is Daffodil, the room-only one. Three things, if you would:<ul class=\"tdl\"><li>Could you open the <b>Stay</b> tab on this site and tell us if anything there is wrong or out of date — room names, bed types, or how many each sleeps?</li><li><b>Tulip:</b> our photo shows a double and a single, but the booking site says twin. Which is right, and does it sleep two or three?</li><li>The <b>floor plan</b> you mentioned — could you still send it?</li></ul>And if any of the photos we have are out of date, please upload newer ones below.",qj:"お部屋の構成は写真から整理できました。あじさいはキングと2段ベッドの2寝室、8室目は客室のみ貸出のダフォディル、という理解です。3点お願いできますでしょうか。<ul class=\"tdl\"><li>本サイトの<b>「宿泊」</b>タブをご確認いただき、お部屋の名称・ベッド構成・定員に誤りや古い情報があればお知らせください。</li><li><b>チューリップ</b>について、お写真ではダブル＋シングルに見えますが、予約サイトではツインとなっています。どちらが正しく、定員は2名／3名のどちらでしょうか。</li><li>以前お話のあった<b>間取り図</b>を、あらためてお送りいただけますでしょうか。</li></ul>また、こちらで掲載している写真が古いものがあれば、下記より新しいものをアップロードしていただけると助かります。",st:"her"},
  {id:"ay3",q:"Wedding-day transport. We&rsquo;re renting the van for a round trip from the airport — the day before the wedding and the day after — but the wedding day itself is still open. All our guests are staying within about 10–15 minutes of the Lakehouse. Could we hire a vehicle to collect everyone from their accommodation and bring them to the venue before the ceremony? Then for the journey home: anyone who wants to leave earlier, from around 19:30, can take a taxi. But for guests leaving later, roughly between 21:00 and midnight, could the van do a run to drop people back at their accommodation? One trip would be enough rather than several. Could we have an estimate for hiring the van on the wedding day itself?",qj:"挙式当日の送迎についてご相談です。空港との往復（式の前日と翌日）はバンをお借りする予定ですが、当日の移動が未定です。ゲストは全員レイクハウスから10〜15分圏内に宿泊しております。<br>①挙式前に、各宿泊先を回って会場までお送りいただく車両を手配することは可能でしょうか。<br>②お帰りについては、19:30頃から早めに戻られる方はタクシーをご利用いただく想定です。一方で21:00〜24:00頃に戻られる方について、バンで各宿泊先までお送りいただくことは可能でしょうか。複数便ではなく1便で構いません。<br>挙式当日にバンを手配する場合のお見積もりをいただけますでしょうか。"},
  {id:"ay8",q:"Could you share the menu for each catering option? Photos would be wonderful if they have them.",qj:"各ケータリングのメニュー内容をご共有いただけますでしょうか。お写真があれば嬉しいです。",st:"you",a:"There is no fixed menu — it is built around what we ask for. You already have Hokkaido specialities lined up: <b>scallops and wagyu</b>. <b>You are waiting on our list of anything else to add.</b>",aj:"決まったメニューはなく、こちらの希望に合わせて組み立てる形とのこと。北海道の名物として<b>ホタテと和牛</b>は既に押さえてくださっています。<b>他に加えたいものがあれば返信が必要です。</b>"},
  {id:"ay9",q:"Santo&rsquo;s staff fees — what is charged on top of the ¥15,000 a head? Teranishi&rsquo;s quote lists ¥450,000 for kitchen car, chef, cooks, service staff, sommelier and travel, so we&rsquo;d like to compare on the same terms.",qj:"Santoさんについて、お一人様15,000円に加えてかかる費用（スタッフ・出張費など）を教えてください。寺西さんの見積もりでは諸経費が450,000円（キッチンカー・シェフ・調理／サービススタッフ・ソムリエ・交通費）でしたので、同じ条件で比較したく存じます。",st:"ok",a:"<b>Nothing on top.</b> The ¥15,000 a head is all-inclusive — no staff and no travel fees — and <b>10% consumption tax</b> is the only addition. At 50 that is <b>¥825,000</b>.",aj:"<b>追加費用なし。</b>お一人様15,000円がオールインクルーシブで、スタッフ費用・出張費はかかりません。追加は<b>消費税10%</b>のみ。50名なら<b>825,000円</b>です。"},
