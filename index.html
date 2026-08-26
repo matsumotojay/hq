@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lake Toya HQ — Jay &amp; Hikaru</title>
 
 <style>
@@ -181,6 +182,69 @@ a{color:var(--sky)}
 .tk.ayq{align-items:flex-start;padding:.7rem .8rem}
 .tk.ayq.done .tk-n{opacity:.55}
 .aypost .bul-edit{font-size:.7rem}
+
+/* ---------- phones ----------
+   Desktop is untouched. Everything here is for a hand: nothing under about
+   32px to hit, and no input below 16px, because iOS zooms the whole page in
+   when you focus anything smaller and there is no way back out. */
+@media(max-width:600px){
+  input,textarea,select{font-size:16px!important}
+  .tk input[type=checkbox],.pri-i input[type=checkbox],
+  .tkchk,.cal-ck,.ck{width:1.85rem;height:1.85rem;min-width:1.85rem;min-height:1.85rem}
+  .tk-note,.dock-t,.bdel,.bmove,.fr{min-height:2rem;padding:.3rem .6rem;display:inline-flex;align-items:center}
+  .stsel,.dksel,.rsel,.a-c,select{min-height:2rem;padding:.3rem .5rem}
+  .ev-t1,.ev-t2,.ev-c{min-height:2rem}
+  .pen,.pen-n,.pen-d,.del,.qx,.bul-x,.psw-x,.arch,.c-del{
+    min-width:2rem;min-height:2rem;display:inline-flex;align-items:center;justify-content:center}
+  .bul-edit{min-height:2rem;padding:.3rem .6rem;display:inline-flex;align-items:center}
+  .own,.sendo{min-height:2rem;padding:.3rem .7rem}
+  .duein{min-height:2.1rem;padding:.3rem .5rem}
+  input[type=text],input[type=email],input[type=number],input[type=date],textarea{min-height:2.2rem}
+  .card a,.tk a,figcaption a{display:inline-block;padding:.35rem 0;min-height:1.9rem}
+  .btn{min-height:2.4rem;padding:.5rem 1rem}
+  .rkb{width:2.2rem;height:2.2rem}
+  .tab{min-width:4.6rem;padding:.45rem .5rem}
+  .seg button{min-height:2.2rem;padding:.45rem .8rem}
+  .chip{padding:.4rem .7rem;font-size:.84rem}
+  .seatz{min-height:2.6rem}
+  .qth,.qadd-tile{width:5rem;height:5rem}
+  .whoami{min-height:2rem}
+  /* wide tables keep their own scroller, and say so */
+  .tscroll,.rscroll{-webkit-overflow-scrolling:touch}
+  /* on a phone the money is the point of the Budget tab, and it was the one
+     column pushed off the edge. Drop the description; it is the least useful
+     of the three on a small screen and everything then fits. */
+  .btable td.dtl,.btable th:nth-child(2){display:none}
+  .btable tr.sub td:first-child{width:auto}
+  .btable{table-layout:fixed;width:100%;min-width:0}
+  .tscroll:has(.btable) table{min-width:0}
+  .btable td:first-child,.btable th:first-child{width:auto;word-break:break-word}
+  .btable td.amt,.btable th.amt,.btable td.n{width:6.6rem}
+  .btable td:last-child,.btable th:last-child{width:1.9rem}
+  .btable .amt input{width:100%;text-align:right}
+  .btable{font-size:.84rem}
+  .btable th,.btable td{padding:.55rem .5rem}
+  .btable td.amt,.btable th.amt{text-align:right;white-space:nowrap}
+  .tscroll::after,.rscroll::after{content:"";position:sticky;right:0;top:0;display:block;
+    width:1.6rem;height:100%;pointer-events:none;
+    background:linear-gradient(90deg,transparent,var(--ground))}
+  /* one column beats two squeezed ones */
+  .aycols{grid-template-columns:1fr}
+  .sgrid{grid-template-columns:1fr}
+  .tgrid{columns:1}
+  .grid.g2{grid-template-columns:1fr}
+  .qcols{grid-template-columns:1fr}
+  .top-in{flex-wrap:nowrap;gap:.35rem;align-items:center}
+  .brand{font-size:.9rem;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .seg button{padding:.4rem .55rem;font-size:.68rem}
+  .whoami{font-size:.66rem;padding:.3rem .55rem}
+  /* headings were eating a third of the screen before any content showed */
+  .ph h2{font-size:1.15rem}
+  .ph p{font-size:.8rem}
+  .ph{margin-bottom:.7rem}
+  h3{font-size:.98rem}
+  .page{padding-bottom:1rem}
+}
 .gal{position:relative;aspect-ratio:3/2;background:var(--sunk)}
 .gal img{width:100%;height:100%;object-fit:cover;display:block}
 .gal .nav{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 .4rem}
@@ -3524,13 +3588,13 @@ function renderBudget(){
       var row=el("tr");
       var flag=(r.choice||r.toggle||r.music||r.transport||r.live)?'<span class="lock">'+t("auto","連動")+'</span>':(r.est?'<span class="est">'+t("est","概算")+'</span>':'');
       row.innerHTML='<td><b>'+bi(r.n,r.nj)+'</b> '+flag+(edited?' <span class="est" style="color:var(--mint);border-color:var(--mint)">'+t("edited","編集済")+'</span>':'')+'</td>'+
-        '<td style="color:var(--ink-faint);font-size:.8rem">'+bi(r.d,r.dj)+'</td>'+
+        '<td class="dtl" style="color:var(--ink-faint);font-size:.8rem">'+bi(r.d,r.dj)+'</td>'+
         '<td class="amt"><input type="text" inputmode="numeric" value="'+money(v)+'" data-row="'+r.id+'"></td><td></td>';
       b.appendChild(row);});
     customRows().filter(function(r){return r.sec===s.id;}).forEach(function(r){
       var v=load("edit."+r.id,null)!=null?load("edit."+r.id,0):r.amt;
       var row=el("tr");
-      row.innerHTML='<td><b>'+r.n+'</b> <span class="est" style="color:var(--mint);border-color:var(--mint)">'+t("yours","追加")+'</span></td><td></td>'+
+      row.innerHTML='<td><b>'+r.n+'</b> <span class="est" style="color:var(--mint);border-color:var(--mint)">'+t("yours","追加")+'</span></td><td class="dtl"></td>'+
         '<td class="amt"><input type="text" inputmode="numeric" value="'+money(v)+'" data-row="'+r.id+'"></td>'+
         '<td><button class="del" data-del="'+r.id+'">✕</button></td>';
       b.appendChild(row);});
