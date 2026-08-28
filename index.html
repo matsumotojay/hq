@@ -1958,7 +1958,7 @@ function untranslated(){
   load("mytasks",[]).forEach(function(x){ if(!tn[x.id]&&!gone[x.id]) chk({n:x.n,nj:x.nj,src:x.src}); });
   (load("sched",null)||[]).forEach(function(e){ if(!e.fixed) chk({n:e.en,nj:e.ja,src:e.src}); });
   ["asked","askedj","ayq"].forEach(function(store){
-    load(store,[]).forEach(function(q){ chk({n:q.n,nj:q.nj,src:q.src}); }); });
+    qList(store).forEach(function(q){ chk({n:q.n,nj:q.nj,src:q.src}); }); });
   ["h","j"].forEach(function(pfx){
     load(pfx==="h"?"asked":"askedj",[]).forEach(function(q){
       var a=load(pfx+"ans."+q.id,""); if(a) chk(a); }); });
@@ -3445,19 +3445,44 @@ function qThumbs(pfx,id,editable){
   }
   return (arr.length||editable)?wrap:null;
 }
+/* ---------- the question boards, saved without trampling ----------
+   These lists were written whole on every save, so a device holding an old copy
+   could push it back and wipe anything added since. Now a save merges with
+   what is already stored instead of replacing it, and a delete leaves a
+   tombstone rather than a hole — the same shape the Ayuko board already uses,
+   which is why that one has never lost anything. */
+function qDel(store){ return load(store+"del",{}); }
+function qList(store){
+  var gone=qDel(store);
+  return load(store,[]).filter(function(q){ return q&&q.id&&!gone[q.id]; });
+}
+function qSave(store,next){
+  var gone=qDel(store), seen={}, out=[];
+  /* whatever is already stored wins on identity; new entries append */
+  load(store,[]).concat(next||[]).forEach(function(q){
+    if(!q||!q.id||gone[q.id]) return;
+    if(seen[q.id]){ out[seen[q.id]-1]=q; return; }   /* later copy is the edit */
+    seen[q.id]=out.push(q);
+  });
+  save(store,out);
+}
+function qDrop(store,id){
+  var g=qDel(store); g[id]=1; save(store+"del",g);
+  save(store,load(store,[]).filter(function(y){return y.id!==id;}));
+}
 /* a question either of you added can be rewritten — filed by the language it is
    written in, like everything else typed on this site */
 function setQuestion(store,id,v){
-  var a=load(store,[]);
+  var a=qList(store);
   a.forEach(function(q){ if(q.id===id){ var p=biSet({n:q.n,nj:q.nj,src:q.src},v); q.n=p.n; q.nj=p.nj; q.src=p.src; } });
-  save(store,a); renderAll();
+  qSave(store,a); renderAll();
 }
 /* An inbox count on each person's dashboard: how many questions the other one
    has asked that are still unanswered. It falls as they answer, so you can
    watch it go to zero. */
 function pendingFrom(store,pfx){
   var n=0;
-  load(store,[]).forEach(function(q){
+  qList(store).forEach(function(q){
     var a=biNorm(load(pfx+"ans."+q.id,""));
     if(!a.n&&!a.nj) n++; });
   return n;
@@ -3487,7 +3512,7 @@ function renderInbox(){
 function renderQA(pfx,seed,store,askLabel,askLabelJ){
   var f=(load(pfx+"filter","")||"").toLowerCase();
   var pend=[],ansd=[];
-  load(store,[]).slice().reverse().forEach(function(q){
+  qList(store).slice().reverse().forEach(function(q){
     /* the seeded rows carry HTML entities; biUser escapes, so decode first */
     var qp=biNorm({n:decodeEnt(q.n||""),nj:decodeEnt(q.nj||""),src:q.src});
     /* the seeded askedj rows were stored English-only, but J2HER already holds
@@ -3535,7 +3560,7 @@ function renderQA(pfx,seed,store,askLabel,askLabelJ){
     ta.addEventListener("keydown",function(e){ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) send(); });
     var th=qThumbs(pfx,o.id,true); if(th) c.appendChild(th);
     c.querySelector("[data-dq]").addEventListener("click",function(){
-      save(store,load(store,[]).filter(function(y){return y.id!==o.id;}));renderAll();});
+      qDrop(store,o.id);renderAll();});
     pw.appendChild(c);});
   if(pend.length>2&&!f){
     var pm=el("button","btn",pOpen?t("Show fewer","表示を減らす"):t("Show all "+pend.length,"全"+pend.length+"件を表示"));
@@ -5882,19 +5907,19 @@ function plainSeed(x){ return decodeEnt(String(x||"").replace(/<br\s*\/?>/gi,"\n
    and the two of you end up with different boards. */
 function seedBoards(){
   if(!load("jseed",false)){
-    var aj=load("askedj",[]);
+    var aj=qList("askedj");
     J2HER.forEach(function(x,i){ if(!aj.some(function(q){return q.id==="js"+i;}))
       aj.push({id:"js"+i,n:plainSeed(x.q),nj:plainSeed(x.qj),src:"en"}); });
-    save("askedj",aj); save("jseed",true);
+    qSave("askedj",aj); save("jseed",true);
   }
   if(!load("hseed2",false)){
-    var ah=load("asked",[]).filter(function(q){ return !/^hs\d+$/.test(q.id||""); });
+    var ah=qList("asked").filter(function(q){ return !/^hs\d+$/.test(q.id||""); });
     J2H.forEach(function(x,i){
       var id="hs"+i;
       ah.push({id:id,n:plainSeed(x.q),nj:plainSeed(x.qj),src:"ja"});
       if(x.a||x.aj) save("hans."+id,{n:plainSeed(x.a),nj:plainSeed(x.aj),src:"en"});
     });
-    save("asked",ah); save("hseed2",true); save("hseed",true);
+    qSave("asked",ah); save("hseed2",true); save("hseed",true);
   }
 }
 function dockLabel(b,f){b.innerHTML='<span lang-en>'+(f?"show":"hide")+'</span><span lang-ja>'+(f?"表示":"隠す")+'</span>';}
@@ -5908,7 +5933,7 @@ function toast(msg,ms){
   var x=document.createElement("div");x.className="toastx";x.textContent=msg;
   document.body.appendChild(x);setTimeout(function(){x.remove();},ms||2000);
 }
-window.renderAll=renderAll;window.toast=toast;window.buildTabs=buildTabs;window.go=go;
+window.renderAll=renderAll;window.toast=toast;window.buildTabs=buildTabs;window.go=go;window.qSave=qSave;window.qList=qList;window.qDrop=qDrop;
 document.addEventListener("keydown",function(e){
   if(!(e.metaKey||e.ctrlKey)||e.key!=="z"||e.shiftKey)return;
   var a=document.activeElement;
@@ -5955,8 +5980,8 @@ document.getElementById("usemaybe").addEventListener("change",function(e){save("
   document.getElementById(C[3]).addEventListener("click",function(){save(C[0]+"open",!load(C[0]+"open",false));renderNotes();});
   document.getElementById(C[5]).addEventListener("click",function(){
     var i=document.getElementById(C[4]),v=i.value.trim();if(!v)return;
-    var a=load(C[1],[]),qp=biSet(null,v);
-    a.push({id:"q"+Date.now(),n:qp.n,nj:qp.nj,src:qp.src});save(C[1],a);i.value="";renderAll();});
+    var qp=biSet(null,v);
+    qSave(C[1],[{id:"q"+Date.now(),n:qp.n,nj:qp.nj,src:qp.src}]);i.value="";renderAll();});
   document.getElementById(C[4]).addEventListener("keydown",function(e){
     if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) document.getElementById(C[5]).click(); });
 });
