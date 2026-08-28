@@ -813,11 +813,12 @@ ul.tdl li{margin:.22rem 0;line-height:1.6}
   <div id="santogal" style="margin-bottom:1.6rem"></div>
   <h3 style="margin:1.6rem 0 .6rem;font-size:1.05rem">🥂 <span lang-en>Drinks</span><span lang-ja>ドリンク</span></h3>
   <p style="font-size:.84rem;color:var(--ink-soft);margin:0 0 .7rem"><span lang-en>Self-arranged is usually cheaper than buying through the caterer. Beverage staff run about ¥10,000 each per day — three cover 50 guests.</span><span lang-ja>自己手配の方が安くなることが多いです。ドリンク担当は1名1日約10,000円、50名なら3名。</span></p>
+  <div id="drinknote" style="margin-bottom:.8rem"></div>
   <div class="card pad" id="drinkcount" style="margin-bottom:.8rem"></div>
   <div class="opts" id="o-drinks"></div>
   <div class="card pad" style="margin-top:1rem;border-color:color-mix(in srgb,var(--accent) 45%,var(--line))">
     <b>🛒 <span lang-en>Hikaru&rsquo;s shopping list, already priced — <span class="m" data-yen="89700"></span></span><span lang-ja>光が試算済みの買い出しリスト — <span class="m" data-yen="89700"></span></span></b>
-    <div style="font-size:.82rem;color:var(--ink-soft);margin:.35rem 0 .6rem;line-height:1.6"><span lang-en>From her own planning sheet. This is the plan for the welcome hour and the late evening, when you are pouring your own rather than paying Teranishi&rsquo;s per-head drink fee.</span><span lang-ja>光のシートより。ウェルカムタイムと夜遅くの時間帯を、寺西さんのドリンク料金ではなく自分たちで用意する想定です。</span></div>
+    <div style="font-size:.82rem;color:var(--ink-soft);margin:.35rem 0 .6rem;line-height:1.6"><span lang-en>From her own planning sheet, and now a line in the budget. Every caterer pours for a fixed window in the middle of the day &mdash; these are the hours either side, which stay yours whoever you choose.</span><span lang-ja>光のシートより。予算にも計上しています。どのケータリングも提供は日中の一定時間のみのため、その前後の時間帯は自分たちで用意します。</span></div>
     <div class="tscroll"><table class="btable"><tbody>
       <tr><td>🍾 <span lang-en>Sparkling wine — for the toast</span><span lang-ja>スパークリングワイン・乾杯用</span></td><td><span lang-en>8 bottles</span><span lang-ja>8本</span></td><td class="amt"><span class="m" data-yen="16000"></span></td></tr>
       <tr><td>🍺 <span lang-en>Sapporo Classic keg, 19 L</span><span lang-ja>サッポロクラシック 19L樽</span></td><td><span lang-en>1</span><span lang-ja>1本</span></td><td class="amt"><span class="m" data-yen="12000"></span></td></tr>
@@ -1727,7 +1728,10 @@ var SECTIONS=[
   {id:"b3",n:"Wedding cake",nj:"ウェディングケーキ",d:"Set on the Food tab",dj:"「料理」タブで選択",toggle:"cake"},
   {id:"b6",n:"Souvenir sweets",nj:"引き菓子",d:"Hokkaido sweets for guests to take home",dj:"帰りにお渡しする北海道のお菓子",toggle:"sweets"},
   {id:"b4",n:"Welcome dinner",nj:"前夜の会食",d:"Set on the Food tab",dj:"「料理」タブで選択",toggle:"welcome"},
-  {id:"b5",n:"Beverage staff",nj:"ドリンク担当スタッフ",d:"3 people × ¥10,000 for 50 guests",dj:"50名で3名×10,000円",amt:30000,est:true}]},
+  {id:"b7",n:"Our own bottles — welcome hour &amp; late evening",nj:"自前のドリンク — ウェルカム＆夜の時間帯",amt:89700,
+  d:"Hikaru&rsquo;s shopping list. Every caterer pours for a fixed window in the middle of the day, so the hours either side are yours whoever you pick.",
+  dj:"光の買い出しリスト。どのケータリングも提供は日中の一定時間のみのため、その前後は自分たちで用意します。"},
+ {id:"b5",n:"Beverage staff",nj:"ドリンク担当スタッフ",d:"3 people × ¥10,000 for 50 guests",dj:"50名で3名×10,000円",amt:30000,est:true}]},
  {id:"C",n:"Photo &amp; film",nj:"撮影",rows:[
   {id:"c1",n:"Photographer",nj:"カメラマン",d:"Set on the Extras tab",dj:"「その他」タブで選択",choice:"photo"},
   {id:"c2",n:"Videographer",nj:"ビデオグラファー",d:"Set on the Extras tab",dj:"「その他」タブで選択",toggle:"video"},
@@ -3067,6 +3071,9 @@ function rowAmount(r){
   if(r.music)return musicTotal();
   if(r.toggle==="htravel")return getTog("htravel")?travelHalf():0;
   if(r.toggle)return getTog(r.toggle)?TOGGLES[r.toggle].amt:0;
+  /* the drinks line has to be tested before the generic choice branch below,
+     which returns the package price and never falls through */
+  if(r.id==="b2"){ var cc=chefById(getChoice("caterer")); if(cc&&cc.drinksIncl) return 0; }
   if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));
     if(c&&c.id==="tera")return teraQuote();          /* live from the real headcount */
     if(c&&c.id==="santo")return santoQuote();
@@ -3075,7 +3082,6 @@ function rowAmount(r){
   if(r.choice==="hmu"){var hm=hmuById(getChoice("hmu"));return hm?hm.amt:0;}
   if(r.choice){var g=CHOICES[r.choice],sel=getChoice(r.choice);
     for(var i=0;i<g.opts.length;i++)if(g.opts[i].id===sel)return g.opts[i].amt;return 0;}
-  if(r.id==="b2"){var cc=chefById(getChoice("caterer"));if(cc&&cc.drinksIncl)return 0;}
   return r.amt;
 }
 function totals(){
@@ -3196,6 +3202,24 @@ function renderRank(){
   w.appendChild(box);
 }
 
+function renderDrinkNote(){
+  var w=document.getElementById("drinknote"); if(!w) return;
+  var c=chefById(getChoice("caterer"));
+  if(!c){ w.innerHTML=""; return; }
+  var incl=!!c.drinksIncl, k=incl?"--leaf":"--amber";
+  var name=bi(c.n,c.nj);
+  w.innerHTML='<div class="card pad" style="border-color:var('+k+');background:color-mix(in srgb,var('+k+') 8%,var(--card))">'+
+    '<div style="font-family:var(--disp);font-weight:800;font-size:.9rem;margin-bottom:.3rem">'+
+    (incl?bi(name+" pours the drinks","ドリンクは"+t(c.n,c.nj)+"が提供")
+         :bi(name+" does not include drinks","ドリンクは"+t(c.n,c.nj)+"に含まれません"))+'</div>'+
+    '<div style="font-size:.85rem;line-height:1.7">'+
+    (incl
+      ? bi("Their quote already covers it, so the bar package below is <b>not charged</b> — the budget counts it as zero. You still pay for your own bottles either side of their service.",
+           "見積もりに含まれているため、下記のバー料金は<b>加算されません</b>（予算上はゼロ）。提供時間の前後にご用意するドリンクは別途かかります。")
+      : bi("Whichever package you pick below is charged <b>on top of their quote</b>, and your own bottles are on top of that again.",
+           "下記で選んだプランは<b>見積もりに加算されます</b>。さらにご自身で用意するドリンクも別途かかります。"))+
+    '</div></div>';
+}
 function renderChefs(){
   var w=document.getElementById("chefs");w.innerHTML="";
   var sel=getChoice("caterer");
@@ -3586,6 +3610,9 @@ function rowBase(r){
   if(r.music)return musicTotal();
   if(r.toggle==="htravel")return getTog("htravel")?travelHalf():0;
   if(r.toggle)return getTog(r.toggle)?TOGGLES[r.toggle].amt:0;
+  /* the drinks line has to be tested before the generic choice branch below,
+     which returns the package price and never falls through */
+  if(r.id==="b2"){ var cc=chefById(getChoice("caterer")); if(cc&&cc.drinksIncl) return 0; }
   if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));
     if(c&&c.id==="tera")return teraQuote();
     if(c&&c.id==="santo")return santoQuote();
@@ -3594,7 +3621,6 @@ function rowBase(r){
   if(r.choice==="hmu"){var hm=hmuById(getChoice("hmu"));return hm?hm.amt:0;}
   if(r.choice){var g=CHOICES[r.choice],sel=getChoice(r.choice);
     for(var i=0;i<g.opts.length;i++)if(g.opts[i].id===sel)return g.opts[i].amt;return 0;}
-  if(r.id==="b2"){var cc=chefById(getChoice("caterer"));if(cc&&cc.drinksIncl)return 0;}
   return r.amt;
 }
 /* phantom "edited" flags: the old blur handler saved overrides even when nothing
@@ -5812,7 +5838,7 @@ function renderAll(){
   renderBudget();renderUpdates();
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
   renderHeroShot();renderCal();renderInbox();renderFeed();renderDecor2();renderBeauty();
-  renderRank();renderStay();renderSeat();renderTent();renderPalette();renderSanto();renderDrive();
+  renderRank();renderDrinkNote();renderStay();renderSeat();renderTent();renderPalette();renderSanto();renderDrive();
   renderAyuAdds();renderAyuNotes();ayuInbox();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
