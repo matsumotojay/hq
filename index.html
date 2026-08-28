@@ -686,9 +686,6 @@ ul.tdl li{margin:.22rem 0;line-height:1.6}
 @media(max-width:600px){.banks{grid-template-columns:1fr}}
 /* two by two is the decided layout — never fan out to four columns */
 .banks{max-width:62rem;margin:0 auto}
-.chef.short{border-color:var(--leaf)}
-.chef.alsoran{opacity:.55}
-.chef.alsoran:hover{opacity:1}
 .bank{border:1.5px dashed color-mix(in srgb,var(--line-2) 60%,transparent);border-radius:16px;padding:.55rem .6rem}
 .bank{display:flex;flex-direction:column;align-items:stretch}
 .tblh{display:flex;align-items:center;gap:.5rem;font-family:var(--disp);font-weight:800;font-size:.8rem;margin:.15rem 0 .3rem}
@@ -1423,8 +1420,8 @@ var HOUSES=[
  {id:"sigra",n:"Lake Toya Lodge Sigra",nj:"洞爺湖ロッジ シグラ",art:A("hotel"),note:"¥30,000 / night / house · 5 min drive",notej:"30,000円／泊／棟・車5分",drive:"5 min",max:15,
   imgs:["sigra1","sigra2","sigra3","sigra4","sigra5"],cap:"3 houses · each a 55 m² bungalow, 2 bedrooms + 1 bath, sleeps 5 · private sauna",capj:"3棟・各55㎡バンガロー・寝室2＋バス1・定員5名・プライベートサウナ付き",
   link:"https://www.agoda.com/ja-jp/lake-toya-logde-sigra/hotel/usu-gun-jp.html"},
- {id:"cocoa",n:"Hotel Cocoa Resort",nj:"ホテル ココアリゾート",art:A("hotel"),note:"¥30,000 / 2 nights / 2 adults · 13 min drive",notej:"30,000円／2泊2名・車13分",drive:"13 min",
-  imgs:["cocoa1","cocoa2","cocoa3"],cap:"Double &amp; twin rooms for 2–3 · all rooms renewed Jan 2023 · free shuttle to Toya Stn and the onsen town",capj:"ダブル・ツイン（2〜3名）・2023年1月全室リニューアル・洞爺駅／温泉街まで無料送迎",
+ {id:"cocoa",n:"Hotel Cocoa Resort",nj:"ホテル ココアリゾート",art:A("hotel"),note:"¥30,000 / 2 nights / 2 adults · 13 min drive · deluxe twin sleeps 3",notej:"30,000円／2泊2名・車13分・デラックスツインは3名可",drive:"13 min",
+  imgs:["cocoa1","cocoa2","cocoa3"],cap:"Deluxe twin takes <b>3 adults</b> — a double plus a single (Ayuko, 27 Aug) · all rooms renewed Jan 2023 · free shuttle to Toya Stn and the onsen town · <b>booking opens after the new year</b>",capj:"デラックスツインは<b>大人3名可</b>（ダブルベッド＋シングルベッド・2026年8月27日確認）・2023年1月全室リニューアル・洞爺駅／温泉街まで無料送迎・<b>予約は年明け以降</b>",
   link:"https://cocoaresort.jp/"},
  {id:"retreat",n:"Lake Toya Retreat",nj:"レイクトーヤ リトリート",art:A("hotel"),note:"~¥172,000 / 2 nights, whole house · 5 min drive",notej:"約172,000円／2泊・一棟貸し・車5分",drive:"5 min",max:8,
   imgs:["retreat1","retreat2","retreat3"],
@@ -1613,14 +1610,32 @@ var CHEFS=[
   hikj:"光の第2希望。チームではなくお一人で対応されるため、50名分でも品質を均一に保てるかを確認したいとのこと。",
   tags:[["Her #2","光の2位","yes"],["Ramen + sushi","ラーメン・寿司","yes"],["Drinks separate","ドリンク別","no"]]},
  {id:"aroi",n:"Aroi",nj:"Aroi（アロイ札幌）",c:"#E05C4B",p:P.steak,lo:819340,hi:null,budget:819340,drinksIncl:false,rank:3,cheap:true,
-  f:["¥12,000 per head, wagyu steak included","10 serving staff, chef travel and lodging inside the price","Buffet style, about 8 dishes","<b>By far the cheapest</b> — roughly half of Teranishi"],
-  fj:["お一人様12,000円・和牛ステーキ込み","サーブ10名＋シェフ出張費・宿泊費込み","ビュッフェ形式・約8品","<b>圧倒的に最安</b>・寺西さんの約半額"],
+  f:["<b>Menu received 28 Aug 2026</b> — eight dishes, buffet style",
+     "Hokkaido scallops in butter · wagyu roast beef · Hokkaido trout escabeche · sushi, and more",
+     "<b>¥8,500 a head</b> with the wagyu as roast beef",
+     "Wagyu braised in wine <b>+¥2,000</b> · wagyu steak <b>+¥2,500–3,500</b>",
+     "⚠️ <b>Dessert is not included</b> — available as an addition",
+     "10 serving staff, chef travel and lodging inside the price"],
+  fj:["<b>2026年8月28日にメニュー受領</b> — ビュッフェ形式・全8品",
+     "道産帆立のバター焼き／和牛ローストビーフ／道産鱒のエスカベッシュ／寿司 など",
+     "和牛ローストビーフの場合<b>お一人様8,500円前後</b>",
+     "和牛ワイン煮込み<b>＋2,000円</b>／和牛ステーキ<b>＋2,500〜3,500円</b>",
+     "⚠️ <b>デザートは含まれません</b>（追加対応可）",
+     "サーブ10名＋シェフ出張費・宿泊費込み"],
   hik:"Her third choice. Long-established and dependable, but from the website the styling reads closer to a corporate event than a wedding, and she is hoping for something with more personality. Worth weighing against the price gap.",
   hikj:"光の第3希望。老舗で安心感はあるものの、サイトを拝見する限り会社のパーティーに近い雰囲気で、もう少し個性のあるスタイルを希望とのこと。価格差との天秤です。",
   tags:[["Cheapest","最安","yes"],["Her #3","光の3位","no"],["Drinks separate","ドリンク別","no"]]},
- {id:"lux",n:"LUX",nj:"LUX",c:"#B5627A",p:P.scallop,lo:1450000,hi:null,budget:1450000,drinksIncl:true,
-  f:["¥25,000 per head plus ¥4,000 drinks","Scallop and wagyu menu","Everything included","Already discounted from ¥29,800"],
-  fj:["お一人様25,000円＋ドリンク4,000円","ホタテ・和牛のメニュー","全て込み","通常29,800円からの割引済み"],
+ {id:"lux",n:"LUX",nj:"LUX",c:"#B5627A",p:P.scallop,lo:1450000,hi:null,budget:1450000,drinksIncl:true,menu:"menu-lux-sample.pdf",
+  f:["<b>Sample menu received 28 Aug 2026</b> — Japanese and Western buffet, three stations",
+     "Cold buffet · a live Japanese station (tempura, yakitori, charcoal wagyu, zaru udon) · dessert buffet",
+     "<b>Two hours of free flow for ¥4,000 a head</b> — red and white wine, sake, beer, soft drinks and sparkling",
+     "¥25,000 per head before drinks",
+     "Already discounted from ¥29,800"],
+  fj:["<b>2026年8月28日にサンプルメニュー受領</b> — 和洋ビュッフェ・3ステーション構成",
+     "コールドビュッフェ／ライブの和食ステーション（天ぷら・焼き鳥・和牛の炭火焼・ざるうどん）／デザートビュッフェ",
+     "<b>2時間フリーフロー お一人様4,000円</b> — 赤・白ワイン、日本酒、ビール、ソフトドリンク、スパークリング",
+     "お一人様25,000円（ドリンク別）",
+     "通常29,800円からの割引済み"],
   hik:"Not in her ranking — you were already leaning away on price.",
   hikj:"光のランキング外。価格面で見送る方向でした。",
   tags:[["Drinks included","ドリンク込み","yes"],["Priciest","最高額","no"]]},
@@ -3186,8 +3201,7 @@ function renderChefs(){
   var sel=getChoice("caterer");
   CHEFS.forEach(function(c){
     var price=c.lo==null?bi("No quote","未取得"):money(c.lo)+(c.hi?"–"+money(c.hi):"");
-    var d=el("div","card chef sel"+(c.id===sel?" on":"")+(c.short?" short":" alsoran"));
-    var sh=c.short?'<span class="badge" style="background:var(--leaf)">'+t("SHORTLIST","最終候補")+'</span>':'';
+    var d=el("div","card chef sel"+(c.id===sel?" on":""));
     var rn=rankOf(c.id);
     var rk=rn?'<span class="badge">'+t("HER #","光の")+rn+t("","位")+'</span>':'';
     var ch2=c.cheap?'<span class="badge" style="background:var(--sky)">'+t("CHEAPEST","最安")+'</span>':'';
@@ -3208,7 +3222,7 @@ function renderChefs(){
       (hik!=null?esc(hik):(c.hik?bi(c.hik,c.hikj):'<i style="color:var(--ink-faint)">'+t("no notes yet","メモなし")+'</i>'))+
       '</span> <button class="bul-edit" data-hikedit="'+c.id+'">'+t("edit","編集")+'</button></div>';
     d.innerHTML='<div class="tick">✓</div><div class="chef-top">'+chef(c.c,c.p)+
-      '<div><h3>'+bi(c.n,c.nj)+sh+rk+ch2+'</h3></div>'+
+      '<div><h3>'+bi(c.n,c.nj)+rk+ch2+'</h3></div>'+
       '<div class="price"><b>'+price+'</b><small>'+bi("for 50","50名")+'</small></div></div>'+
       '<ul>'+lis+'</ul>'+
       '<div class="buladd"><input type="text" data-chefadd="'+c.id+'" placeholder="'+t("Add a point…","項目を追加…")+'" style="font-size:.75rem;width:60%"><button class="bul-edit" data-chefaddbtn="'+c.id+'">＋</button></div>'+
