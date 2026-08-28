@@ -858,6 +858,8 @@ ul.tdl li{margin:.22rem 0;line-height:1.6}
   <div class="ph"><h2>📋 <span lang-en>The checklist</span><span lang-ja>チェックリスト</span></h2>
     <p><span lang-en>Owners and dates are editable — tap them.</span><span lang-ja>担当と期限はタップで変更できます。</span></p></div>
   <div id="decortasks" style="margin-bottom:1.9rem"></div>
+  <div id="makiko" style="margin-bottom:1.8rem"></div>
+
   <div class="ph"><h2>🎨 <span lang-en>Theme colour</span><span lang-ja>テーマカラー</span></h2>
     <p><span lang-en>Decided &mdash; these six. Send Makiko the codes, not the colour names, so she matches the exact shades.</span><span lang-ja>この6色で決定しました。色名ではなくカラーコードをまきこさんにお送りください。</span></p></div>
   <div class="card pad" style="margin-bottom:1.9rem"><div id="palwheel"></div></div>
@@ -1260,7 +1262,7 @@ var UNDO=[];
    who is not signed in may only write inside her own namespace — the UI hides
    the rest anyway, this is the belt to that pair of braces, and the Firestore
    rules are the third. */
-var PLANNER_WRITES=/^(ayu\.|ayans\.|ayqdone$|ayqdel$|asked$|askedj$|hans\.|jans\.|mytasks$|ttrash$|feed$|feedblob\.|qimg\.ayu\.|imgblob\.|tdesc$|tdone$)/;
+var PLANNER_WRITES=/^(ayu\.|ayans\.|ayqdone$|ayqdel$|mytasks$|ttrash$|feed$|feedblob\.|qimg\.ayu\.|imgblob\.|tdesc$|tdone$)/;
 function canWrite(k){
   if(window.ROLE!=="planner")return true;
   if(SYNCSKIP.test(k))return true;              /* view prefs never leave the device */
@@ -4197,6 +4199,87 @@ var THEME=[
  {hex:"#E6936D",n:"Terracotta", nj:"テラコッタ"},
  {hex:"#F2C6AF",n:"Apricot",    nj:"アプリコット"}];
 function themeCodes(){ return THEME.map(function(c){return c.hex;}).join("  "); }
+/* ---------- what still has to reach Makiko ----------
+   Her deadline is 5 September and the decoration count depends on answers we
+   mostly already have. The trap is that "decided" and "sent" were the same
+   tick, so a settled colour looked delivered. Two states here: is it settled,
+   and has it actually gone to her. */
+var MAKIKO_DUE="2026-09-05";
+var MK=[
+ {k:"colour", n:"Theme colour",              nj:"テーマカラー",
+  ready:function(){ return THEME.length===6; },
+  val:function(){ return THEME.map(function(c){return c.hex;}).join("  "); }},
+ {k:"layout", n:"Table layout",               nj:"テーブル配置",
+  ready:function(){ return true; },
+  val:function(){ return t("Two by two — tables 1·2 and 3·4 in front, 5·6 and 7·8 behind, eight tables of seven",
+                           "2列×2段 — 前列に1・2と3・4、後列に5・6と7・8。7名掛け8卓"); }},
+ {k:"concept",n:"Concept and mood",           nj:"テーマ・世界観",  task:"t401"},
+ {k:"tables", n:"Table styling",              nj:"テーブル装花・装飾", task:"t402"},
+ {k:"flowers",n:"Floral arrangements",        nj:"装花全般",        task:"t403"},
+ {k:"arch",   n:"Ceremony arch",              nj:"挙式のアーチ",     task:"t404"},
+ {k:"bouquet",n:"Bouquet &amp; boutonnière",  nj:"ブーケ・ブートニア", task:"t408"},
+ {k:"welcome",n:"Welcome area &amp; reception desk", nj:"ウェルカムスペース・受付", task:"t406"},
+ {k:"candles",n:"Candles and fire stand",     nj:"キャンドル・焚き火台", task:"t407"},
+ {k:"origami",n:"Where her mother&rsquo;s origami goes", nj:"お母さまの折り紙を飾る場所",
+  ready:function(){ return false; },
+  val:function(){ return t("Not placed anywhere yet — it is free, and it matters to her",
+                           "まだ飾る場所が決まっていません。費用はかからず、光にとって大切なものです"); }},
+ {k:"budget", n:"Decoration budget",          nj:"装飾の予算",
+  ready:function(){ return !!getChoice("decor"); },
+  val:function(){ var g=CHOICES.decor, sel=getChoice("decor");
+    for(var i=0;i<g.opts.length;i++) if(g.opts[i].id===sel) return t(g.opts[i].n,g.opts[i].nj)+" — "+money(g.opts[i].amt);
+    return ""; }}
+];
+function mkReady(x){
+  if(x.ready) return x.ready();
+  var tk=allTasks().filter(function(y){return y.id===x.task;})[0];
+  return tk ? taskDone(tk.id) : false;
+}
+function mkVal(x){
+  if(x.val) return x.val();
+  var tk=allTasks().filter(function(y){return y.id===x.task;})[0];
+  if(!tk) return "";
+  var d=taskDescPlain(tk);
+  return d || t("Decided, but nothing written down — worth a line before it goes",
+                "決定済みですが内容が未記入です。送る前に一言まとめておきましょう");
+}
+function renderMakiko(){
+  var w=document.getElementById("makiko"); if(!w) return;
+  var sent=load("mk.sent",{});
+  var days=daysTo(MAKIKO_DUE);
+  var ready=MK.filter(mkReady).length, gone=MK.filter(function(x){return sent[x.k];}).length;
+  var late=days!==null&&days<0, soon=days!==null&&days<=14;
+  var head=el("div","card pad");
+  head.style.cssText="margin-bottom:.8rem;border-color:var("+(late?"--coral":(soon?"--sun":"--leaf"))+
+    ");background:color-mix(in srgb,var("+(late?"--coral":(soon?"--sun":"--leaf"))+") 8%,var(--card))";
+  head.innerHTML='<div style="display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap">'+
+    '<h4 style="margin:0;font-size:.98rem">🎀 '+bi("What still has to reach Makiko","まきこさんにお送りするもの")+'</h4>'+
+    '<span style="margin-left:auto;font-size:.78rem;font-weight:800;color:var('+(late?"--coral":(soon?"--sun":"--leaf"))+')">'+
+    (days===null?"":(late?bi(Math.abs(days)+" days past her deadline",Math.abs(days)+"日超過")
+                        :bi(days+" days to 5 September",Math.abs(days)+"日で9月5日")))+'</span></div>'+
+    '<div style="font-size:.84rem;color:var(--ink-soft);margin-top:.35rem;line-height:1.7">'+
+    bi("<b>"+ready+" of "+MK.length+"</b> settled, <b>"+gone+"</b> actually sent. Deciding something and sending it are different — tick the box only once it has gone to her.",
+       "<b>"+MK.length+"件中"+ready+"件</b>が決定済み、<b>"+gone+"件</b>が送付済みです。決めることと送ることは別なので、実際にお送りしてからチェックしてください。")+'</div>';
+  w.appendChild(head);
+  var list=el("div"); list.style.cssText="display:flex;flex-direction:column;gap:.4rem";
+  MK.forEach(function(x){
+    var ok=mkReady(x), s=!!sent[x.k];
+    var row=el("div","tk"+(s?" done":""));
+    row.style.borderColor = s?"var(--leaf)":(ok?"var(--line)":"var(--sun)");
+    row.innerHTML='<input type="checkbox" '+(s?"checked":"")+(ok?"":" disabled")+
+      ' title="'+t("tick when it has actually gone to her","実際にお送りしたらチェック")+'">'+
+      '<div class="tk-b"><div class="tk-n" style="font-weight:600">'+bi(x.n,x.nj)+
+      (ok?'':'<span class="aychip" style="color:var(--sun);border-color:var(--sun)">'+bi("still to decide","未決定")+'</span>')+
+      (s?'<span class="dtag ansd-tag">✓ '+bi("sent","送付済み")+'</span>':'')+'</div>'+
+      '<div class="tk-d" style="white-space:pre-wrap">'+esc(mkVal(x))+'</div></div>';
+    row.querySelector("input").addEventListener("change",function(e){
+      var m=load("mk.sent",{});
+      if(e.target.checked) m[x.k]=true; else delete m[x.k];
+      save("mk.sent",m); renderAll();});
+    list.appendChild(row);});
+  w.appendChild(list);
+}
+
 function renderPalette(){
   var w=document.getElementById("palwheel"); if(!w) return;
   var h='<div style="display:flex;flex-wrap:wrap;gap:.7rem">';
@@ -5852,7 +5935,7 @@ function renderAll(){
   renderBudget();renderUpdates();
   renderNext();renderTaskBoxes("hertasks","h");renderTaskBoxes("jaytasks","j");renderTaskBoxes("bothtasks","b");
   renderHeroShot();renderCal();renderInbox();renderFeed();renderDecor2();renderBeauty();
-  renderRank();renderDrinkNote();renderStay();renderSeat();renderTent();renderPalette();renderSanto();renderDrive();
+  renderRank();renderDrinkNote();renderMakiko();renderStay();renderSeat();renderTent();renderPalette();renderSanto();renderDrive();
   renderAyuAdds();renderAyuNotes();ayuInbox();renderLegs();renderDay();renderInvites();renderInvNotes();renderAyuko();
   buildTabs();go(load("tab","home"));applyDocks();
   yenify(document.body);
