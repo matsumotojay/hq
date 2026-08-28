@@ -105,6 +105,13 @@ a{color:var(--sky)}
 /* rooms */
 .rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:1rem}
 .room{overflow:hidden;display:flex;flex-direction:column}
+.foodsplit{display:grid;grid-template-columns:15rem minmax(0,1fr);gap:1.2rem;align-items:start}
+.foodrail{position:sticky;top:4.2rem;align-self:start}
+.foodrail .card{padding:.7rem .8rem}
+.foodrail h4{font-size:.86rem}
+@media(max-width:900px){.foodsplit{grid-template-columns:1fr}.foodrail{position:static}}
+.shotlink{display:inline-flex;align-items:center;gap:.3rem;font-size:.78rem;color:var(--ink-soft);background:var(--sunk);border:1.5px solid var(--line-2);border-radius:999px;padding:.22rem .6rem;cursor:pointer;font:inherit;font-size:.78rem;margin-left:.4rem}
+.shotlink:hover{border-color:var(--accent);color:var(--accent)}
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:.9rem}
 .sfig{margin:0;border:2px solid var(--line-2);border-radius:16px;overflow:hidden;background:var(--card);cursor:zoom-in;transition:transform .18s ease,box-shadow .18s ease}
 .sfig:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
@@ -805,17 +812,13 @@ ul.tdl li{margin:.22rem 0;line-height:1.6}
 </div>
 
 <div class="page" id="p-food">
-  <div class="ph"><h2>🍽 <span lang-en>Food &amp; drink</span><span lang-ja>料理とドリンク</span></h2><p><span lang-en>Tap to choose. The budget follows you. Teranishi recalculates for your live headcount; the others are their quoted totals.</span><span lang-ja>タップで選択、予算に即反映。寺西さんは実人数で自動計算、他社は提示額です。</span></p></div>
-  <div id="chefrank" style="margin-bottom:1.1rem"></div>
-  <div class="chefs" id="chefs"></div>
-  <h3 style="margin:1.9rem 0 .3rem;font-size:1.05rem">📸 <span lang-en>Santo &mdash; how their food looks</span><span lang-ja>Santo の料理</span></h3>
-  <p style="font-size:.84rem;color:var(--ink-soft);margin:0 0 .9rem"><span lang-en>Sent by Ayuko on 24 August 2026. Tap any photo to open it full size.</span><span lang-ja>2026年8月24日、鮎子さんより。写真をタップすると拡大表示できます。</span></p>
-  <div id="santogal" style="margin-bottom:1.6rem"></div>
-  <h3 style="margin:1.6rem 0 .6rem;font-size:1.05rem">🥂 <span lang-en>Drinks</span><span lang-ja>ドリンク</span></h3>
-  <p style="font-size:.84rem;color:var(--ink-soft);margin:0 0 .7rem"><span lang-en>Self-arranged is usually cheaper than buying through the caterer. Beverage staff run about ¥10,000 each per day — three cover 50 guests.</span><span lang-ja>自己手配の方が安くなることが多いです。ドリンク担当は1名1日約10,000円、50名なら3名。</span></p>
-  <div id="drinknote" style="margin-bottom:.8rem"></div>
-  <div class="card pad" id="drinkcount" style="margin-bottom:.8rem"></div>
-  <div class="opts" id="o-drinks"></div>
+  <div class="ph"><h2>🍽 <span lang-en>Food &amp; drink</span><span lang-ja>料理とドリンク</span></h2><p><span lang-en>Tap a caterer to choose. Everything below follows that choice.</span><span lang-ja>ケータリングをタップで選択。以下の内容はすべて選択に連動します。</span></p></div>
+  <div class="foodsplit">
+    <aside class="foodrail"><div id="chefrank"></div></aside>
+    <div class="foodmain">
+      <div class="chefs" id="chefs"></div>
+      <div id="drinknote" style="margin:1.3rem 0 .9rem"></div>
+      <div class="card pad" id="drinkcount" style="margin-bottom:.8rem"></div>
   <div class="card pad" style="margin-top:1rem;border-color:color-mix(in srgb,var(--accent) 45%,var(--line))">
     <b>🛒 <span lang-en>Hikaru&rsquo;s shopping list, already priced — <span class="m" data-yen="89700"></span></span><span lang-ja>光が試算済みの買い出しリスト — <span class="m" data-yen="89700"></span></span></b>
     <div style="font-size:.82rem;color:var(--ink-soft);margin:.35rem 0 .6rem;line-height:1.6"><span lang-en>From her own planning sheet, and now a line in the budget. Every caterer pours for a fixed window in the middle of the day &mdash; these are the hours either side, which stay yours whoever you choose.</span><span lang-ja>光のシートより。予算にも計上しています。どのケータリングも提供は日中の一定時間のみのため、その前後の時間帯は自分たちで用意します。</span></div>
@@ -841,6 +844,8 @@ ul.tdl li{margin:.22rem 0;line-height:1.6}
   <h3 style="margin:1.6rem 0 .6rem;font-size:1.05rem">🍰 <span lang-en>Extras</span><span lang-ja>その他</span></h3>
   <div class="opts" id="o-food2"></div>
   <p class="note"><span lang-en><b>There are 100 plates at the Lakehouse</b> — Ayuko&rsquo;s own count, so you almost certainly need no crockery rental at all. Every caterer quote includes serving staff. Aroi&rsquo;s total leaves out its ¥198,000 tablecloth charge — you don&rsquo;t need it, Ayuko lends white cloths free. Where a vendor gave a range, the budget uses the midpoint. Child rates are being asked of the chefs directly.</span><span lang-ja>各見積もりはサーブスタッフ込み。Aroiの合計はクロス198,000円を含みませんが、鮎子さんが白クロスを無償貸与のため不要です。幅がある場合は中間値を使用。お子様料金は未確認です。</span></p>
+    </div>
+  </div>
 </div>
 
 <div class="page" id="p-decor">
@@ -1628,7 +1633,7 @@ var CHEFS=[
   hik:"Her third choice. Long-established and dependable, but from the website the styling reads closer to a corporate event than a wedding, and she is hoping for something with more personality. Worth weighing against the price gap.",
   hikj:"光の第3希望。老舗で安心感はあるものの、サイトを拝見する限り会社のパーティーに近い雰囲気で、もう少し個性のあるスタイルを希望とのこと。価格差との天秤です。",
   tags:[["From ¥8,500 a head","8,500円〜","yes"],["Her #3","光の3位","no"],["Drinks separate","ドリンク別","no"]]},
- {id:"lux",n:"LUX",nj:"LUX",c:"#B5627A",p:P.scallop,lo:1450000,hi:null,budget:1450000,drinksIncl:true,menu:"menu-lux-sample.pdf",
+ {id:"lux",n:"LUX",nj:"LUX",c:"#B5627A",p:P.scallop,lo:1250000,hi:1450000,budget:1450000,drinksIncl:false,drinkAdd:4000,menu:"menu-lux-sample.pdf",
   f:["<b>Sample menu received 28 Aug 2026</b> — Japanese and Western buffet, three stations",
      "Cold buffet · a live Japanese station (tempura, yakitori, charcoal wagyu, zaru udon) · dessert buffet",
      "<b>Two hours of free flow for ¥4,000 a head</b> — red and white wine, sake, beer, soft drinks and sparkling",
@@ -1680,12 +1685,6 @@ var PHOTOG=[
   hikj:"こちらも光の好みとは少し方向性が違うとのこと。決める前に他のカメラマンも何名か拝見したいと考えています。"}];
 
 var CHOICES={
- drinks:{def:"jp",opts:[
-  {id:"none",n:"No bar",nj:"ドリンクなし",amt:0,art:A("speaker"),d:"Guests buy their own",dj:"各自負担"},
-  {id:"lean",n:"Beer &amp; soft drinks",nj:"ビール・ソフトドリンク",amt:100000,art:A("speaker"),d:"Simplest option",dj:"最もシンプル"},
-  {id:"jp",n:"Japanese bar",nj:"和のバー",amt:150000,art:A("speaker"),d:"A bartender serving highballs, sours, sake and Sapporo Classic. Fits a crowd where only 5–10 drink.",dj:"ハイボール・サワー・日本酒・サッポロクラシックをバーテンダーが提供。飲む方が5〜10名の構成に最適。"},
-  {id:"open",n:"Open bar",nj:"オープンバー",amt:250000,art:A("speaker"),d:"¥5,000 a head — far more than this crowd will drink",dj:"お一人様5,000円。この人数では飲まれる量に対して割高です"},
-  {id:"premium",n:"Premium bar",nj:"プレミアムバー",amt:400000,art:A("speaker"),d:"¥8,000 a head",dj:"お一人様8,000円"}]},
  decor:{def:"mid",opts:[
   {id:"lean",n:"Lean",nj:"控えめ",amt:100000,art:A("arch"),d:"Makiko&rsquo;s floor. She warns below this it looks cheap.",dj:"まきこさんの下限。これ以下は安っぽくなるとのこと。"},
   {id:"mid",n:"Comfortable",nj:"標準",amt:150000,art:A("arch"),d:"¥58,000 fees + ~¥92,000 of flowers and rentals",dj:"基本料58,000円＋花材・レンタル約92,000円"},
@@ -1726,7 +1725,7 @@ var SECTIONS=[
   {id:"a4",n:"Lakeside ceremony deck",nj:"レイクサイドデッキ",d:"Waived — brochure lists ¥100,000",dj:"無料（表記100,000円）",amt:0}]},
  {id:"B",n:"Food &amp; drink",nj:"飲食",rows:[
   {id:"b1",n:"Caterer",nj:"ケータリング",d:"Set on the Food tab",dj:"「料理」タブで選択",choice:"caterer"},
-  {id:"b2",n:"Drinks",nj:"ドリンク",d:"Set on the Food tab. Only ~5–10 guests will actually drink — most are driving",dj:"「料理」タブで選択。運転する方が多く実際に飲むのは5〜10名程度",choice:"drinks"},
+  {id:"b2",n:"Drinks from the caterer",nj:"ケータリングのドリンク",d:"Follows whoever is chosen on the Food tab — zero when their quote already pours, their own rate when it does not",dj:"「料理」タブで選んだ業者に連動。ドリンク込みならゼロ、別料金ならその金額",caterdrinks:true},
   {id:"b3",n:"Wedding cake",nj:"ウェディングケーキ",d:"Set on the Food tab",dj:"「料理」タブで選択",toggle:"cake"},
   {id:"b6",n:"Souvenir sweets",nj:"引き菓子",d:"Hokkaido sweets for guests to take home",dj:"帰りにお渡しする北海道のお菓子",toggle:"sweets"},
   {id:"b4",n:"Welcome dinner",nj:"前夜の会食",d:"Set on the Food tab",dj:"「料理」タブで選択",toggle:"welcome"},
@@ -3075,7 +3074,7 @@ function rowAmount(r){
   if(r.toggle)return getTog(r.toggle)?TOGGLES[r.toggle].amt:0;
   /* the drinks line has to be tested before the generic choice branch below,
      which returns the package price and never falls through */
-  if(r.id==="b2"){ var cc=chefById(getChoice("caterer")); if(cc&&cc.drinksIncl) return 0; }
+  if(r.caterdrinks){ var cc=chefById(getChoice("caterer")); return (cc&&!cc.drinksIncl&&cc.drinkAdd)?cc.drinkAdd*planHead():0; }
   if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));
     if(c&&c.id==="tera")return teraQuote();          /* live from the real headcount */
     if(c&&c.id==="santo")return santoQuote();
@@ -3216,10 +3215,13 @@ function renderDrinkNote(){
          :bi(name+" does not include drinks","ドリンクは"+t(c.n,c.nj)+"に含まれません"))+'</div>'+
     '<div style="font-size:.85rem;line-height:1.7">'+
     (incl
-      ? bi("Their quote already covers it, so the bar package below is <b>not charged</b> — the budget counts it as zero. You still pay for your own bottles either side of their service.",
-           "見積もりに含まれているため、下記のバー料金は<b>加算されません</b>（予算上はゼロ）。提供時間の前後にご用意するドリンクは別途かかります。")
-      : bi("Whichever package you pick below is charged <b>on top of their quote</b>, and your own bottles are on top of that again.",
-           "下記で選んだプランは<b>見積もりに加算されます</b>。さらにご自身で用意するドリンクも別途かかります。"))+
+      ? bi("Their quote already covers it, so the <b>Drinks from the caterer</b> line in the budget is zero. Hikaru&rsquo;s bottles below are still needed &mdash; they cover the welcome hour and the late evening, when nobody is pouring.",
+           "見積もりに含まれているため、予算の<b>「ケータリングのドリンク」</b>はゼロです。下記の買い出しは引き続き必要で、ウェルカムタイムと夜の時間帯をカバーします。")
+      : (c.drinkAdd
+        ? bi("They charge <b>¥"+c.drinkAdd.toLocaleString()+" a head</b> for it, which the budget adds on top. Hikaru&rsquo;s bottles below are still needed for the hours outside that.",
+             "<b>お一人様"+c.drinkAdd.toLocaleString()+"円</b>が別途かかり、予算に加算されます。その時間外のために下記の買い出しも必要です。")
+        : bi("They have <b>not quoted a drinks price</b>, so the budget carries nothing for it yet &mdash; worth asking. In the meantime Hikaru&rsquo;s bottles below are what you actually have.",
+             "<b>ドリンクの金額は未提示</b>のため、予算には計上していません。要確認です。現時点で確保できているのは下記の買い出し分のみです。")))+
     '</div></div>';
 }
 function renderChefs(){
@@ -3238,10 +3240,12 @@ function renderChefs(){
     lis+=fadd.map(function(b){
       return '<li>'+b.n+' <button class="bul-x" data-chef="'+c.id+'" data-bcust="'+b.id+'" title="'+t("Remove","削除")+'">×</button></li>';}).join("");
     var menu=load("chef.menu."+c.id,c.menu||"");
+    var shots=(c.id==="santo"&&santoPhotos().length)?santoPhotos().length:0;
     var menuRow='<div class="menurow" style="margin:.45rem 0;font-size:.79rem">'+
       (menu?'<a href="'+menu+'" target="_blank" rel="noopener">📄 '+t("Menu &amp; price sheet","メニュー・料金表")+' ↗</a> ':
         '<span style="color:var(--ink-faint)">📄 '+t("No menu link yet","メニュー未リンク")+'</span> ')+
-      '<button class="bul-edit" data-menuedit="'+c.id+'">'+(menu?t("edit","編集"):t("add link","リンク追加"))+'</button></div>';
+      '<button class="bul-edit" data-menuedit="'+c.id+'">'+(menu?t("edit","編集"):t("add link","リンク追加"))+'</button>'+
+      (shots?'<button class="shotlink" data-shots="'+c.id+'">📷 '+t("See "+shots+" photos","写真"+shots+"枚を見る")+'</button>':'')+'</div>';
     var hik=load("chef.hik."+c.id,null);
     var hikHtml=(hik!=null?hik:(c.hik?null:""));
     var hikBlock='<div class="hiknote" style="font-size:.79rem;background:color-mix(in srgb,var(--pink) 12%,transparent);border-radius:10px;padding:.5rem .65rem;line-height:1.5"><b>'+t("Hikaru:","光：")+'</b> <span class="hiktxt">'+
@@ -3255,6 +3259,7 @@ function renderChefs(){
       menuRow+hikBlock+
       '<div class="pillrow">'+c.tags.map(function(g){return '<span class="pill '+g[2]+'">'+bi(g[0],g[1])+'</span>';}).join("")+'</div>';
     d.addEventListener("click",function(e){
+      if(e.target.closest(".shotlink")){ e.stopPropagation(); santoLightbox(0); return; }
       if(e.target.closest(".bul-x,.bul-edit,.buladd,.menurow,.hiknote,a,input,textarea"))return;
       if(c.budget==null){if(typeof toast==="function")toast(t("No quote for this vendor yet, so it can't be budgeted","見積もり未取得のため予算に反映できません"));return;}
       setChoice("caterer",c.id);});
@@ -3614,7 +3619,7 @@ function rowBase(r){
   if(r.toggle)return getTog(r.toggle)?TOGGLES[r.toggle].amt:0;
   /* the drinks line has to be tested before the generic choice branch below,
      which returns the package price and never falls through */
-  if(r.id==="b2"){ var cc=chefById(getChoice("caterer")); if(cc&&cc.drinksIncl) return 0; }
+  if(r.caterdrinks){ var cc=chefById(getChoice("caterer")); return (cc&&!cc.drinksIncl&&cc.drinkAdd)?cc.drinkAdd*planHead():0; }
   if(r.choice==="caterer"){var c=chefById(getChoice("caterer"));
     if(c&&c.id==="tera")return teraQuote();
     if(c&&c.id==="santo")return santoQuote();
@@ -3721,8 +3726,7 @@ function renderWhatIf(){
   var g=guestCount()||1;
   var c=chefById(getChoice("caterer"));
   var perFood=c&&c.budget?Math.round(c.budget/g):0;
-  var dr=CHOICES.drinks.opts.filter(function(o){return o.id===getChoice("drinks");})[0];
-  var perDrink=dr?Math.round(dr.amt/g):0;
+  var perDrink=(c&&!c.drinksIncl&&c.drinkAdd)?c.drinkAdd:0;
   var perBag=Math.round(rowAmountById("g2")/g);
   var perSweet=getTog("sweets")?Math.round(TOGGLES.sweets.amt/g):0;
   var st=rosterStats();
@@ -4234,6 +4238,7 @@ var SANTO_SEASON=[
  {n:"Hamo pike conger, as fritto",nj:"ハモ（フリットで）"},
  {n:"Asparagus, white and green — warm starter or alongside the main",nj:"アスパラ 白／グリーン（温前菜やメインのコントルノで）"},
  {n:"Bamboo shoots, in pasta or alongside the main",nj:"筍（パスタやメインのコントルノで）"}];
+function santoPhotos(){ return SANTO_SHOTS.filter(function(x){return IMG[x.k];}); }
 function renderSanto(){
   var w=document.getElementById("santogal"); if(!w) return;
   var h='<div style="font-size:.85rem;line-height:1.75;color:var(--ink-soft);margin-bottom:.9rem">'+
@@ -4748,18 +4753,22 @@ function drinkStats(){
 function renderDrinkCount(){
   var w=document.getElementById("drinkcount"); if(!w) return;
   var d=drinkStats(), known=d.yes+d.no;
-  var pick=CHOICES.drinks.opts.filter(function(o){return o.id===getChoice("drinks");})[0];
+  /* the bar-package tiers are gone; the useful advice now is about how much of
+     Hikaru's shopping list you actually need */
   var advice;
-  if(known<5) advice=bi("Set each guest to drinking or not on the Guests tab and this will tell you which package actually fits.","「ゲスト」タブで飲む・飲まないを入力すると、どのプランが妥当か判断できます。");
-  else if(d.yes<=10) advice=bi("At this many drinkers the Japanese bar is the sensible pick — an open bar charges you for around 40 people who never use it.","この人数なら和のバーが妥当です。オープンバーは飲まない約40名分も課金されます。");
-  else if(d.yes<=20) advice=bi("Worth pricing the Japanese bar against an open bar — you are close to the point where they cost the same.","和のバーとオープンバーの比較を。両者の損益分岐点に近づいています。");
-  else advice=bi("With this many drinkers an open bar starts to pay for itself.","この人数ならオープンバーが割に合ってきます。");
+  if(known<5) advice=bi("Set each guest to drinking or not on the Guests tab and this will tell you how much to buy.",
+                        "「ゲスト」タブで飲む・飲まないを入力すると、必要な量の目安が出ます。");
+  else if(d.yes<=10) advice=bi("At this many drinkers Hikaru&rsquo;s list below is generous — you could cut a bottle or two rather than add.",
+                               "この人数なら下記の買い出しは十分な量です。むしろ少し減らしても構いません。");
+  else if(d.yes<=20) advice=bi("Hikaru&rsquo;s list below is about right for this many drinkers.",
+                               "この人数であれば下記の買い出しでおおむね足ります。");
+  else advice=bi("More drinkers than the list below assumes — worth adding beer and soda.",
+                 "下記の想定より飲まれる方が多いため、ビールと炭酸水を足した方がよさそうです。");
   w.innerHTML='<div style="display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap">'+
     '<div><div style="font-family:var(--disp);font-weight:800;font-size:1.7rem;color:var(--grape);line-height:1">'+d.yes+'</div>'+
     '<div style="font-size:.75rem;color:var(--ink-faint);font-weight:700">'+bi("likely drinking","飲まれる見込み")+'</div></div>'+
     '<div style="font-size:.83rem;color:var(--ink-soft);flex:1;min-width:12rem;line-height:1.6">'+
       bi(d.no+" not drinking",d.no+"名は飲まない")+(d.unknown?' · <b>'+bi(d.unknown+" still to ask",d.unknown+"名が未確認")+'</b>':'')+
-      (pick?' · '+bi("currently on the "+t(pick.n,pick.nj).replace(/&amp;/g,"&"),"現在の選択："+t(pick.n,pick.nj)):'')+
       '<br>'+advice+'</div></div>';
 }
 var USG={jF:1,jf:1};
@@ -5834,7 +5843,7 @@ document.addEventListener("click",function(e){
 function renderAll(){
   var sx=window.scrollX,sy=window.scrollY;
   fillSecPicker();renderRoster();
-  renderHMU();renderChefs();renderOpts("o-drinks","drinks");renderDrinkCount();renderFood2();
+  renderHMU();renderChefs();renderDrinkCount();renderFood2();
   renderPhotog();renderVideo();renderMusic();
   renderOpts("o-decor","decor");renderNights();renderSupport();renderUs();renderNotes();
   renderBudget();renderUpdates();
