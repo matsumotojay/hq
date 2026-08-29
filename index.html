@@ -6176,8 +6176,24 @@ if(window.FBCONFIG){
         if(snap.empty){ for(let i=0;i<localStorage.length;i++){ const K=localStorage.key(i);
           if(K&&K.indexOf("lt4.")===0){ const k=K.slice(4);
             if(!SYNCSKIP.test(k)) window.__fbWrite(k,localStorage.getItem(K)); } } } }
-      if(changed)rerender();
+      if(changed){ window.__syncStamp=Date.now(); rerender(); }
     },err=>{ console.warn("sync listener",err); });
+
+    /* Belt and braces. The debounce above is meant to redraw after a change
+       lands, and it demonstrably did not — the data arrived and the screen sat
+       there. Rather than trust one path, this watches for a change stamp that
+       has not been drawn yet and draws it. Cheap, and it cannot get wedged. */
+    let drawn=0;
+    setInterval(()=>{
+      const st=window.__syncStamp||0;
+      if(st<=drawn) return;
+      if(document.querySelector(".floating")||document.querySelector(".ied")) return;
+      drawn=st;
+      try{ if(typeof window.renderAll==="function") window.renderAll(); }
+      catch(e){ console.warn("redraw",e); }
+      const d=document.getElementById("syncdot");
+      if(d){ d.style.opacity=".35"; setTimeout(()=>{ d.style.opacity=""; },400); }
+    },1500);
     const sd=document.getElementById("syncdot"); if(sd)sd.style.display="";
   }catch(e){ console.warn("sync off:",e); }
 }
