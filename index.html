@@ -6143,11 +6143,25 @@ if(window.FBCONFIG){
         if(typeof toast==="function")toast(e.code==="resource-exhausted"||/too large|exceeds/i.test(String(e.message))
           ?"That was too big to sync — try removing a picture":"Sync hiccup — will retry on your next change");});
     };
-    let pending=false;
-    const rerender=()=>{ if(pending)return; pending=true;
-      setTimeout(()=>{ pending=false;
-        if(document.querySelector(".floating")||document.querySelector(".ied")){rerender();return;}
-        if(typeof renderAll==="function")renderAll(); },600); };
+    /* A change from the other person has landed in localStorage; this puts it on
+       the screen. It used to sit behind a self-rescheduling debounce that could
+       stop firing, so the data arrived and the page never moved. Straight timer,
+       explicit window.renderAll, and it gives up waiting on a drag after a few
+       tries rather than deferring forever. */
+    let timer=null, waits=0;
+    const rerender=()=>{
+      if(timer) clearTimeout(timer);
+      timer=setTimeout(()=>{
+        timer=null;
+        const busy=document.querySelector(".floating")||document.querySelector(".ied");
+        if(busy && waits<10){ waits++; rerender(); return; }
+        waits=0;
+        try{ if(typeof window.renderAll==="function") window.renderAll(); }
+        catch(e){ console.warn("redraw",e); }
+        const d=document.getElementById("syncdot");
+        if(d){ d.style.opacity=".35"; setTimeout(()=>{ d.style.opacity=""; },400); }
+      },500);
+    };
     let first=true;
     onSnapshot(collection(db,"kv"),snap=>{
       let changed=false;
