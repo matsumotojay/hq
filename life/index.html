@@ -192,8 +192,7 @@
   td.r,th.r{text-align:right}
   .tablewrap{overflow-x:auto}
   .nonbiz{font-size:12.5px;color:var(--ink3);margin:14px 0 30px}
-  /* wedding fund */
-  .fundcard{padding:16px 18px}
+  /* monthly bills */
   .billrow{display:flex;gap:12px;align-items:center;padding:11px 15px;border-bottom:1px solid var(--line)}
   .billrow:last-child{border-bottom:none}
   .billrow .b{flex:1;min-width:0}
@@ -205,31 +204,6 @@
   .billrow.soon .when{color:var(--owed);font-weight:700}
   .billrow.due{background:var(--urgent-soft)}
   .billrow.due .when{color:var(--urgent);font-weight:700}
-  .fundhead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
-  .fundhead .big{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--accent)}
-  .fundhead .of{font-size:13.5px;color:var(--ink2)}
-  .fundbar{height:10px;background:var(--surface2);border-radius:99px;margin:11px 0 6px;overflow:hidden;position:relative}
-  .fundbar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
-  .fundbar b{position:absolute;top:-3px;width:2px;height:16px;background:var(--ink3);border-radius:1px}
-  .fundfacts{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)}
-  .fundfacts b{color:var(--ink)}
-  .miles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin:14px 0 4px}
-  .mile{border:1px solid var(--line);border-radius:9px;padding:9px 11px}
-  .mile .d{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3)}
-  .mile .a{font-size:17px;font-weight:800;margin-top:2px}
-  .mile .s{font-size:11.5px;font-weight:700;margin-top:2px}
-  .mile.ok{border-color:var(--good)} .mile.ok .s{color:var(--good)}
-  .mile.warn{border-color:var(--owed)} .mile.warn .s{color:var(--owed)}
-  .mile.done{background:var(--good-soft);border-color:var(--good)} .mile.done .s{color:var(--good)}
-  .deprow{display:flex;gap:9px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
-  .deprow:last-of-type{border-bottom:none}
-  .deprow .dd{flex:0 0 58px;color:var(--ink3);font-size:12px}
-  .deprow .ds{flex:1;min-width:0}
-  .deprow .da{font-weight:700;color:var(--good)}
-  .depempty{color:var(--ink3);font-size:12.5px;padding:8px 0}
-  .depadd{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:flex-end}
-  .depadd .f{flex:1;min-width:110px}
-  .depadd label{display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:3px}
   /* outreach */
   .outgroup{margin-bottom:16px}
   .outgroup h3{font-size:13px;font-weight:800;margin:0 0 2px}
@@ -606,13 +580,11 @@
       <button class="btn small" id="clearPaidBtn" style="display:none" onclick="clearPaid()">Clear paid ▸</button>
     </div>
     <div class="card tablewrap"><table id="owedTable"></table></div>
-    <h2>Wedding fund — Lake Toya</h2>
     <div id="billsCard"></div>
-    <div class="card fundcard" id="fundCard"></div>
 
     <h2>Collected</h2>
     <div class="card tablewrap"><table id="paidTable"></table></div>
-    <p class="nonbiz">Non-business (not counted toward the $100K goal): lawyer fees refund $7,559.91 · IRS federal refund $4,459.99 · birthday gifts $500 (Cathy &amp; AJ $100, Jose $200, Ace &amp; Aru $200) — gifts aren’t taxable income, so they sit outside gig revenue; the $500 went into the wedding fund.</p>
+    <p class="nonbiz">Non-business (not counted toward the $100K goal): lawyer fees refund $7,559.91 · IRS federal refund $4,459.99 · birthday gifts $500 (Cathy &amp; AJ $100, Jose $200, Ace &amp; Aru $200) — gifts aren’t taxable income, so they sit outside gig revenue.</p>
   </section>
 
   <!-- ═══════════ OUTREACH ═══════════ -->
@@ -944,7 +916,6 @@ function seed(){
       E({title:'📸 Manila Killa — Maeto Warehouse',gig:true,client:'Manila Killa',gross:null,date:'2026-09-12',details:'Arts District, DTLA. Email Brett to confirm details. ⚠︎ Same day as Eri & Dom’s wedding in Vista'})
     ],
     invoices:[],
-    wfund:[],
     outreach:[],
     contacts:{},
     bills:[],
@@ -1531,23 +1502,13 @@ function migrate(){
       );
     }
   }
-  // patch 23 (2026-08-17): wedding fund opens with the birthday gift money
-  if(!state.patch23){
-    state.patch23=true;
-    state.wfund=state.wfund||[];
-    if(!state.wfund.length){
-      state.wfund.push(
-        {id:uid(),date:'2026-08-14',amount:100,source:'Birthday gift — Cathy & AJ',note:''},
-        {id:uid(),date:'2026-08-14',amount:200,source:'Birthday gift — Jose',note:''},
-        {id:uid(),date:'2026-08-14',amount:200,source:'Birthday gift — Ace & Aru',note:''}
-      );
-    }
-    /* idempotent by title — a re-run on another device must not duplicate these */
-    const lacks=t=>!state.tasks.some(x=>x.title===t);
-    if(lacks('Open a separate account for the wedding fund'))
-      state.tasks.unshift({id:uid(),title:'Open a separate account for the wedding fund',tag:'Money',notes:'Keep the $20K out of spending reach — the $500 birthday money is deposit #1. Then set the rule: every gig payment that lands, move ~40% straight in.',due:'2026-08-19',status:'open',completedAt:null});
-    if(lacks('Ask Jonny for exact amounts on all 4 wedding payments'))
-      state.tasks.unshift({id:uid(),title:'Ask Jonny for exact amounts on all 4 wedding payments',tag:'Money',notes:'Dashboard has the DATES (Dec 1 2026 deposit 20%, Mar 1 2027 planner+garden, ~Mar 2027 catering in full, Apr 1 2027 accommodation balance) but not the amounts. Need them to size each savings milestone. jonny@hokkaidoresorts.com',due:'2026-09-15',status:'open',completedAt:null});
+  // patch 56 (2026-09-04): wedding fund retired — Jay saves for the wedding outside
+  // the tracker now. Drops the deposits, the 40%-of-every-gig rule and its setup task.
+  if(!state.patch56){
+    state.patch56=true;
+    state.fundPurge=(state.fundPurge||[]).concat((state.wfund||[]).map(w=>w.id));
+    delete state.wfund;
+    state.tasks=state.tasks.filter(t=>t.title!=='Open a separate account for the wedding fund');
   }
   // patch 22 (2026-08-17): Brianna's brief — deadlines, reel refs, night preference, Bass Ventura fix
   if(!state.patch22){
@@ -1672,7 +1633,6 @@ function snapshotDocs(){
   state.tasks.forEach(t=>{m['t.'+t.id]=JSON.stringify(t)});
   state.events.forEach(e=>{m['e.'+e.id]=JSON.stringify(e)});
   state.invoices.forEach(i=>{m['i.'+i.id]=JSON.stringify(i)});
-  (state.wfund||[]).forEach(w=>{m['w.'+w.id]=JSON.stringify(w)});
   (state.outreach||[]).forEach(o=>{m['o.'+o.id]=JSON.stringify(o)});
   (state.leads||[]).forEach(l=>{m['l.'+l.id]=JSON.stringify(l)});
   const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{},bills:state.bills||[],lineups:state.lineups||{},festMeta:state.festMeta||{},sentLog:state.sentLog||{}};
@@ -1683,6 +1643,12 @@ function snapshotDocs(){
 let lastPush={};
 function pushDiff(){
   if(!window.__fbWrite)return;
+  /* one-time: clear the retired wedding-fund docs out of Firestore. Nothing writes
+     w.* any more, so without this sweep the old deposits would just sit there. */
+  if(state.fundPurge&&state.fundPurge.length){
+    state.fundPurge.forEach(id=>window.__fbWrite('w.'+id,null));
+    state.fundPurge=[];
+  }
   const cur=snapshotDocs();
   for(const k in cur)if(lastPush[k]!==cur[k])window.__fbWrite(k,cur[k]);
   for(const k in lastPush)if(!(k in cur))window.__fbWrite(k,null);
@@ -1691,19 +1657,19 @@ function pushDiff(){
 window.__pushAll=function(){lastPush={};pushDiff()};
 window.__adoptCloud=function(cloud){
   try{
-    const tasks=[],events=[],invoices=[],wfund=[],outreach=[],leads=[];let meta=null;
+    const tasks=[],events=[],invoices=[],outreach=[],leads=[],fundJunk=[];let meta=null;
     for(const k in cloud){
       let v;try{v=JSON.parse(cloud[k])}catch(e){continue}
       if(k==='meta')meta=v;
       else if(k.slice(0,2)==='t.')tasks.push(v);
       else if(k.slice(0,2)==='e.')events.push(v);
       else if(k.slice(0,2)==='i.')invoices.push(v);
-      else if(k.slice(0,2)==='w.')wfund.push(v);
+      else if(k.slice(0,2)==='w.')fundJunk.push(k.slice(2));   /* retired wedding fund — queued for deletion */
       else if(k.slice(0,2)==='o.')outreach.push(v);
       else if(k.slice(0,2)==='l.')leads.push(v);
     }
     if(!meta)return;
-    state.wfund=wfund.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    if(fundJunk.length)state.fundPurge=(state.fundPurge||[]).concat(fundJunk);
     state.outreach=outreach;
     state.leads=leads;
     const order=meta.taskOrder||[];
@@ -2227,7 +2193,6 @@ function togglePaid(id,checked){
   if(checked){e.cleared=false;if(e.invoiceId){const inv=invById(e.invoiceId);if(inv)inv.status='paid'}}
   else{if(e.invoiceId){const inv=invById(e.invoiceId);if(inv&&inv.status==='paid'){inv.status=inv.sentAt?'sent':'draft'}}}
   save();render();
-  if(checked)offerFundCut(net(e),e.client||e.title);
 }
 function clearPaid(){
   state.events.forEach(e=>{if(e.gig&&e.paid&&!e.cleared)e.cleared=true});
@@ -3279,69 +3244,6 @@ function renderBills(){
 }
 function ordinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])}
 
-/* ─────────────────────── WEDDING FUND ─────────────────────── */
-const WGOAL=20000;                       /* Jay's share; Hikaru covers ~$10K of the ~$30.4K total */
-const WMILES=[
-  {date:'2026-12-01',amt:5000, label:'Accommodation deposit'},
-  {date:'2027-03-01',amt:15000,label:'Planner + catering'},
-  {date:'2027-04-01',amt:20000,label:'Accommodation balance'}
-];
-function fundSaved(){return (state.wfund||[]).reduce((s,w)=>s+(parseFloat(w.amount)||0),0)}
-function renderFund(){
-  const w=$('fundCard');if(!w)return;
-  const saved=fundSaved(),left=Math.max(0,WGOAL-saved),today=todayISO();
-  const lastMile=WMILES[WMILES.length-1];
-  const daysLeft=Math.max(1,(new Date(lastMile.date)-new Date(today))/864e5);
-  const perMo=left/(daysLeft/30.44), perWk=left/(daysLeft/7);
-  let h='<div class="fundhead"><span class="big num">'+fmt$(saved)+'</span>'
-    +'<span class="of">of <b class="num">'+fmt$(WGOAL)+'</b> — your share of the ~$30,400 wedding</span></div>';
-  h+='<div class="fundbar"><i style="width:'+Math.min(100,saved/WGOAL*100)+'%"></i>'
-    +WMILES.slice(0,-1).map(m=>'<b style="left:'+(m.amt/WGOAL*100)+'%"></b>').join('')+'</div>';
-  h+='<div class="fundfacts"><span><b class="num">'+Math.round(saved/WGOAL*100)+'%</b> funded</span>'
-    +'<span><b class="num">'+fmt$(left)+'</b> to go</span>'
-    +'<span>Pace needed <b class="num">'+fmt$(Math.round(perMo))+'</b>/mo · <b class="num">'+fmt$(Math.round(perWk))+'</b>/wk</span></div>';
-  h+='<div class="miles">'+WMILES.map(m=>{
-      const need=m.amt-saved, dl=(new Date(m.date)-new Date(today))/864e5;
-      let cls='ok',s;
-      if(saved>=m.amt){cls='done';s='✓ covered'}
-      else if(dl<=0){cls='warn';s='past — short '+fmt$(need)}
-      else{
-        const mo=Math.max(0.1,dl/30.44), rate=need/mo;
-        cls = rate>3500?'warn':'ok';
-        s=fmt$(Math.round(rate))+'/mo from here';
-      }
-      return '<div class="mile '+cls+'"><div class="d">'+fmtDate(m.date)+'</div>'
-        +'<div class="a num">'+fmt$(m.amt)+'</div><div class="s">'+s+'</div>'
-        +'<div style="font-size:11px;color:var(--ink3);margin-top:2px">'+esc(m.label)+'</div></div>';
-    }).join('')+'</div>';
-  const deps=[...(state.wfund||[])].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  h+='<h3 style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin:14px 0 4px">Deposits</h3>';
-  h+=deps.length?deps.map(d=>'<div class="deprow"><span class="dd">'+fmtDate(d.date)+'</span>'
-      +'<span class="ds">'+esc(d.source||'Deposit')+(d.note?' <span style="color:var(--ink3)">· '+esc(d.note)+'</span>':'')+'</span>'
-      +'<span class="da num">+'+fmt$(d.amount)+'</span>'
-      +'<button class="iconbtn" title="Remove" onclick="delDeposit(\''+d.id+'\')">✕</button></div>').join('')
-    :'<div class="depempty">Nothing in the fund yet.</div>';
-  h+='<div class="depadd">'
-    +'<div class="f"><label>Date</label><input type="date" id="wDate" value="'+today+'"></div>'
-    +'<div class="f"><label>Where from</label><input id="wSrc" placeholder="e.g. Laya shoot"></div>'
-    +'<div class="f" style="max-width:110px"><label>Amount $</label><input id="wAmt" type="number" min="0" step="0.01"></div>'
-    +'<button class="btn primary small" onclick="addDeposit()">Add</button></div>';
-  w.innerHTML=h;
-}
-function addDeposit(){
-  const amt=parseFloat($('wAmt').value);
-  if(!amt||amt<=0){toast('Enter an amount first');return}
-  state.wfund=state.wfund||[];
-  state.wfund.push({id:uid(),date:$('wDate').value||todayISO(),amount:amt,source:$('wSrc').value.trim()||'Deposit',note:''});
-  state.wfund.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  save();render();toast('Added to the wedding fund');
-}
-function delDeposit(id){
-  if(!confirm('Remove this deposit from the wedding fund?'))return;
-  state.wfund=(state.wfund||[]).filter(w=>w.id!==id);
-  save();render();
-}
-
 /* ─────────────────────── OUTREACH ─────────────────────── */
 const OSTAT={todo:'To contact',emailed:'Emailed',replied:'Replied',booked:'Booked',passed:'Passed'};
 const ONEXT={todo:'emailed',emailed:'replied',replied:'booked',booked:'passed',passed:'todo'};
@@ -4238,25 +4140,9 @@ function markGroupSent(client){
 function markGroupPaid(client){
   const g=groupByName(client);if(!g)return;
   if(!confirm('Mark all '+fmt$(g.total)+' from '+client+' as paid?'))return;
-  const amt=g.total;
   g.invs.forEach(i=>{i.status='paid';i.fresh=false;invMarkPaidEvents(i)});
   save();render();
-  offerFundCut(amt,client);
-}
-/* Jay's own rule: ~40% of every payment goes straight into the wedding account
-   the moment it lands. Asked here because this is the moment it lands. */
-const FUND_CUT=0.4;
-function offerFundCut(amount,label){
-  amount=parseFloat(amount)||0;
-  if(amount<=0){toast('Marked paid');return}
-  const cut=Math.round(amount*FUND_CUT);
-  if(!confirm(fmt$(amount)+' in from '+label+'.\n\nMove '+fmt$(cut)+' (40%) into the wedding fund?\n\nTransfer it for real in your bank app — this just logs it.'))
-    {toast('Marked paid');return}
-  state.wfund=state.wfund||[];
-  state.wfund.push({id:uid(),date:todayISO(),amount:cut,source:'40% of '+label,note:''});
-  state.wfund.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  save();render();
-  toast(fmt$(cut)+' logged — '+fmt$(fundSaved())+' saved of $20,000');
+  toast('Marked paid');
 }
 /* Three invoices for the same artist is three things for him to open, approve and
    pay. One itemized invoice is one. Merging keeps every line — nothing is summed away. */
@@ -4414,7 +4300,7 @@ function invQuickPaid(id){
   inv.status='paid';inv.fresh=false;
   invMarkPaidEvents(inv);
   save();render();
-  offerFundCut(inv.amount,inv.client||inv.number);
+  toast('Marked paid');
 }
 function deleteInvoiceById(id){
   const inv=invById(id);if(!inv)return;
@@ -4580,7 +4466,6 @@ function markInvoice(status){
   if(status==='sent'&&!inv.sentAt)inv.sentAt=todayISO();
   if(status==='paid')invMarkPaidEvents(inv);
   save();closeOverlays();render();
-  if(status==='paid')offerFundCut(inv.amount,inv.client||inv.number);
 }
 
 /* ─────────────────────── misc ─────────────────────── */
@@ -4590,7 +4475,7 @@ document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeOverlays()});
 
 function render(){
   $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  renderToday();renderCalendar();renderMoney();renderBills();renderFund();renderOutreach();renderDiscordLeads();renderGroups();renderCollect();renderInvoices();renderMoneyNudge();
+  renderToday();renderCalendar();renderMoney();renderBills();renderOutreach();renderDiscordLeads();renderGroups();renderCollect();renderInvoices();renderMoneyNudge();
 }
 
 load();
