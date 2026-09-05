@@ -1,0 +1,5 @@
+*.json.key
+service-account*.json
+serviceAccountKey*.json
+*-adminsdk-*.json
+.hq-creds/
