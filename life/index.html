@@ -1510,6 +1510,35 @@ function migrate(){
     delete state.wfund;
     state.tasks=state.tasks.filter(t=>t.title!=='Open a separate account for the wedding fund');
   }
+  // patch 57 (2026-09-04): calendar events created directly in Google Calendar this
+  // session never made it into the tracker's own event list -- the two are separate
+  // systems and one doesn't sync to the other. Backfilling the ones with a real gig
+  // date so they show up here too.
+  if(!state.patch57){
+    state.patch57=true;
+    const lacksEvt=t=>!state.events.some(e=>e.title===t);
+    // migrate() doesn't have E()/T()/G() in scope -- those helpers only exist inside
+    // the initial default-state builder. Every other patch that adds an event or task
+    // here uses a raw object literal matching their shape; this one had used E()/T()
+    // directly, which silently no-op'd (ReferenceError swallowed upstream) -- fixed below.
+    // NOT lacksEvt('Laya — shoot') -- there's already an old June Laya gig with that
+    // exact title, so a title-only check would silently think this one exists too.
+    if(!state.events.some(e=>e.title==='Laya — shoot'&&e.date==='2026-09-04'))
+      state.events.push({id:uid(),title:'Laya — shoot',details:'Monthly shoot. Same night as Electrik Seoul x Yetep at Exchange LA (doors 10 PM) -- you wrap at 8:30, so it\'s clear.',date:'2026-09-04',endDate:'',start:'17:30',end:'20:30',gig:true,client:'Laya',gross:null,exp:0,paid:false,invoiceId:null,month:''});
+    if(lacksEvt('ILYA — shoot'))
+      state.events.push({id:uid(),title:'ILYA — shoot',details:'Confirmed by Jay.',date:'2026-09-09',endDate:'',start:'15:00',end:'18:00',gig:true,client:'ILYA',gross:null,exp:0,paid:false,invoiceId:null,month:''});
+    const lacksTask=t=>!state.tasks.some(x=>x.title===t);
+    if(lacksTask('Deliver HERSHE reel 3/7 — LACMA lamps'))
+      state.tasks.unshift({id:uid(),title:'Deliver HERSHE reel 3/7 — LACMA lamps',tag:'Delivery',notes:'1st drop, Chelsea focused. Static shot, walking shot, upward angle shot, spinning. Posts Tue Sep 8.',due:'2026-09-08',status:'open',completedAt:null});
+    if(lacksTask('Deliver HERSHE reel 4/7 — Chinese building statics'))
+      state.tasks.unshift({id:uid(),title:'Deliver HERSHE reel 4/7 — Chinese building statics',tag:'Delivery',notes:'2nd drop, Chelsea focused. Cutting Chelsea\'s angle against Luis\'s (Bass Ventura). Posts Thu Sep 10.',due:'2026-09-10',status:'open',completedAt:null});
+    if(lacksTask('Deliver HERSHE reel 5/7 — Lower Grand'))
+      state.tasks.unshift({id:uid(),title:'Deliver HERSHE reel 5/7 — Lower Grand',tag:'Delivery',notes:'1st drop. Clones + drone, Bass Ventura rapping. You fly to Lost Lands tonight -- send before heading to the airport. Posts Tue Sep 15.',due:'2026-09-15',status:'open',completedAt:null});
+    if(lacksTask('Deliver HERSHE reel 6/7 — Centennial Street'))
+      state.tasks.unshift({id:uid(),title:'Deliver HERSHE reel 6/7 — Centennial Street',tag:'Delivery',notes:'2nd drop. All the Centennial material as one piece. You\'re at Lost Lands -- cut this before you fly. Posts Thu Sep 17.',due:'2026-09-17',status:'open',completedAt:null});
+    if(lacksTask('Deliver HERSHE reel 7/7 — the closer (FINAL)'))
+      state.tasks.unshift({id:uid(),title:'Deliver HERSHE reel 7/7 — the closer (FINAL)',tag:'Delivery',notes:'1st drop. Heavy edit recap -- VHS cut-ins, distortion, VFX-leaning. Closes out all 7 reels ($1,050 total). You land from Lost Lands today at 4:30 PM. Posts Tue Sep 22.',due:'2026-09-22',status:'open',completedAt:null});
+  }
   // patch 22 (2026-08-17): Brianna's brief — deadlines, reel refs, night preference, Bass Ventura fix
   if(!state.patch22){
     state.patch22=true;
@@ -4486,12 +4515,17 @@ render();
 <script type="module">
 if(window.FBCONFIG){
   try{
-    const [{initializeApp},{getFirestore,doc,setDoc,deleteDoc,onSnapshot,collection},{getAuth,signInAnonymously}]=await Promise.all([
-      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+    /* Was signInAnonymously, which gave every visitor a token and made the
+       Firestore rule `if request.auth != null` meaningless — anyone who found
+       this URL could read and write the income, invoices and client phones.
+       requireAuth() blocks here until a NAMED account signs in; the rules now
+       reject anonymous sessions outright. One emailed link per device, then
+       browserLocalPersistence keeps Jay signed in for good. */
+    const [{getFirestore,doc,setDoc,deleteDoc,onSnapshot,collection},{requireAuth}]=await Promise.all([
       import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
-      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")]);
-    const app=initializeApp(FBCONFIG), db=getFirestore(app);
-    await signInAnonymously(getAuth(app));
+      import("../auth.js")]);
+    const {app}=await requireAuth(FBCONFIG,{label:"Your Life Tracker"});
+    const db=getFirestore(app);
     window.__fbWrite=(k,raw)=>{
       (raw==null?deleteDoc(doc(db,"jlt",k))
                 :setDoc(doc(db,"jlt",k),{v:raw,t:Date.now()}))
