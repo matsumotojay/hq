@@ -477,6 +477,42 @@
   .invsheet .footbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#0E0E0E;margin:28px -54px 0;padding:15px 54px;font-weight:700;font-size:12px;color:#fff}
   .missing{outline:2px solid var(--owed);outline-offset:1px;border-radius:4px}
 
+  /* ── job search ── */
+  .jobcard{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:13px 14px;margin-bottom:10px;position:relative}
+  .jobcard.top{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .jobcard.applied{opacity:.62}
+  .jobcard.passed{opacity:.42}
+  .jobrank{position:absolute;top:-9px;left:12px;background:var(--accent);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:999px}
+  .jobhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:3px}
+  .jobtitle{font-size:15px;font-weight:700;line-height:1.25}
+  .jobco{font-size:12.5px;color:var(--ink2);margin-bottom:7px}
+  .jobfit{flex-shrink:0;text-align:center;min-width:44px}
+  .jobfit b{display:block;font-size:17px;font-weight:800;line-height:1}
+  .jobfit span{font-size:9.5px;color:var(--ink3);letter-spacing:.05em;font-weight:700}
+  .jobmeta{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+  .jobpay{font-weight:700;color:var(--good);background:var(--good-soft)}
+  .jobfresh{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+  .jobstale{background:var(--owed-soft);color:var(--owed)}
+  .jobwhy{font-size:13px;line-height:1.5;margin-bottom:9px}
+  .jobmg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+  @media(max-width:620px){.jobmg{grid-template-columns:1fr}}
+  .jobmg h5{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px;font-weight:800}
+  .jobmg ul{list-style:none;margin:0;padding:0}
+  .jobmg li{font-size:12px;line-height:1.45;padding-left:13px;position:relative;margin-bottom:2px;color:var(--ink2)}
+  .jobmg .m li:before{content:'+';position:absolute;left:0;color:var(--good);font-weight:800}
+  .jobmg .g li:before{content:'-';position:absolute;left:0;color:var(--urgent);font-weight:800}
+  .jobacts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  /* .btn is styled for <button>; as an <a> it kept the UA blue underline. */
+  .jobacts a.btn{color:var(--ink);text-decoration:none}
+  .jobstatus{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.03em}
+  .st-new{background:var(--accent-soft);color:var(--accent-ink)}
+  .st-applied{background:var(--pers-soft);color:var(--pers)}
+  .st-interview{background:var(--good-soft);color:var(--good)}
+  .st-rejected,.st-passed{background:var(--chip);color:var(--ink3)}
+  .jobnote{font-size:11.5px;color:var(--ink3);margin-top:7px;line-height:1.45}
+  .jobsect{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);font-weight:800;margin:16px 0 8px}
+  .jobempty{font-size:13px;color:var(--ink3);padding:18px 0;text-align:center}
+
   /* ── bottom tabs (spreadsheet style) ── */
   nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface2);border-top:1px solid var(--line);z-index:40;padding:0 10px env(safe-area-inset-bottom)}
   .tabs{display:flex;max-width:1080px;margin:0 auto;gap:2px}
@@ -625,6 +661,24 @@
 
 </main>
 
+
+<!-- ═══════════ JOBS ═══════════ -->
+<section class="view" id="view-jobs">
+  <div class="card" style="padding:14px 16px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+      <h3 style="font-size:15px;font-weight:700">Job search</h3>
+      <div style="font-size:11.5px;color:var(--ink3)" id="jobUpdated"></div>
+    </div>
+    <div style="font-size:12.5px;color:var(--ink2);line-height:1.5;margin-top:6px">
+      Ranked by fit, not by date. Fit weighs whether you meet the stated experience bar,
+      whether the pay midpoint clears your floor, and whether the hours leave the side business alone.
+      Apply when something scores well, not on a schedule.
+    </div>
+    <div id="jobStats" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:9px"></div>
+  </div>
+  <div id="jobList"></div>
+</section>
+
 <!-- ═══════════ NAV ═══════════ -->
 <nav>
   <div class="tabs">
@@ -649,6 +703,11 @@
       <svg viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
       Invoices
       <span class="badge" id="invBadge" style="display:none"></span>
+    </button>
+    <button class="tab" id="tab-jobs" onclick="showTab('jobs')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 12h18"/></svg>
+      Jobs
+      <span class="badge" id="jobBadge" style="display:none"></span>
     </button>
   </div>
 </nav>
@@ -942,6 +1001,7 @@ function migrate(){
     if(!Array.isArray(i.chases))i.chases=[];
   });
   state.contacts=state.contacts||{};
+  if(!Array.isArray(state.jobs))state.jobs=[];
   /* Some contacts were stored as a bare address STRING instead of {email,cc,phone}.
      Electrik Seoul was one, which made c.email undefined and silently defeated the
      existing-relationship guard for a client who owes $1,700. Normalise on every
@@ -1514,6 +1574,15 @@ function migrate(){
   // session never made it into the tracker's own event list -- the two are separate
   // systems and one doesn't sync to the other. Backfilling the ones with a real gig
   // date so they show up here too.
+  if(!state.patch58){
+    state.patch58=true;
+    /* Seed the job search from the 2026-09-05 sweep. Every band, bar and date was
+       read off the live posting. Matched on url so a re-run never duplicates. */
+    if(!Array.isArray(state.jobs))state.jobs=[];
+    const seed=[{"id": "jb01", "title": "Project Manager, Global Program Management, Production Solutions", "company": "Netflix", "location": "Los Angeles, onsite", "url": "https://explore.jobs.netflix.net/careers/job/790317799439", "pay": "$160,000 - $252,000", "mid": 206000, "posted": "2026-08-13", "bar": "5-7+ yrs project management", "fit": 88, "resume": "master", "status": "new", "why": "The only posting found where BOTH halves of your background are listed requirements rather than one being a bonus. It asks for Six Sigma and Lean thinking, and separately for on-set and post-production knowledge.", "matches": ["5 yrs PM at Northrop meets the 5-7+ bar", "Lean and Six Sigma named in quals, your IE degree and time studies", "On-set and post-production knowledge, 8 yrs freelance plus 2 at Koma", "Wants comfort with generative AI and cloud tools for creative workflows, you build them", "Change management and rollout across teams, your Northrop cross-functional work"], "gaps": ["No formal Six Sigma certification, only Lean by practice", "No management consulting background or MBA, listed as a plus", "Media asset management asked at enterprise scale, yours is self-built", "Netflix is high-accountability culture, not a quiet 40 hours"], "note": "Verified live 2026-09-05, req JR42110. Salary only, no bonus, you pick the salary vs stock split."}, {"id": "jb02", "title": "Principal Industrial Engineer", "company": "Northrop Grumman", "location": "El Segundo, onsite", "url": "https://jobs.northropgrumman.com/careers?pid=1340074157093", "pay": "$103,600 - $155,400", "mid": 129500, "posted": "2026-09-02", "bar": "BS + 5 yrs industrial or manufacturing engineering", "fit": 82, "resume": "ops", "status": "new", "why": "Highest probability of an actual offer in the file. You meet the stated bar exactly, no clearance needed to start, and it is the same business unit that promoted you twice.", "matches": ["BS plus 5 yrs is precisely your tenure", "Posting names time studies, capacity modeling and shop-floor controls", "Names Excel macros and pivot tables specifically", "No clearance required to start", "Same employer, so the internal history helps"], "gaps": ["Zero creative content, this is a pure return to IE", "Only clears the $120K floor at midpoint, not comfortably", "Going back to the org you left, decide that is not a step backward"], "note": "Level 3 band shown. Level 2 is $83,400-$125,200 and does not clear."}, {"id": "jb03", "title": "Sr Principal Program Planning and Scheduling Analyst", "company": "Northrop Grumman", "location": "Redondo Beach, hybrid", "url": "https://jobs.northropgrumman.com/careers?pid=1340071847680", "pay": "$129,300 - $193,900", "mid": 161600, "posted": "2026-08-20", "bar": "Secret clearance required at start", "fit": 74, "resume": "ops", "status": "new", "why": "Best work-life-balance structure found anywhere: hybrid plus the 9/80 schedule with every other Friday off. Hybrid protects weekday shoot availability in a way onsite roles do not.", "matches": ["Program scheduling is literally your Northrop job title", "Hybrid plus 9/80, the best hours structure in the whole search", "Band clears the floor comfortably without a top-of-band offer"], "gaps": ["TIME SENSITIVE: needs Secret clearance at start. You left Sep 2024, right at the ~24 month reinstatement edge. Check status now.", "Wants intermediate to advanced MS Project and IMS development", "Wants proven Earned Value Management, program-controls flavored rather than IE", "No creative content"], "note": "Check your clearance reinstatement eligibility before spending time here. This one may close on its own."}, {"id": "jb04", "title": "Program Scheduler, Level 4", "company": "Boeing (Millennium Space Systems)", "location": "El Segundo, 100% onsite", "url": "https://jobs.boeing.com/job/el-segundo/program-scheduler-mid-level-or-senior-millennium-space-systems/185/92362938304", "pay": "$126,650 - $171,350", "mid": 149000, "posted": "2026-08-07", "bar": "Level 4 maps to 5+ yrs", "fit": 68, "resume": "ops", "status": "new", "why": "Clears the floor without needing a top-of-band offer, and the level conversation matters more than the salary conversation here.", "matches": ["Level 4 bar of 5+ yrs matches your tenure", "Scheduling is your core Northrop skill", "Applications open through 16 November, no rush"], "gaps": ["Millennium runs compressed launch-driven schedules, faster than mainline Boeing. Probe hours on call one.", "100% onsite", "Level 3 band caps at $136,850 and would not clear, so the level matters", "No creative content"]}, {"id": "jb05", "title": "Sr. Project Manager, Creative Operations", "company": "Mattel", "location": "El Segundo, 4 days onsite, Fridays remote", "url": "https://jobs.mattel.com/en/job/el-segundo/sr-project-manager-creative-operations/2015/100139154256", "pay": "$95,000 - $119,000", "mid": 107000, "posted": "2026-09-03", "bar": "3-5+ yrs creative project management", "fit": 72, "resume": "master", "status": "new", "why": "The only creative-operations posting whose stated bar you clearly meet, and a realistic 40 hour week. This is what buying the creative-ops credential looks like.", "matches": ["3-5+ yrs creative PM, you have 8 yrs production plus 2 agency", "Owns eComm photography from pre-pro through shoot coordination to delivery", "Runs vendor management to budget, which you do now", "Fridays remote, realistic 40 hours"], "gaps": ["Comp is short. Top of band is $119K and a realistic offer lands near $105K", "Wants Adobe Workfront, which you have not used", "Two years here would open the $140K+ creative roles, so it is an investment not a destination"]}, {"id": "jb06", "title": "Sr. Manager of Crewing, Live Sports Production", "company": "Amazon", "location": "Culver City", "url": "https://www.amazon.jobs/en/jobs/10503351/sr-manager-of-crewing-live-sports-production", "pay": "$98,300 - $160,000", "mid": 129150, "posted": "2026-08-28", "bar": "union and CBA fluency in basic quals", "fit": 62, "resume": "master", "status": "new", "why": "On raw skills this is the closest match to what you actually did at Northrop, just pointed at camera crews instead of aircraft.", "matches": ["Centralized crew scheduling across properties, this is labor modeling", "Catching scheduling conflicts in real time, your recovery-plan work", "Maintaining rate structures and analyzing crew spend", "Combines production ops with live event knowledge"], "gaps": ["Live sports means nights, weekends and seasonal peaks", "You are the person called when a crew falls through, so it is not a 40 hour job", "Basic quals want union and CBA fluency you do not have", "Collides directly with weekend shooting"]}];
+    seed.forEach(j=>{ if(!state.jobs.some(x=>x.url===j.url)) state.jobs.push(j) });
+    state.jobsUpdated='2026-09-05';
+  }
   if(!state.patch57){
     state.patch57=true;
     const lacksEvt=t=>!state.events.some(e=>e.title===t);
@@ -1664,6 +1733,7 @@ function snapshotDocs(){
   state.invoices.forEach(i=>{m['i.'+i.id]=JSON.stringify(i)});
   (state.outreach||[]).forEach(o=>{m['o.'+o.id]=JSON.stringify(o)});
   (state.leads||[]).forEach(l=>{m['l.'+l.id]=JSON.stringify(l)});
+  (state.jobs||[]).forEach(j=>{m['j.'+j.id]=JSON.stringify(j)});
   const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{},bills:state.bills||[],lineups:state.lineups||{},festMeta:state.festMeta||{},sentLog:state.sentLog||{}};
   Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch')meta[k]=state[k]});
   m['meta']=JSON.stringify(meta);
@@ -1686,7 +1756,7 @@ function pushDiff(){
 window.__pushAll=function(){lastPush={};pushDiff()};
 window.__adoptCloud=function(cloud){
   try{
-    const tasks=[],events=[],invoices=[],outreach=[],leads=[],fundJunk=[];let meta=null;
+    const tasks=[],events=[],invoices=[],outreach=[],leads=[],jobs=[],fundJunk=[];let meta=null;
     for(const k in cloud){
       let v;try{v=JSON.parse(cloud[k])}catch(e){continue}
       if(k==='meta')meta=v;
@@ -1696,11 +1766,13 @@ window.__adoptCloud=function(cloud){
       else if(k.slice(0,2)==='w.')fundJunk.push(k.slice(2));   /* retired wedding fund — queued for deletion */
       else if(k.slice(0,2)==='o.')outreach.push(v);
       else if(k.slice(0,2)==='l.')leads.push(v);
+      else if(k.slice(0,2)==='j.')jobs.push(v);
     }
     if(!meta)return;
     if(fundJunk.length)state.fundPurge=(state.fundPurge||[]).concat(fundJunk);
     state.outreach=outreach;
     state.leads=leads;
+    state.jobs=jobs;
     const order=meta.taskOrder||[];
     tasks.sort((a,b)=>{let ia=order.indexOf(a.id),ib=order.indexOf(b.id);
       if(ia<0)ia=9999;if(ib<0)ib=9999;return ia-ib});
@@ -4502,9 +4574,103 @@ function closeOverlays(){document.querySelectorAll('.overlay').forEach(o=>o.clas
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',ev=>{if(ev.target===o)closeOverlays()}));
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeOverlays()});
 
+
+/* ─────────────────────── JOBS ─────────────────────── */
+/* Ranked by fit, never by date. Jay asked explicitly for a priority list rather
+   than an application schedule, so there is no streak, no daily target and no
+   nagging. A job either scores well enough to be worth an afternoon or it does not. */
+const JOB_STATUS=['new','shortlist','applied','interview','offer','rejected','passed'];
+function jobDays(iso){
+  if(!iso)return null;
+  const d=Math.floor((Date.now()-new Date(iso+'T12:00:00').getTime())/86400000);
+  return isNaN(d)?null:d;
+}
+/* Posting age, honestly. Fresh genuinely helps: recruiters review in batches and
+   the pile is smallest in the first week. A long-open posting is ambiguous rather
+   than good — it can mean a hard-to-fill role, a picky panel, or an evergreen
+   pipeline req that is not really hiring. So freshness is shown, not scored. */
+function jobAgeChip(d){
+  if(d===null)return '';
+  if(d<=7) return '<span class="chip jobfresh">'+(d<=1?'posted today':d+'d old')+' · apply early</span>';
+  if(d<=21)return '<span class="chip">'+d+'d old</span>';
+  return '<span class="chip jobstale">'+d+'d old · may be stale or picky</span>';
+}
+function setJobStatus(id,st){
+  const j=(state.jobs||[]).find(x=>x.id===id);if(!j)return;
+  j.status=st;save();renderJobs();
+}
+function cycleJobStatus(id){
+  const j=(state.jobs||[]).find(x=>x.id===id);if(!j)return;
+  const i=JOB_STATUS.indexOf(j.status||'new');
+  setJobStatus(id,JOB_STATUS[(i+1)%JOB_STATUS.length]);
+}
+function jobCard(j,rank){
+  const d=jobDays(j.posted),dead=(j.status==='rejected'||j.status==='passed');
+  const cls='jobcard'+(rank&&rank<=5&&!dead&&j.status!=='applied'?' top':'')
+    +(j.status==='applied'?' applied':'')+(dead?' passed':'');
+  let h='<div class="'+cls+'">';
+  if(rank&&rank<=5&&!dead)h+='<div class="jobrank">#'+rank+'</div>';
+  h+='<div class="jobhead"><div><div class="jobtitle">'+esc(j.title)+'</div>'
+    +'<div class="jobco">'+esc(j.company)+' · '+esc(j.location)+'</div></div>'
+    +'<div class="jobfit"><b>'+j.fit+'</b><span>FIT</span></div></div>';
+  h+='<div class="jobmeta"><span class="chip jobpay">'+esc(j.pay)+'</span>'+jobAgeChip(d)
+    +(j.bar?'<span class="chip">'+esc(j.bar)+'</span>':'')+'</div>';
+  h+='<div class="jobwhy">'+esc(j.why)+'</div>';
+  h+='<div class="jobmg"><div class="m"><h5>Your resume matches</h5><ul>'
+    +(j.matches||[]).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>'
+    +'<div class="g"><h5>Gaps to address</h5><ul>'
+    +(j.gaps||[]).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div></div>';
+  h+='<div class="jobacts">'
+    +'<a class="btn small" href="'+esc(j.url)+'" target="_blank" rel="noopener">Open posting</a>'
+    +'<span class="jobstatus st-'+esc(j.status||'new')+'" onclick="cycleJobStatus(\''+j.id+'\')" style="cursor:pointer" title="Tap to advance">'
+    +esc((j.status||'new').toUpperCase())+'</span>'
+    +'<span class="chip">resume: '+esc(j.resume||'master')+'</span></div>';
+  if(j.note)h+='<div class="jobnote">'+esc(j.note)+'</div>';
+  return h+'</div>';
+}
+function renderJobs(){
+  const list=$('jobList');if(!list)return;
+  const jobs=(state.jobs||[]).slice();
+  const live=jobs.filter(j=>j.status!=='rejected'&&j.status!=='passed'&&j.status!=='applied')
+                 .sort((a,b)=>(b.fit||0)-(a.fit||0));
+  const done=jobs.filter(j=>j.status==='applied'||j.status==='interview'||j.status==='offer')
+                 .sort((a,b)=>(b.fit||0)-(a.fit||0));
+  const dead=jobs.filter(j=>j.status==='rejected'||j.status==='passed');
+
+  const st=$('jobStats');
+  if(st){
+    const fresh=jobs.filter(j=>{const d=jobDays(j.posted);return d!==null&&d<=7}).length;
+    st.innerHTML='<span class="chip">'+jobs.length+' tracked</span>'
+      +'<span class="chip">'+live.length+' to consider</span>'
+      +(done.length?'<span class="chip st-applied">'+done.length+' in flight</span>':'')
+      +(fresh?'<span class="chip jobfresh">'+fresh+' posted this week</span>':'');
+  }
+  const up=$('jobUpdated');
+  if(up)up.textContent=state.jobsUpdated?('updated '+state.jobsUpdated):'';
+
+  let h='';
+  if(!jobs.length){
+    h='<div class="jobempty">Nothing tracked yet. The morning sweep adds new postings here.</div>';
+  }else{
+    if(live.length){
+      h+='<div class="jobsect">Top choices for you</div>';
+      live.forEach((j,i)=>{h+=jobCard(j,i+1)});
+    }
+    if(done.length){h+='<div class="jobsect">In flight</div>';done.forEach(j=>{h+=jobCard(j,0)})}
+    if(dead.length){h+='<div class="jobsect">Closed out</div>';dead.forEach(j=>{h+=jobCard(j,0)})}
+  }
+  list.innerHTML=h;
+
+  const b=$('jobBadge');
+  if(b){
+    const n=live.filter(j=>(j.fit||0)>=75).length;
+    b.style.display=n?'':'none';b.textContent=n;
+  }
+}
+
 function render(){
   $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  renderToday();renderCalendar();renderMoney();renderBills();renderOutreach();renderDiscordLeads();renderGroups();renderCollect();renderInvoices();renderMoneyNudge();
+  renderToday();renderCalendar();renderMoney();renderBills();renderOutreach();renderDiscordLeads();renderGroups();renderCollect();renderInvoices();renderMoneyNudge();renderJobs();
 }
 
 load();
