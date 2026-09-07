@@ -38,19 +38,34 @@ export async function requireAuth(FBCONFIG, opts = {}) {
      localStorage from when the link was requested; if the link is opened on a
      DIFFERENT device than it was requested from, that's empty and Firebase
      requires us to ask again — hence the prompt fallback. */
+  let linkError = "";
   if (isSignInWithEmailLink(auth, location.href)) {
-    let email = localStorage.getItem(EMAIL_KEY);
-    if (!email) email = window.prompt("Confirm the email address this link was sent to:") || "";
+    /* Order matters: the URL works on any device/browser, localStorage only on
+       the one that requested the link. window.prompt() used to be the fallback
+       and is suppressed inside in-app browsers, which failed silently. */
+    const email = new URLSearchParams(location.search).get("e")
+               || localStorage.getItem(EMAIL_KEY)
+               || "";
     if (email) {
       try {
         await signInWithEmailLink(auth, email, location.href);
         localStorage.removeItem(EMAIL_KEY);
-        /* Strip the sign-in token out of the URL so a shared or bookmarked
-           link can't be replayed by someone else. */
+        /* Strip the token AND the address so a forwarded or bookmarked link
+           can't be replayed by someone else. */
         history.replaceState(null, "", location.pathname + location.hash);
       } catch (e) {
-        console.warn("email-link sign-in failed", e);
+        const c = (e && e.code) || "";
+        linkError =
+          c === "auth/invalid-action-code"
+            ? "That link was already used or has expired. Send yourself a fresh one."
+            : c === "auth/invalid-email"
+            ? "That link is for a different email address."
+            : "Couldn't finish signing in" + (c ? " (" + c + ")" : "") + ". Try a fresh link.";
       }
+    } else {
+      /* No address anywhere — an old-format link. Ask in-page rather than via
+         prompt(), and finish the pending link instead of sending a new one. */
+      linkError = "__ASK__";
     }
   }
 
@@ -61,11 +76,11 @@ export async function requireAuth(FBCONFIG, opts = {}) {
   if (named(current)) return { app, auth, user: current, signOut: () => signOut(auth) };
 
   /* Not signed in — put up the gate and wait. Nothing behind it renders. */
-  const user = await gate(auth, { sendSignInLinkToEmail, label });
+  const user = await gate(auth, { sendSignInLinkToEmail, signInWithEmailLink, label, linkError });
   return { app, auth, user, signOut: () => signOut(auth) };
 }
 
-function gate(auth, { sendSignInLinkToEmail, label }) {
+function gate(auth, { sendSignInLinkToEmail, signInWithEmailLink, label, linkError }) {
   return new Promise((resolve) => {
     const wrap = document.createElement("div");
     wrap.id = "hq-gate";
@@ -100,6 +115,19 @@ function gate(auth, { sendSignInLinkToEmail, label }) {
     const go = wrap.querySelector("#hq-go");
     const msg = wrap.querySelector("#hq-msg");
 
+    /* A link that arrived but couldn't be completed. Say so — this used to fail
+       into a bare sign-in screen, which reads as "it just doesn't work". */
+    const pending = linkError === "__ASK__";
+    if (pending) {
+      wrap.querySelector("h1").textContent = "Almost there";
+      wrap.querySelector("p").textContent =
+        "Confirm the email address this link was sent to and you're in.";
+      go.textContent = "Finish signing in";
+    } else if (linkError) {
+      msg.className = "msg err";
+      msg.textContent = linkError;
+    }
+
     /* If the link is clicked in this same tab the page reloads and the
        isSignInWithEmailLink branch above handles it. If it's clicked
        elsewhere, this listener catches the state change and lifts the gate. */
@@ -110,10 +138,34 @@ function gate(auth, { sendSignInLinkToEmail, label }) {
     const send = async () => {
       const email = (mail.value || "").trim();
       if (!email) { msg.textContent = "Enter your email first."; msg.className = "msg err"; return; }
-      go.disabled = true; msg.className = "msg"; msg.textContent = "Sending…";
+      go.disabled = true; msg.className = "msg";
+
+      if (pending) {
+        msg.textContent = "Signing in…";
+        try {
+          await signInWithEmailLink(auth, email, location.href);
+          localStorage.removeItem(EMAIL_KEY);
+          history.replaceState(null, "", location.pathname + location.hash);
+          return; /* onAuthStateChanged lifts the gate */
+        } catch (e) {
+          msg.className = "msg err";
+          msg.textContent = ((e && e.code) === "auth/invalid-email")
+            ? "That link was sent to a different address."
+            : "Couldn't finish signing in. Send yourself a fresh link.";
+          go.disabled = false;
+          return;
+        }
+      }
+
+      msg.textContent = "Sending…";
       try {
+        /* The email rides along in the URL. Without it, finishing the sign-in
+           depends on localStorage from the device that ASKED for the link — and
+           tapping the link in the Gmail app opens Gmail's own in-app browser,
+           which has its own separate storage. That's why phone sign-in failed.
+           The link itself is still the secret; the address alone grants nothing. */
         await sendSignInLinkToEmail(auth, email, {
-          url: location.origin + location.pathname,
+          url: location.origin + location.pathname + "?e=" + encodeURIComponent(email),
           handleCodeInApp: true,
         });
         localStorage.setItem(EMAIL_KEY, email);
