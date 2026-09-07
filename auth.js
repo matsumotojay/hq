@@ -28,7 +28,6 @@ export async function requireAuth(FBCONFIG, opts = {}) {
   const {
     getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged,
     sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signOut,
-    signInAnonymously,
   } = authMod;
 
   const app = getApps().length ? getApp() : initializeApp(FBCONFIG);
@@ -76,20 +75,11 @@ export async function requireAuth(FBCONFIG, opts = {}) {
   });
   if (named(current)) return { app, auth, user: current, signOut: () => signOut(auth) };
 
-  /* Ayuko arrives on ?planner and has no account, so the gate is a wall she can
-     never pass. Give her the anonymous session the Firestore rules are written
-     for: read of the wedding board, write of her own answers and notes, and
-     nothing at all in jlt, art or shoot. Callers opt in with allowAnonymous, so
-     the tracker and the artist database keep the hard gate.
-
-     This is what made the link Jay sent her dead — the 5 September lockdown
-     removed the anonymous session without leaving her any way back in. */
-  if (opts.allowAnonymous && new URLSearchParams(location.search).has("planner")) {
-    const guest = current && current.isAnonymous
-      ? current
-      : (await signInAnonymously(auth)).user;
-    return { app, auth, user: guest, signOut: () => signOut(auth) };
-  }
+  /* Everyone signs in, Ayuko included — there is no anonymous path any more.
+     An anonymous session cannot be told apart from a stranger's, so the rules
+     could never give Ayuko her planner writes without giving them to anyone
+     holding the URL. She signs in with her own address instead, and the rules
+     recognise it. */
 
   /* Not signed in — put up the gate and wait. Nothing behind it renders. */
   const user = await gate(auth, { sendSignInLinkToEmail, signInWithEmailLink, label, linkError });
