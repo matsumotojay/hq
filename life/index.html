@@ -1962,7 +1962,13 @@ function showTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   $('view-'+name).classList.add('active');
   $('tab-'+name).classList.add('active');
+  switchingTab=true;      /* a real navigation — top of the page is correct here */
   render();
+  switchingTab=false;
+  /* Tabs only ever landed at the top as a side effect of the DOM being rebuilt.
+     Now that renders preserve scroll, say it explicitly instead of relying on
+     a bug — otherwise switching to Money drops you halfway down it. */
+  window.scrollTo(0,0);
 }
 
 /* ─────────────────────── TODAY render ─────────────────────── */
@@ -4791,9 +4797,41 @@ function renderJobs(){
   }
 }
 
+/* Ticking one artist chip re-renders the whole page, which used to throw away two
+   things the browser was holding for us: which <details> panels were open, and
+   where the page was scrolled. Clicking an act inside Escape therefore slammed the
+   festival shut and jumped to the top — the panel looked like it collapsed itself.
+   Both are captured here and restored after the rebuild.
+
+   switchingTab skips the restore: showTab() also calls render(), and there the
+   scroll SHOULD go back to the top. */
+let switchingTab=false;
+function openGroupNames(){
+  const out=new Set();
+  document.querySelectorAll('details.grp[open]').forEach(function(d){
+    const n=d.querySelector('.gname');
+    if(n)out.add(n.textContent);
+  });
+  return out;
+}
 function render(){
+  const y=window.scrollY;
+  /* An empty set on the very first paint would force-close panels that ship open
+     (Lost Lands), so only restore once some have actually been rendered. */
+  const hadGroups=document.querySelectorAll('details.grp').length>0;
+  const wasOpen=openGroupNames();
+
   $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   renderToday();renderCalendar();renderMoney();renderBills();renderShows();renderOutreach();renderDiscordLeads();renderGroups();renderCollect();renderInvoices();renderMoneyNudge();renderJobs();
+
+  if(hadGroups && !switchingTab){
+    document.querySelectorAll('details.grp').forEach(function(d){
+      const n=d.querySelector('.gname');
+      if(n)d.open=wasOpen.has(n.textContent);
+    });
+    /* after layout settles, or the restore lands against the old page height */
+    requestAnimationFrame(function(){window.scrollTo(0,y)});
+  }
 }
 
 load();
