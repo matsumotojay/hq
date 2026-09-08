@@ -478,6 +478,8 @@
   .modalfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
   .modalfoot .spacer{flex:1}
 
+  .fhint{font-size:11.5px;line-height:1.45;color:var(--ink3);margin-top:5px}
+  .billto{font-size:11px;color:var(--ink3);margin-top:1px;font-weight:600}
   /* invoice sheet */
   .invlayout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px}
   .invlayout>*{min-width:0}
@@ -836,9 +838,13 @@
     <h3 id="invModalTitle">Invoice</h3>
     <div class="invlayout">
       <div>
-        <div class="field"><label>Bill to — client / company</label><input id="iClient"></div>
+        <div class="field"><label>Client — who booked you</label><input id="iClient"></div>
         <div class="field"><label>Client email <span style="font-weight:400;color:var(--ink3)">(needed to send)</span></label><input id="iEmail" type="email" placeholder="client@email.com"></div>
-        <div class="field"><label>Client address (optional)</label><textarea id="iAddr" rows="2"></textarea></div>
+        <div class="field"><label>Billed to — exactly as it prints
+          <button class="btn small" type="button" onclick="billToFromClient()" style="float:right;font-weight:400">Use client details</button></label>
+          <textarea id="iBillTo" rows="4" spellcheck="false"></textarea>
+          <div class="fhint">Leave this blank and it bills the client above. Fill it in when someone else pays — a label, an LLC, a venue — and it replaces the whole Billed To block. The preview updates as you type.</div>
+        </div>
         <div class="field"><label>Line items</label>
           <div class="itemhead"><span>Description</span><span>Service date</span><span>Qty</span><span>Unit $</span><span title="Already paid">Paid</span><span></span></div>
           <div id="iItems"></div>
@@ -1644,6 +1650,18 @@ function migrate(){
     const seed=[{"id": "jb01", "title": "Project Manager, Global Program Management, Production Solutions", "company": "Netflix", "location": "Los Angeles, onsite", "url": "https://explore.jobs.netflix.net/careers/job/790317799439", "pay": "$160,000 - $252,000", "mid": 206000, "posted": "2026-08-13", "bar": "5-7+ yrs project management", "fit": 88, "resume": "master", "status": "new", "why": "The only posting found where BOTH halves of your background are listed requirements rather than one being a bonus. It asks for Six Sigma and Lean thinking, and separately for on-set and post-production knowledge.", "matches": ["5 yrs PM at Northrop meets the 5-7+ bar", "Lean and Six Sigma named in quals, your IE degree and time studies", "On-set and post-production knowledge, 8 yrs freelance plus 2 at Koma", "Wants comfort with generative AI and cloud tools for creative workflows, you build them", "Change management and rollout across teams, your Northrop cross-functional work"], "gaps": ["No formal Six Sigma certification, only Lean by practice", "No management consulting background or MBA, listed as a plus", "Media asset management asked at enterprise scale, yours is self-built", "Netflix is high-accountability culture, not a quiet 40 hours"], "note": "Verified live 2026-09-05, req JR42110. Salary only, no bonus, you pick the salary vs stock split."}, {"id": "jb02", "title": "Principal Industrial Engineer", "company": "Northrop Grumman", "location": "El Segundo, onsite", "url": "https://jobs.northropgrumman.com/careers?pid=1340074157093", "pay": "$103,600 - $155,400", "mid": 129500, "posted": "2026-09-02", "bar": "BS + 5 yrs industrial or manufacturing engineering", "fit": 82, "resume": "ops", "status": "new", "why": "Highest probability of an actual offer in the file. You meet the stated bar exactly, no clearance needed to start, and it is the same business unit that promoted you twice.", "matches": ["BS plus 5 yrs is precisely your tenure", "Posting names time studies, capacity modeling and shop-floor controls", "Names Excel macros and pivot tables specifically", "No clearance required to start", "Same employer, so the internal history helps"], "gaps": ["Zero creative content, this is a pure return to IE", "Only clears the $120K floor at midpoint, not comfortably", "Going back to the org you left, decide that is not a step backward"], "note": "Level 3 band shown. Level 2 is $83,400-$125,200 and does not clear."}, {"id": "jb03", "title": "Sr Principal Program Planning and Scheduling Analyst", "company": "Northrop Grumman", "location": "Redondo Beach, hybrid", "url": "https://jobs.northropgrumman.com/careers?pid=1340071847680", "pay": "$129,300 - $193,900", "mid": 161600, "posted": "2026-08-20", "bar": "Secret clearance required at start", "fit": 74, "resume": "ops", "status": "new", "why": "Best work-life-balance structure found anywhere: hybrid plus the 9/80 schedule with every other Friday off. Hybrid protects weekday shoot availability in a way onsite roles do not.", "matches": ["Program scheduling is literally your Northrop job title", "Hybrid plus 9/80, the best hours structure in the whole search", "Band clears the floor comfortably without a top-of-band offer"], "gaps": ["TIME SENSITIVE: needs Secret clearance at start. You left Sep 2024, right at the ~24 month reinstatement edge. Check status now.", "Wants intermediate to advanced MS Project and IMS development", "Wants proven Earned Value Management, program-controls flavored rather than IE", "No creative content"], "note": "Check your clearance reinstatement eligibility before spending time here. This one may close on its own."}, {"id": "jb04", "title": "Program Scheduler, Level 4", "company": "Boeing (Millennium Space Systems)", "location": "El Segundo, 100% onsite", "url": "https://jobs.boeing.com/job/el-segundo/program-scheduler-mid-level-or-senior-millennium-space-systems/185/92362938304", "pay": "$126,650 - $171,350", "mid": 149000, "posted": "2026-08-07", "bar": "Level 4 maps to 5+ yrs", "fit": 68, "resume": "ops", "status": "new", "why": "Clears the floor without needing a top-of-band offer, and the level conversation matters more than the salary conversation here.", "matches": ["Level 4 bar of 5+ yrs matches your tenure", "Scheduling is your core Northrop skill", "Applications open through 16 November, no rush"], "gaps": ["Millennium runs compressed launch-driven schedules, faster than mainline Boeing. Probe hours on call one.", "100% onsite", "Level 3 band caps at $136,850 and would not clear, so the level matters", "No creative content"]}, {"id": "jb05", "title": "Sr. Project Manager, Creative Operations", "company": "Mattel", "location": "El Segundo, 4 days onsite, Fridays remote", "url": "https://jobs.mattel.com/en/job/el-segundo/sr-project-manager-creative-operations/2015/100139154256", "pay": "$95,000 - $119,000", "mid": 107000, "posted": "2026-09-03", "bar": "3-5+ yrs creative project management", "fit": 72, "resume": "master", "status": "new", "why": "The only creative-operations posting whose stated bar you clearly meet, and a realistic 40 hour week. This is what buying the creative-ops credential looks like.", "matches": ["3-5+ yrs creative PM, you have 8 yrs production plus 2 agency", "Owns eComm photography from pre-pro through shoot coordination to delivery", "Runs vendor management to budget, which you do now", "Fridays remote, realistic 40 hours"], "gaps": ["Comp is short. Top of band is $119K and a realistic offer lands near $105K", "Wants Adobe Workfront, which you have not used", "Two years here would open the $140K+ creative roles, so it is an investment not a destination"]}, {"id": "jb06", "title": "Sr. Manager of Crewing, Live Sports Production", "company": "Amazon", "location": "Culver City", "url": "https://www.amazon.jobs/en/jobs/10503351/sr-manager-of-crewing-live-sports-production", "pay": "$98,300 - $160,000", "mid": 129150, "posted": "2026-08-28", "bar": "union and CBA fluency in basic quals", "fit": 62, "resume": "master", "status": "new", "why": "On raw skills this is the closest match to what you actually did at Northrop, just pointed at camera crews instead of aircraft.", "matches": ["Centralized crew scheduling across properties, this is labor modeling", "Catching scheduling conflicts in real time, your recovery-plan work", "Maintaining rate structures and analyzing crew spend", "Combines production ops with live event knowledge"], "gaps": ["Live sports means nights, weekends and seasonal peaks", "You are the person called when a crew falls through, so it is not a 40 hour job", "Basic quals want union and CBA fluency you do not have", "Collides directly with weekend shooting"]}];
     seed.forEach(j=>{ if(!state.jobs.some(x=>x.url===j.url)) state.jobs.push(j) });
     state.jobsUpdated='2026-09-05';
+  }
+  // patch 59 (2026-09-08): Jose Reyes booked Jay for the William Black show at the
+  // Hollywood Palladium on 2026-09-05, but the money comes from WILLIAM BLACK LLC.
+  // Until now an invoice had a single identity, so billing the LLC would have meant
+  // renaming the client -- losing the contact link, Jose's email and the JR- number.
+  // billTo separates the two: this sets the printed block, the client stays Jose.
+  if(!state.patch59){
+    state.patch59=true;
+    const jr=(state.invoices||[]).find(i=>i.number==='JR-0905-26')
+          ||(state.invoices||[]).find(i=>i.client==='Jose Reyes'&&i.svcDate==='2026-09-05');
+    if(jr&&!jr.billTo)
+      jr.billTo='WILLIAM BLACK LLC\n2323 S. Troy Street\nBldg 5 - Suite 300\nAurora, CO 80014';
   }
   if(!state.patch57){
     state.patch57=true;
@@ -4269,9 +4287,9 @@ async function invoicePDF(inv){
   text('Billed To',M,y,10.1,false,'#C8C8C4');
   text('Billed From',R-150,y,10.1,false,'#C8C8C4');
   var ly=y+17;
-  text(inv.client||'-',M,ly,10.5,false,'#E2E2DE');
-  String(inv.addr||'').split('\n').filter(Boolean).forEach(function(l){ly+=12;text(l,M,ly,9.8,false,'#E2E2DE')});
-  if(inv.email){ly+=12;text(inv.email,M,ly,9.8,false,'#E2E2DE')}
+  var btl=billToLines(inv);
+  text(btl[0]||'-',M,ly,10.5,false,'#E2E2DE');
+  btl.slice(1).forEach(function(l){ly+=12;text(l,M,ly,9.8,false,'#E2E2DE')});
   var ry=y+18;
   text(BIZ.name,R,ry,12.4,true,'#FFFFFF','right');
   String(BIZ.sub||'').split('\n').filter(Boolean).forEach(function(l){ry+=13;text(l,R,ry,9.8,false,'#E2E2DE','right')});
@@ -4858,7 +4876,10 @@ function renderInvoices(){
   const rows=[...state.invoices].sort((a,b)=>b.number.localeCompare(a.number));
   $('invTable').innerHTML='<tr><th>Invoice</th><th>Client</th><th>Service</th><th class="r">Amount</th><th>Sent</th><th>Due</th><th>Status</th><th></th></tr>'
     +(rows.length?rows.map(i=>{const od=overdueDays(i);return '<tr'+(i.status==='sent'&&od<=0?' class="sentrow"':'')+'><td><button class="btn small" onclick="openInvoice(\''+i.id+'\')">'+i.number+'</button></td>'
-      +'<td><b>'+esc(i.client)+'</b></td><td>'+esc(invLabel(i))+'</td><td class="r num">'+fmt$(i.amount)+'</td>'
+      +'<td><b>'+esc(i.client)+'</b>'
+      +(function(){const L=billToLines(i);
+         return (i.billTo&&L[0]&&L[0]!==i.client)?'<div class="billto">bills '+esc(L[0])+'</div>':'';})()
+      +'</td><td>'+esc(invLabel(i))+'</td><td class="r num">'+fmt$(i.amount)+'</td>'
       +'<td>'+(i.sentAt?fmtDate(i.sentAt):'<span style="color:var(--ink3)">—</span>')+'</td>'
       +'<td>'+(i.status==='draft'?'<span style="color:var(--ink3)">on send</span>':fmtDate(dueDate(i)))+'</td>'
       +'<td>'+(od>0?'<span class="status overdue">'+od+'d late</span>':'<span class="status '+i.status+'">'+i.status+'</span>')+'</td>'
@@ -4889,12 +4910,12 @@ function openInvoice(id){
   const inv=invById(id);if(!inv)return;
   inv.fresh=false;
   $('invModalTitle').textContent=inv.number+' — '+inv.client;
-  $('iClient').value=inv.client;$('iEmail').value=inv.email;$('iAddr').value=inv.addr;
+  $('iClient').value=inv.client;$('iEmail').value=inv.email;$('iBillTo').value=inv.billTo||'';
   editingItems=invItems(inv).map(it=>Object.assign({},it));
   renderInvItems();
   $('iTerms').value=inv.terms;$('iIssue').value=inv.issue;
   $('iPay').value=inv.pay;$('iNote').value=inv.note;
-  ['iClient','iEmail','iAddr','iIssue','iPay','iNote'].forEach(fid=>{$(fid).oninput=invFormChanged});
+  ['iClient','iEmail','iBillTo','iIssue','iPay','iNote'].forEach(fid=>{$(fid).oninput=invFormChanged});
   $('invOverlay').classList.add('open');
   invFormChanged();
 }
@@ -4929,7 +4950,7 @@ function invFromForm(){
   const priced=items.some(it=>it.price!=null);
   const total=items.reduce((t,it)=>t+(it.paid?0:lineTotal(it)),0);
   return {
-    client:$('iClient').value.trim(),email:$('iEmail').value.trim(),addr:$('iAddr').value.trim(),
+    client:$('iClient').value.trim(),email:$('iEmail').value.trim(),billTo:$('iBillTo').value.trim(),
     items,
     desc:items.map(it=>it.desc).filter(Boolean).join(' · '),
     svcDate:items.map(it=>it.svcDate).filter(Boolean).sort()[0]||'',
@@ -4957,8 +4978,32 @@ function invFormChanged(){
   $('invPreview').innerHTML=invoiceSheetHTML(d);
   fitSheet($('invPreview'));
   $('iEmail').classList.toggle('missing',!d.email);
+  /* show what an empty box would print, so blank never looks like "nothing" */
+  $('iBillTo').placeholder=billToLines(Object.assign({},d,{billTo:''})).join('\n');
+}
+/* Loads the client's own details into the box so they can be edited rather than
+   retyped -- the usual case is "same company, one line different". */
+function billToFromClient(){
+  const inv=invById(editingInvId);if(!inv)return;
+  $('iBillTo').value=billToLines(Object.assign({},inv,invFromForm(),{billTo:''})).join('\n');
+  invFormChanged();
 }
 function fmtDateLong(iso){if(!iso)return'—';const[y,m,d]=iso.split('-').map(Number);const dt=new Date(y,m-1,d);return d+' '+dt.toLocaleDateString('en-US',{month:'long'})+' '+y}
+/* Who the invoice is BILLED TO, which is not always who booked you. Jose Reyes hired
+   Jay for the William Black show at the Palladium; the money comes from WILLIAM BLACK
+   LLC in Aurora. So the client stays Jose -- that is the contact, the email he chases
+   and the JR- invoice number -- while the printed block names the company that pays.
+   An empty billTo keeps the old behaviour exactly: name, address, email.
+   All three renderers (screen sheet, plain text, PDF) go through here so they cannot
+   drift apart. */
+function billToLines(inv){
+  const over=String(inv.billTo||'').trim();
+  if(over)return over.split('\n').map(l=>l.trim()).filter(Boolean);
+  const out=[inv.client||'\u2014'];
+  String(inv.addr||'').split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>out.push(l));
+  if(inv.email)out.push(inv.email);
+  return out;
+}
 function invoiceSheetHTML(inv){
   const due=dueDate(inv);
   const items=invItems(inv), total=invAmount(inv)||inv.amount;
@@ -4967,7 +5012,12 @@ function invoiceSheetHTML(inv){
     +'<div><div class="invnum">Invoice Number: '+esc(inv.number)+'</div>'
     +'<div class="invdate"><div class="l">Date</div><div class="v">'+fmtDateLong(inv.issue)+'</div></div></div></div>'
     +'<div class="parties">'
-    +'<div class="party"><div class="lbl">Billed To</div><div class="ln">'+esc(inv.client||'—')+(inv.addr?'\n'+esc(inv.addr):'')+(inv.email?'\n'+esc(inv.email):'')+'</div></div>'
+    +'<div class="party"><div class="lbl">Billed To</div>'
+    +(function(){const L=billToLines(inv);
+      /* first line is the payer's name, so it carries the same weight as Billed From */
+      return '<div class="nm">'+esc(L[0]||'\u2014')+'</div>'
+        +(L.length>1?'<div class="ln">'+L.slice(1).map(esc).join('\n')+'</div>':'');})()
+    +'</div>'
     +'<div class="party"><div class="lbl">Billed From</div><div class="nm">'+esc(BIZ.name)+'</div><div class="ln">'+esc(BIZ.sub)+'</div></div>'
     +'</div>'
     +'<table><tr><th>Description</th><th>Qty</th><th>Price</th><th>Total</th></tr>'
@@ -5004,7 +5054,7 @@ function invoiceText(inv){
     return head+' — '+(it.qty||1)+' × '+fmt$(it.price)+' = '+fmt$(lineTotal(it));
   });
   return [BIZ.brand+' — '+BIZ.brandSub,'INVOICE '+inv.number,'Date: '+fmtDateLong(inv.issue),'',
-    'Billed To: '+inv.client+(inv.email?' <'+inv.email+'>':'')+(inv.addr?', '+inv.addr.replace(/\n/g,', '):''),
+    'Billed To: '+billToLines(inv).join(', '),
     'Billed From: '+BIZ.name+', '+BIZ.sub.replace(/\n/g,', '),'',
     (items.length>1?'Items:':'Item:')].concat(lines).concat(['',
     (items.some(it=>it.paid)?'TOTAL DUE: ':'TOTAL: ')+fmt$(total),
