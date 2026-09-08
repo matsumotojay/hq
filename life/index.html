@@ -1663,6 +1663,24 @@ function migrate(){
     if(jr&&!jr.billTo)
       jr.billTo='WILLIAM BLACK LLC\n2323 S. Troy Street\nBldg 5 - Suite 300\nAurora, CO 80014';
   }
+  // patch 60 (2026-09-08): the Palladium invoice was one $350 line. Splitting it into
+  // the cam-op fee and the gear rental, which is what an LLC's accounts payable expects
+  // to see. Mirrors what invFromForm() derives so the legacy single-item fields stay
+  // consistent with the new items array: desc joins the lines, price/qty go null on a
+  // multi-line invoice, amount is the sum. $250 + $100 = the same $350 the linked gig
+  // already carries, so the Money tab does not move.
+  if(!state.patch60){
+    state.patch60=true;
+    const jr=(state.invoices||[]).find(i=>i.number==='JR-0905-26')
+          ||(state.invoices||[]).find(i=>i.client==='Jose Reyes'&&i.svcDate==='2026-09-05');
+    if(jr&&!(Array.isArray(jr.items)&&jr.items.length>1)){
+      const d=jr.svcDate||'2026-09-05';
+      jr.items=[{desc:'Camera operator \u2014 William Black @ Hollywood Palladium',svcDate:d,qty:1,price:250,paid:false},
+                {desc:'Gear rental',svcDate:d,qty:1,price:100,paid:false}];
+      jr.desc=jr.items.map(i=>i.desc).filter(Boolean).join(' \u00b7 ');
+      jr.qty=1;jr.price=null;jr.amount=350;
+    }
+  }
   if(!state.patch57){
     state.patch57=true;
     const lacksEvt=t=>!state.events.some(e=>e.title===t);
