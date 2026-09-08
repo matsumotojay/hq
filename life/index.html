@@ -351,7 +351,16 @@
   .acard .af{display:block;font-weight:700;color:var(--good)}
   .acard .af.none{color:var(--ink3);font-weight:500}
   .acard .ac{display:block;margin-top:4px;word-break:break-word}
-  .acard .ah{display:block;margin-top:3px;color:var(--pers)}
+  .acard .ah{display:inline-block;margin-top:3px;color:var(--pers);text-decoration:none;
+    pointer-events:auto;cursor:pointer}
+  .acard .ah:hover{text-decoration:underline}
+  .daygrp{margin:10px 0 4px;padding-left:9px;border-left:2px solid var(--line2)}
+  .dgh{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+  .dgh .dgn{font-size:14.5px;font-weight:700;color:var(--ink)}
+  .dgh .dgct{font-size:11.5px;color:var(--ink3);margin-left:auto}
+  .dgs{font-size:12px;color:var(--ink3);margin:1px 0 4px}
+  .dgsup{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:3px;
+    background:var(--surface2);color:var(--ink2);border:1px solid var(--line2)}
   .pickbar{position:sticky;bottom:8px;display:flex;gap:8px;align-items:center;margin-top:8px;
     padding:9px 12px;border-radius:9px;background:var(--pers-soft);box-shadow:var(--shadow);font-size:13px}
   .artrow .b{flex:1;min-width:180px;font-size:13px;color:var(--ink)}
@@ -2954,7 +2963,12 @@ function chipFor(n){
     +(f?'<span class="af">'+fmtFollowers(f)+' followers</span>'
        :'<span class="af none">follower count not on file</span>')
     +'<span class="ac">'+esc(artistEmailNote(n))+'</span>'
-    +(ig?'<span class="ah">@'+esc(ig.replace(/\/$/,'').split('/').pop())+'</span>':'')
+    /* An <a>, not a <span> — this handle has looked clickable since it was added
+       but did nothing, because the chip's own onclick swallowed the event and a
+       span has nowhere to go. stopPropagation keeps the click from also toggling
+       the chip's selection on the way out. */
+    +(ig?'<a class="ah" href="'+esc(ig)+'" target="_blank" rel="noopener"'
+        +' onclick="event.stopPropagation()">@'+esc(ig.replace(/\/$/,'').split('/').pop())+' \u2197</a>':'')
     +'</span>';
   return '<span class="achip '+st+' b-'+bk+(sel?' sel':'')+'"'
     +' onclick="toggleArtist('+JSON.stringify(n).replace(/"/g,'&quot;')+')">'
@@ -3128,6 +3142,9 @@ function renderDiscordLeads(){
 /* Festivals and clubs are different businesses — a festival is one date with many
    artists to pitch, a club is one venue you work again and again. */
 function festName(o){
+  /* An imported Edmtrain festival carries its own name, so it groups without
+     needing to be added to the hand-maintained list below. */
+  if(o.fest)return o.fest;
   const blob=(o.event||'')+' '+(o.name||'');
   const known=['Lost Lands','Escape','Hulaween','Breakaway','Lights All Night','Dreamstate','Wasteland',
                'Beyond Wonderland','Nocturnal','North Coast','Shambhala','EDC','Countdown','Block Party','Niteharts'];
@@ -3398,7 +3415,7 @@ function outHome(){
   else{const n=new Date();outY=n.getFullYear();outM=n.getMonth();outSel=today}
 }
 const FEST_RE=/festival|lost lands|escape|dreamstate|wasteland|beyond wonderland|nocturnal|apocalypse|edc|countdown|hard summer|shambhala|north coast|hulaween|breakaway|lights all night|block party|niteharts|nitehearts/i;
-function outKind(o){return o.kind||(FEST_RE.test((o.event||'')+' '+(o.name||''))?'festival':'club')}
+function outKind(o){return o.kind||(o.fest?'festival':(FEST_RE.test((o.event||'')+' '+(o.name||''))?'festival':'club'))}
 let outFilter='all';
 function setOutFilter(k){outFilter=k;render()}
 function outVisible(){
@@ -3459,8 +3476,16 @@ function renderOutreachCal(){
     ls.forEach(o=>{(outKind(o)==='festival'?fests:clubs).push(o)});
     const chips=[];
     [...new Set(fests.map(festName))].forEach(f=>chips.push({label:f,cls:'fest'}));
-    clubs.forEach(o=>chips.push({label:o.name,
-      cls:o.status==='booked'?'booked':(o.warm==='owes'?'owes':(o.warm==='worked'?'worked':''))}));
+    /* One chip per SHOW, not per artist. A three-act club night used to fill the
+       cell with three names and push everything else behind "+2 more"; now it
+       reads as the headliner with the support counted after it. */
+    const byVenue={};
+    clubs.forEach(function(o){const k=clubName(o)||'—';(byVenue[k]=byVenue[k]||[]).push(o)});
+    Object.keys(byVenue).forEach(function(k){
+      const g=byVenue[k], head=g[0];
+      chips.push({label:head.name+(g.length>1?' +'+(g.length-1):''),
+        cls:head.status==='booked'?'booked':(head.warm==='owes'?'owes':(head.warm==='worked'?'worked':''))});
+    });
     chips.slice(0,2).forEach(ch=>{
       cell.innerHTML+='<div class="leadchip '+ch.cls+'">'+(c&&c.hard?'⚠️ ':'')+esc(ch.label)+'</div>';
     });
@@ -3473,8 +3498,43 @@ function renderOutreachCal(){
   let h='<h3>'+new Date(outSel+'T12:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+'</h3>';
   const dc=clash(outSel);
   if(dc)h+='<div class="clashbanner'+(dc.hard?' hard':'')+'">'+(dc.hard?'⚠️ You’re already booked: ':'On your calendar: ')+esc(dc.label)+'</div>';
-  h+=ls.length?ls.map(leadDetail).join('')
-     :'<p style="color:var(--ink3);font-size:13.5px">No leads this day.</p>';
+  /* Grouped by event. Clicking the 19th used to give a flat wall of DJs with no
+     indication they were all one festival — now the event is the heading and its
+     bill sits underneath, each act still individually draftable. */
+  if(ls.length){
+    const groups={};
+    ls.forEach(function(o){
+      const isF=outKind(o)==='festival';
+      const k=isF?festName(o):(clubName(o)||'Other');
+      (groups[k]=groups[k]||{fest:isF,rows:[]}).rows.push(o);
+    });
+    /* festivals first, then the bigger club bills */
+    const keys=Object.keys(groups).sort(function(a,b){
+      const fa=groups[a].fest?0:1, fb=groups[b].fest?0:1;
+      return fa-fb || groups[b].rows.length-groups[a].rows.length;
+    });
+    h+=keys.map(function(k){
+      const g=groups[k], head=g.rows[0];
+      /* A festival is known by its name; a club night is known by who is headlining
+         it, with the venue as the supporting line. Using the venue for both made
+         the heading and subtitle identical. */
+      const title=g.fest?k:head.name;
+      const sub=g.fest
+        ? (((state.festMeta||{})[k]||{}).where||'')
+        : (head.event||k);
+      const support=g.fest?0:g.rows.length-1;
+      return '<div class="daygrp">'
+        +'<div class="dgh"><span class="dgn">'+esc(title)+'</span>'
+          +(g.fest?'<span class="shfest">FESTIVAL</span>'
+                  :(support?'<span class="dgsup">+'+support+' support</span>':''))
+          +'<span class="dgct">'+g.rows.length+(g.rows.length===1?' act':' acts')+'</span></div>'
+        +(sub?'<div class="dgs">'+esc(sub)+'</div>':'')
+        +g.rows.map(leadDetail).join('')
+        +'</div>';
+    }).join('');
+  } else {
+    h+='<p style="color:var(--ink3);font-size:13.5px">No leads this day.</p>';
+  }
   h+='<div style="margin-top:10px"><button class="btn small" onclick="openOutModal(null,\''+outSel+'\')">＋ Add a lead on this day</button></div>';
   panel.innerHTML=h;
 }
@@ -3505,6 +3565,41 @@ async function loadShows(){
 /* Shows on a given day. Read straight from the synced feed rather than copied
    into state.events, so the calendar can display them without them ever counting
    as gigs, appearing in Money, or auto-drafting an invoice. */
+/* Edmtrain files a multi-day festival as one event per day, so Escape arrived as
+   two identical rows (Oct 30, Oct 31) and Nocturnal as two more. Merge consecutive
+   days at the same event+venue into a single row carrying a date RANGE, and pool
+   the bills — the lineup differs per day and Jay wants to see the whole weekend. */
+function collapseRuns(evs){
+  const byKey={};
+  evs.forEach(function(e){
+    const k=(e.t||'')+'|'+(e.v||'')+'|'+e.tier;
+    (byKey[k]=byKey[k]||[]).push(e);
+  });
+  const out=[];
+  Object.keys(byKey).forEach(function(k){
+    const g=byKey[k].slice().sort((a,b)=>a.d.localeCompare(b.d));
+    /* An unnamed one-off keeps its own row — only a named run should merge, or
+       two unrelated club nights at one venue would fuse into nonsense. */
+    if(!g[0].t||g.length===1){out.push.apply(out,g);return}
+    let run=[g[0]];
+    const flush=function(){
+      const first=run[0], last=run[run.length-1];
+      const acts=[];
+      run.forEach(x=>(x.a||[]).forEach(n=>{if(acts.indexOf(n)<0)acts.push(n)}));
+      out.push(Object.assign({},first,{a:acts,dEnd:last.d!==first.d?last.d:'',
+                                       days:run.length,ids:run.map(x=>x.id)}));
+      run=[];
+    };
+    for(let i=1;i<g.length;i++){
+      const prev=new Date(run[run.length-1].d+'T12:00'), cur=new Date(g[i].d+'T12:00');
+      /* same weekend, not the same festival returning months later */
+      if((cur-prev)/864e5<=1.5)run.push(g[i]); else {flush();run=[g[i]]}
+    }
+    if(run.length)flush();
+  });
+  return out;
+}
+
 function showsOn(iso){
   return (showsAll||[]).filter(e=>e.d===iso);
 }
@@ -3519,7 +3614,7 @@ function renderShows(){
   if(!showsAll){host.innerHTML='';return}
   const today=todayISO();
   const cut=new Date(Date.now()+showsDays*864e5).toISOString().slice(0,10);
-  let list=showsAll.filter(e=>e.d>=today&&e.d<=cut);
+  let list=collapseRuns(showsAll.filter(e=>e.d>=today&&e.d<=cut));
   const withReach=list.filter(e=>showReach(e).length);
   if(showsOnlyReach)list=withReach;
   if(showsTier!=='all')list=list.filter(e=>e.tier===showsTier);
@@ -3562,7 +3657,7 @@ function renderShows(){
     const inPipe=reach.filter(n=>(state.outreach||[]).some(o=>
         String(o.name||'').toLowerCase()===n.toLowerCase()&&o.date===e.d)).length;
     return '<div class="shrow'+(reach.length?' reach':'')+'">'
-      +'<span class="sd">'+fmtDate(e.d)+'</span>'
+      +'<span class="sd">'+fmtDate(e.d)+(e.dEnd?'–'+fmtDate(e.dEnd):'')+'</span>'
       +'<span class="sa"><b>'+esc(title)+'</b>'
         +(e.tier==='fest'?' <span class="shfest">FESTIVAL</span>':(e.tier==='tour'?' <span class="shtour">TOUR</span>':''))
         +'<div class="sv">'+esc(e.v||'')+(e.loc?' · '+esc(e.loc):'')+'</div>'
@@ -3570,11 +3665,17 @@ function renderShows(){
       +'</span>'
       +'<span class="sx">'
         +(reach.length?'<span class="shbadge" title="You have an address for: '+esc(reach.join(', '))+'">✉ '+reach.length+'</span>':'')
-        +(reach.length
-            ? (inPipe>=reach.length
-                ? '<span class="shdone">in outreach ✓</span>'
-                : '<button class="btn small" onclick="showToOutreach('+e.id+')" title="Adds '+esc(reach.join(', '))+' to your outreach pipeline with the venue and date filled in">＋ Add to outreach</button>')
-            : '')
+        +(function(){
+            if(e.tier==='fest'&&e.t){
+              const done=(state.outreach||[]).some(o=>o.fest===e.t);
+              return done?'<span class="shdone">in Festivals ✓</span>'
+                :'<button class="btn small" onclick="importFestival('+e.id+')" title="Adds all '+(e.a||[]).length+' acts as chips in the Festivals section below, same as Lost Lands">＋ Work this festival</button>';
+            }
+            if(!reach.length)return '';
+            return inPipe>=reach.length
+              ? '<span class="shdone">in outreach ✓</span>'
+              : '<button class="btn small" onclick="showToOutreach('+e.id+')" title="Adds '+esc(reach.join(', '))+' to your outreach pipeline">＋ Add to outreach</button>';
+          })()
         +'<a class="shlink" href="'+esc(e.link)+'" target="_blank" rel="noopener" title="Open on Edmtrain">↗</a>'
       +'</span></div>';
   }).join('')||'<div style="color:var(--ink3);font-size:12.5px">Nothing in this window.</div>';
@@ -3583,8 +3684,72 @@ function renderShows(){
 }
 
 /* Add every reachable act on a bill to the pipeline, venue and date prefilled. */
+/* Pull a whole festival into the pipeline so it renders through the SAME panel as
+   Lost Lands and Escape — every act as a chip, with the email/IG/verified filters
+   and the size bands. Rather than build a second UI for Edmtrain events, this
+   writes the three things that panel already reads: a lineup, its festMeta, and
+   one outreach row per act.
+
+   Acts with no address yet still get a row; they show as "no contact" in the
+   panel, which is exactly the worklist for the overnight research run. */
+function importFestival(id){
+  const runs=collapseRuns(showsAll||[]);
+  const e=runs.find(x=>x.id===id); if(!e)return;
+  const name=e.t||'';
+  if(!name){toast('This one has no event name to group by');return}
+  const acts=(e.a||[]).filter(n=>n&&!/lineup|tbc|tba/i.test(n));
+  if(!acts.length){toast('No lineup published for this one yet');return}
+
+  state.lineups=state.lineups||{};
+  state.festMeta=state.festMeta||{};
+  state.outreach=state.outreach||[];
+
+  /* Reuse the key an existing researched lineup already lives under — Escape is
+     stored as "Escape Halloween 2026", and writing a bare "Escape Halloween"
+     alongside it would leave two lineups for one festival, with the panel showing
+     whichever the prefix match happened to hit first. */
+  const lkeys=Object.keys(state.lineups);
+  const key=lkeys.find(x=>x.toLowerCase().indexOf(name.toLowerCase())===0)
+          ||lkeys.find(x=>x.toLowerCase().includes(name.toLowerCase()))
+          ||name;
+  const existing=Array.isArray(state.lineups[key])?state.lineups[key]:[];
+  const merged=existing.slice();
+  acts.forEach(n=>{if(!merged.some(x=>nkey(x)===nkey(n)))merged.push(n)});
+  state.lineups[key]=merged;
+
+  /* Same for the header card: a hand-checked festMeta carries real dates and the
+     venue Jay confirmed, so only fill it in when there isn't one. */
+  const mkeys=Object.keys(state.festMeta);
+  const mkey=mkeys.find(x=>x.toLowerCase().indexOf(name.toLowerCase())===0)
+           ||mkeys.find(x=>x.toLowerCase().includes(name.toLowerCase()));
+  if(!mkey){
+    state.festMeta[name]={
+      dates:fmtDate(e.d)+(e.dEnd?'–'+fmtDate(e.dEnd):''),
+      where:(e.v||'')+(e.loc?', '+e.loc:''),
+      local:/,\s*CA\b|California/i.test(e.loc||''),
+      link:e.link
+    };
+  }
+
+  let added=0;
+  acts.forEach(function(n){
+    if(state.outreach.some(o=>nkey(o.name)===nkey(n)&&o.fest===name))return;
+    state.outreach.push({id:uid(),name:n,email:artistEmail(n),kind:'festival',fest:name,
+      event:name+' · '+(e.v||''),date:e.d,warm:'cold',status:'todo',
+      notes:'From Edmtrain: '+e.link,lastTouch:''});
+    added++;
+  });
+  save();render();
+  toast(added?(name+': '+added+' acts added — see Festivals below'):(name+' is already in the pipeline'));
+}
+
 function showToOutreach(id){
-  const e=(showsAll||[]).find(x=>x.id===id); if(!e)return;
+  /* collapseRuns keeps the first day's id, and its `a` already pools the whole
+     run's bill, so one lookup covers the weekend. */
+  let e=(showsAll||[]).find(x=>x.id===id);
+  const merged=collapseRuns(showsAll||[]).find(x=>x.id===id);
+  if(merged)e=merged;
+  if(!e)return;
   const reach=showReach(e); if(!reach.length)return;
   state.outreach=state.outreach||[];
   let added=0;
