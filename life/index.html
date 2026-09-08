@@ -983,7 +983,11 @@ const BIZ={
   email:'matsumotojay@gmail.com',
   site:'jaymatsu.com',
   phone:'(310) 951-2318',
-  pay:'Venmo: Jay-Matsumoto\nZelle: 310-951-2318\nChecks also accepted',
+  /* Direct deposit leads because a company's accounts-payable desk pays by ACH, not
+     Venmo -- and the Palladium invoice bills an LLC. Each detail gets its own line:
+     the block renders with white-space:pre-line, which keeps newlines but collapses
+     runs of spaces, so indentation would not survive. */
+  pay:'Direct deposit (ACH) \u00b7 US Bank\nAccount name: Jay Matsumoto\nRouting: 122235821\nAccount: 158232327433\nVenmo: Jay-Matsumoto\nZelle: 310-951-2318\nChecks also accepted',
   note:'Thank you! Payment is appreciated within the terms above.'
 };
 let state=null;
@@ -1680,6 +1684,18 @@ function migrate(){
       jr.desc=jr.items.map(i=>i.desc).filter(Boolean).join(' \u00b7 ');
       jr.qty=1;jr.price=null;jr.amount=350;
     }
+  }
+  // patch 61 (2026-09-08): add direct deposit to the payment block. Every existing
+  // invoice still carried the old default verbatim, so there is no hand-edited wording
+  // to protect -- but PAID invoices are left alone on purpose: their record should keep
+  // matching the PDF the client actually received. Drafts and unpaid sent invoices get
+  // it, because those are the ones that might still be paid or resent.
+  if(!state.patch61){
+    state.patch61=true;
+    const OLDPAY='Venmo: Jay-Matsumoto\nZelle: 310-951-2318\nChecks also accepted';
+    (state.invoices||[]).forEach(i=>{
+      if(i.status!=='paid'&&(!i.pay||i.pay===OLDPAY))i.pay=BIZ.pay;
+    });
   }
   if(!state.patch57){
     state.patch57=true;
