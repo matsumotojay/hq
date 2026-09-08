@@ -204,6 +204,25 @@
   .billrow.soon .when{color:var(--owed);font-weight:700}
   .billrow.due{background:var(--urgent-soft)}
   .billrow.due .when{color:var(--urgent);font-weight:700}
+  /* edmtrain shows feed */
+  .shrow{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .shrow:last-child{border-bottom:none}
+  .shrow .sd{flex:0 0 52px;color:var(--ink3);font-size:12px;white-space:nowrap}
+  .shrow .sa{flex:1;min-width:0}
+  .shrow .sa b{font-weight:650}
+  .shrow .sv{color:var(--ink3);font-size:12px}
+  .shrow .sx{flex:none;display:flex;gap:5px;align-items:center}
+  .shrow.reach{background:var(--good-soft)}
+  .shbadge{font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:3px;
+           background:var(--good-soft);color:var(--good);border:1px solid var(--good);white-space:nowrap}
+  .shtour{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:3px;
+          background:var(--surface2);color:var(--ink2);border:1px solid var(--line2);white-space:nowrap}
+  .shfest{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:3px;
+          background:var(--pers-soft,var(--surface2));color:var(--pers);border:1px solid var(--pers);white-space:nowrap}
+  .shlink{color:var(--ink3);text-decoration:none;font-size:11.5px;border:1px solid var(--line);border-radius:3px;padding:1px 5px}
+  .shlink:hover{color:var(--accent);border-color:var(--accent)}
+  .shhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
+  .shstale{color:var(--owed);font-size:11.5px}
   /* outreach */
   .outgroup{margin-bottom:16px}
   .outgroup h3{font-size:13px;font-weight:800;margin:0 0 2px}
@@ -626,6 +645,7 @@
   <!-- ═══════════ OUTREACH ═══════════ -->
   <section class="view" id="view-outreach">
     <div class="monthstrip" id="outStats" style="margin-top:18px"></div>
+    <div id="showsCard"></div>
     <div id="outFilters" style="display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 2px"></div>
     <div class="calhead">
       <button class="btn small" onclick="outNav(-1)">‹</button>
@@ -3438,6 +3458,109 @@ function renderOutreachCal(){
   h+='<div style="margin-top:10px"><button class="btn small" onclick="openOutModal(null,\''+outSel+'\')">＋ Add a lead on this day</button></div>';
   panel.innerHTML=h;
 }
+/* ─────────────────────── EDMTRAIN SHOWS ───────────────────────
+   Upcoming SoCal shows, synced by edmtrain_sync.py into the `edm` collection.
+   The API key never reaches this page — Edmtrain's terms forbid sharing it, and
+   this page is served from a public repo. Their terms also require the event
+   link to be shown UNMODIFIED, which is what the ↗ opens.
+
+   The point of the feed is the cross-reference: a show is only useful to Jay if
+   he can actually reach somebody on the bill, so anything he already has an
+   address for is pulled to the top and marked. */
+let showsAll=null, showsMeta=null, showsDays=90, showsOnlyReach=false, showsTier='all';
+
+async function loadShows(){
+  if(showsAll||!window.__fbGet)return;
+  try{
+    const m=await window.__fbGet('edm','meta'); if(!m)return;
+    const n=+(m.chunks||0); let out=[];
+    for(let i=0;i<n;i++){
+      const c=await window.__fbGet('edm','c'+i);
+      if(c&&c.v)out=out.concat(JSON.parse(c.v));
+    }
+    showsAll=out; showsMeta=m; renderShows();
+  }catch(e){ /* rules or offline — the card just stays hidden */ }
+}
+
+function showReach(ev){
+  /* which acts on this bill do we already have an address for? */
+  return (ev.a||[]).filter(n=>artistEmail(n));
+}
+
+function renderShows(){
+  const host=$('showsCard'); if(!host)return;
+  if(!showsAll){host.innerHTML='';return}
+  const today=todayISO();
+  const cut=new Date(Date.now()+showsDays*864e5).toISOString().slice(0,10);
+  let list=showsAll.filter(e=>e.d>=today&&e.d<=cut);
+  const withReach=list.filter(e=>showReach(e).length);
+  if(showsOnlyReach)list=withReach;
+  if(showsTier!=='all')list=list.filter(e=>e.tier===showsTier);
+  /* festivals first, then brand nights, then headliner shows; reachable ahead of
+     unreachable inside each; date last. A festival you can pitch is the best row
+     on the page and should never be buried under a club night. */
+  const TR={fest:0,tour:1,club:2,raw:3};
+  list=list.slice().sort((a,b)=>{
+    const ta=TR[a.tier]!==undefined?TR[a.tier]:9, tb=TR[b.tier]!==undefined?TR[b.tier]:9;
+    const ra=showReach(a).length?0:1, rb=showReach(b).length?0:1;
+    return ta-tb || ra-rb || a.d.localeCompare(b.d);
+  }).slice(0,60);
+
+  const age=showsMeta&&showsMeta.fetchedAt?Math.floor((Date.now()-(+showsMeta.fetchedAt))/36e5):null;
+  const stale=age!=null&&age>=24;
+
+  let h='<div class="listhead"><h2>Shows near you</h2></div><div class="card" style="padding:14px 16px">';
+  h+='<div class="shhead">'
+    +'<span style="font-size:12.5px;color:var(--ink2)"><b>'+withReach.length+'</b> of '+list.length
+    +' you can already reach</span>'
+    +'<span style="flex:1"></span>'
+    +[{k:'all',l:'all'},{k:'fest',l:'festivals'},{k:'tour',l:'tours'},{k:'club',l:'clubs'}]
+        .map(t=>'<button class="btn small'+(showsTier===t.k?' on':'')+'" onclick="showsTier=\''+t.k+'\';renderShows()">'+t.l+'</button>').join('')
+    +'<span style="width:8px"></span>'
+    +[90,365].map(d=>'<button class="btn small'+(showsDays===d?' on':'')+'" onclick="showsDays='+d+';renderShows()">'
+        +(d===365?'1 yr':'90d')+'</button>').join('')
+    +'<button class="btn small'+(showsOnlyReach?' on':'')+'" onclick="showsOnlyReach=!showsOnlyReach;renderShows()">have an email</button>'
+    +'</div>';
+  if(stale)h+='<div class="shstale">Feed is '+age+'h old — run edmtrain_sync.py (Edmtrain asks for under 24h).</div>';
+
+  h+=list.map(e=>{
+    const reach=showReach(e);
+    const acts=(e.a&&e.a.length)?e.a:[e.t||'TBA'];
+    const names=acts.map(n=>reach.indexOf(n)>-1?'<b>'+esc(n)+'</b>':esc(n)).join(', ');
+    return '<div class="shrow'+(reach.length?' reach':'')+'">'
+      +'<span class="sd">'+fmtDate(e.d)+'</span>'
+      +'<span class="sa">'+names
+        +(e.tier==='fest'?' <span class="shfest">FESTIVAL</span>':(e.tier==='tour'?' <span class="shtour">TOUR</span>':''))
+        +'<div class="sv">'+esc(e.v||'')+(e.loc?' · '+esc(e.loc):'')+'</div></span>'
+      +'<span class="sx">'
+        +(reach.length?'<span class="shbadge" title="'+esc(reach.join(', '))+'">✉ '+reach.length+'</span>':'')
+        +(reach.length?'<button class="btn small" onclick="showToOutreach('+e.id+')">＋ pitch</button>':'')
+        +'<a class="shlink" href="'+esc(e.link)+'" target="_blank" rel="noopener" title="Open on Edmtrain">↗</a>'
+      +'</span></div>';
+  }).join('')||'<div style="color:var(--ink3);font-size:12.5px">Nothing in this window.</div>';
+  h+='</div>';
+  host.innerHTML=h;
+}
+
+/* Add every reachable act on a bill to the pipeline, venue and date prefilled. */
+function showToOutreach(id){
+  const e=(showsAll||[]).find(x=>x.id===id); if(!e)return;
+  const reach=showReach(e); if(!reach.length)return;
+  state.outreach=state.outreach||[];
+  let added=0;
+  const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  reach.forEach(n=>{
+    if(state.outreach.some(o=>norm(o.name)===norm(n)&&o.date===e.d))return;
+    state.outreach.push({id:uid(),name:n,email:artistEmail(n),
+      event:(e.v||'')+(e.loc?' · '+e.loc:''),date:e.d,warm:'cold',status:'todo',
+      notes:'From Edmtrain: '+e.link,lastTouch:''});
+    added++;
+  });
+  if(!added){toast('Already in the pipeline');return}
+  save();render();
+  toast(added+' added to outreach');
+}
+
 function renderOutreach(){
   const list=outVisible(), today=todayISO();
   const all=state.outreach||[];
@@ -4670,7 +4793,7 @@ function renderJobs(){
 
 function render(){
   $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  renderToday();renderCalendar();renderMoney();renderBills();renderOutreach();renderDiscordLeads();renderGroups();renderCollect();renderInvoices();renderMoneyNudge();renderJobs();
+  renderToday();renderCalendar();renderMoney();renderBills();renderShows();renderOutreach();renderDiscordLeads();renderGroups();renderCollect();renderInvoices();renderMoneyNudge();renderJobs();
 }
 
 load();
@@ -4692,6 +4815,15 @@ if(window.FBCONFIG){
       import("../auth.js")]);
     const {app}=await requireAuth(FBCONFIG,{label:"Your Life Tracker"});
     const db=getFirestore(app);
+    /* One-shot reader for collections the tracker doesn't live-sync — the
+       Edmtrain feed and anything else that is refreshed by a local script
+       rather than edited here. Returns the doc's fields, or null. */
+    window.__fbGet=async(coll,id)=>{
+      const {doc:_d,getDoc:_g}=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+      const snap=await _g(_d(db,coll,id));
+      return snap.exists()?snap.data():null;
+    };
+    if(typeof loadShows==="function")loadShows();
     window.__fbWrite=(k,raw)=>{
       (raw==null?deleteDoc(doc(db,"jlt",k))
                 :setDoc(doc(db,"jlt",k),{v:raw,t:Date.now()}))
