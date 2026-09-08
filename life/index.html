@@ -215,6 +215,9 @@
   .shrow.reach{background:var(--good-soft)}
   .shbadge{font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:3px;
            background:var(--good-soft);color:var(--good);border:1px solid var(--good);white-space:nowrap}
+  .evchip.show{background:transparent;border:1px dashed var(--line2);color:var(--ink2)}
+  .shrow .sacts{font-size:11.5px;color:var(--ink2);margin-top:2px}
+  .shdone{font-size:11px;font-weight:700;color:var(--good);white-space:nowrap}
   .shtour{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:3px;
           background:var(--surface2);color:var(--ink2);border:1px solid var(--line2);white-space:nowrap}
   .shfest{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:3px;
@@ -2179,7 +2182,16 @@ function renderCalendar(){
       const isTrip=e.endDate&&e.date!==iso;
       cell.innerHTML+='<div class="evchip'+(e.gig?' gig':'')+'">'+esc(isTrip?'· '+e.title:e.title)+'</div>';
     });
-    if(evs.length>2)cell.innerHTML+='<div class="evmore">+'+(evs.length-2)+' more</div>';
+    /* Edmtrain shows sit alongside real bookings but are styled apart and never
+       written into state.events — they are somebody else's calendar, not Jay's,
+       and must not leak into gigs, money or invoices. */
+    const shw=showsOn(iso), room=Math.max(0,2-evs.length);
+    shw.slice(0,room).forEach(e=>{
+      cell.innerHTML+='<div class="evchip show" title="'+esc((e.v||'')+(e.loc?' · '+e.loc:''))+'">'
+        +esc(e.t||(e.a||[]).join(', ')||'Show')+'</div>';
+    });
+    const hidden=(evs.length>2?evs.length-2:0)+Math.max(0,shw.length-room);
+    if(hidden)cell.innerHTML+='<div class="evmore">+'+hidden+' more</div>';
     cell.onclick=()=>{selDate=iso;render()};
     grid.appendChild(cell);
   }
@@ -3414,7 +3426,9 @@ function leadDetail(o){
     +'<span class="st '+o.status+'" onclick="cycleOutreach(\''+o.id+'\')" title="Tap to advance">'+OSTAT[o.status]+'</span>'
     +'<span class="warm '+o.warm+'">'+OWARM[o.warm]+'</span>'
     +(c?'<span class="clashchip'+(c.hard?' hard':'')+'">'+(c.hard?'⚠️ you’re booked':'heads-up')+'</span>':'')+'</div>'
-    +(c?'<div class="clashline'+(c.hard?' hard':'')+'">'+(c.hard?'Already on your calendar: ':'Also that day: ')+esc(c.label)+'</div>':'')
+    /* The panel already carries one clashbanner for the day. Repeating the whole
+       sentence under every lead just buried the leads. The chip above still marks
+       each row, which is the part worth keeping. */
     +'<div class="sub">'+esc(o.event||'—')+'</div>'
     +'<div class="sub'+(o.email?'':' ')+'" style="'+(o.email?'':'color:var(--owed);font-weight:600')+'">'
       +esc(o.email||'no email yet — find their booking contact')+'</div>'
@@ -3488,6 +3502,13 @@ async function loadShows(){
   }catch(e){ /* rules or offline — the card just stays hidden */ }
 }
 
+/* Shows on a given day. Read straight from the synced feed rather than copied
+   into state.events, so the calendar can display them without them ever counting
+   as gigs, appearing in Money, or auto-drafting an invoice. */
+function showsOn(iso){
+  return (showsAll||[]).filter(e=>e.d===iso);
+}
+
 function showReach(ev){
   /* which acts on this bill do we already have an address for? */
   return (ev.a||[]).filter(n=>artistEmail(n));
@@ -3531,16 +3552,29 @@ function renderShows(){
 
   h+=list.map(e=>{
     const reach=showReach(e);
-    const acts=(e.a&&e.a.length)?e.a:[e.t||'TBA'];
-    const names=acts.map(n=>reach.indexOf(n)>-1?'<b>'+esc(n)+'</b>':esc(n)).join(', ');
+    /* Lead with the event's own name where it has one. Every festival does, and
+       showing "ILLENIUM, Angrybaby, B-Sides…" instead of "Nocturnal Wonderland"
+       made the feed unreadable — the bill is detail, the event is the headline. */
+    const title=e.t||(e.a||[]).join(', ')||'TBA';
+    const acts=(e.a||[]);
+    const shown=acts.slice(0,4).map(n=>reach.indexOf(n)>-1?'<b>'+esc(n)+'</b>':esc(n)).join(', ');
+    const more=acts.length>4?' <span style="color:var(--ink3)">+'+(acts.length-4)+' more</span>':'';
+    const inPipe=reach.filter(n=>(state.outreach||[]).some(o=>
+        String(o.name||'').toLowerCase()===n.toLowerCase()&&o.date===e.d)).length;
     return '<div class="shrow'+(reach.length?' reach':'')+'">'
       +'<span class="sd">'+fmtDate(e.d)+'</span>'
-      +'<span class="sa">'+names
+      +'<span class="sa"><b>'+esc(title)+'</b>'
         +(e.tier==='fest'?' <span class="shfest">FESTIVAL</span>':(e.tier==='tour'?' <span class="shtour">TOUR</span>':''))
-        +'<div class="sv">'+esc(e.v||'')+(e.loc?' · '+esc(e.loc):'')+'</div></span>'
+        +'<div class="sv">'+esc(e.v||'')+(e.loc?' · '+esc(e.loc):'')+'</div>'
+        +(e.t&&acts.length?'<div class="sacts">'+shown+more+'</div>':'')
+      +'</span>'
       +'<span class="sx">'
-        +(reach.length?'<span class="shbadge" title="'+esc(reach.join(', '))+'">✉ '+reach.length+'</span>':'')
-        +(reach.length?'<button class="btn small" onclick="showToOutreach('+e.id+')">＋ pitch</button>':'')
+        +(reach.length?'<span class="shbadge" title="You have an address for: '+esc(reach.join(', '))+'">✉ '+reach.length+'</span>':'')
+        +(reach.length
+            ? (inPipe>=reach.length
+                ? '<span class="shdone">in outreach ✓</span>'
+                : '<button class="btn small" onclick="showToOutreach('+e.id+')" title="Adds '+esc(reach.join(', '))+' to your outreach pipeline with the venue and date filled in">＋ Add to outreach</button>')
+            : '')
         +'<a class="shlink" href="'+esc(e.link)+'" target="_blank" rel="noopener" title="Open on Edmtrain">↗</a>'
       +'</span></div>';
   }).join('')||'<div style="color:var(--ink3);font-size:12.5px">Nothing in this window.</div>';
@@ -3562,9 +3596,9 @@ function showToOutreach(id){
       notes:'From Edmtrain: '+e.link,lastTouch:''});
     added++;
   });
-  if(!added){toast('Already in the pipeline');return}
+  if(!added){toast('Already in your outreach pipeline');return}
   save();render();
-  toast(added+' added to outreach');
+  toast(added+' added to outreach — '+reach.join(', '));
 }
 
 function renderOutreach(){
