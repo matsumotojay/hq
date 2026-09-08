@@ -360,7 +360,13 @@
     background:var(--card,#1b1b1e);border:1px solid var(--line);
     box-shadow:0 10px 28px rgba(0,0,0,.45);text-align:left;cursor:default;
     font-size:11.5px;line-height:1.45;color:var(--ink2);white-space:normal}
-  .achip:hover .acard{display:block}
+  /* The card floats 7px clear of the chip, so travelling to it crossed dead space:
+     :hover ended, the card vanished, and the Instagram link could never be
+     reached. This pseudo-element bridges that gap so the pointer stays inside a
+     hovered element the whole way. Keeping the card open while the pointer is IN
+     it is what makes the link clickable at all. */
+  .acard::after{content:'';position:absolute;left:0;right:0;bottom:-9px;height:9px}
+  .achip:hover .acard,.acard:hover{display:block}
   .acard b{display:block;font-size:13px;color:var(--ink);margin-bottom:3px}
   .acard .af{display:block;font-weight:700;color:var(--good)}
   .acard .af.none{color:var(--ink3);font-weight:500}
@@ -691,12 +697,12 @@
     </div>
 
     <div id="outListView" hidden>
-      <div id="showsCard"></div>
-      <div id="outFilters" style="display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 2px"></div>
-      <div id="discordCard"></div>
       <div id="festCard"></div>
-      <div id="tourCard"></div>
-      <div id="clubCard"></div>
+      <div id="discordCard" hidden></div>
+      <div id="showsCard" hidden></div>
+      <div id="outFilters" hidden></div>
+      <div id="tourCard" hidden></div>
+      <div id="clubCard" hidden></div>
     </div>
     <details class="allleads"><summary>Everything in the pipeline — the flat list</summary>
       <div id="outList"></div>
@@ -3204,15 +3210,13 @@ function lineupKeyFor(festLabel){
   return keys.find(x=>x.toLowerCase().indexOf(festLabel.toLowerCase())===0)
       ||keys.find(x=>x.toLowerCase().includes(festLabel.toLowerCase()))||null;
 }
-function festPanel(k,rows,dates){
-  const seen={},names=[];
-  (lineupFor(k)||[]).concat(rows.map(o=>o.name)).forEach(function(n){
-    if(!n||seen[nkey(n)])return;
-    if(/lineup|tbc|tba/i.test(n))return;   /* placeholders are not artists */
-    seen[nkey(n)]=1;names.push(n);
-  });
-  const from=dates[0]||todayISO(), to=dates[dates.length-1]||from;
-  if(!names.length)return '<div style="font-size:13px;color:var(--ink3);padding:4px 0">Lineup not pulled yet — the nightly research run fills this in.</div>';
+/* The chip grid, filters and bulk bar, split out of festPanel so an Edmtrain
+   lineup can render through exactly the same thing without first being imported
+   into the pipeline. Everything here works from artist NAMES — chipFor() looks up
+   the address, status and handle itself — so no outreach rows are needed just to
+   look at a bill. */
+function lineupPanel(k,names,from,to){
+  if(!names.length)return '<div style="font-size:13px;color:var(--ink3);padding:4px 0">Lineup not published yet.</div>';
   const lk=lineupKeyFor(k), ps=lk?posterListFor(lk):[];
   let ph='';
   if(ps.length){
@@ -3227,6 +3231,18 @@ function festPanel(k,rows,dates){
                    :'<div class="fnone">Nobody in this pile for this festival.</div>')
     +pickBarHTML(k,names,from,to);
 }
+
+function festPanel(k,rows,dates){
+  const seen={},names=[];
+  (lineupFor(k)||[]).concat(rows.map(o=>o.name)).forEach(function(n){
+    if(!n||seen[nkey(n)])return;
+    if(/lineup|tbc|tba/i.test(n))return;   /* placeholders are not artists */
+    seen[nkey(n)]=1;names.push(n);
+  });
+  const dts=dates||[];
+  return lineupPanel(k,names,dts[0]||todayISO(),dts[dts.length-1]||dts[0]||todayISO());
+}
+
 function clubPanel(k,rows){
   const sorted=rows.slice().sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
   const picked=sorted.filter(o=>selArtists.has(o.name));
@@ -3279,7 +3295,7 @@ function renderGroups(){
         }).join('')+'</div>'):'';
     }
   }
-  if(fest){
+  if(false){          /* festivals now render through renderUnifiedList() */
     if(outFilter==='club'){fest.innerHTML=''}
     else{
       const g=groupBy(all.filter(o=>outKind(o)==='festival'),festName);
@@ -3477,15 +3493,15 @@ function leadDetail(o){
   return '<div class="leaddet"><div class="top"><span class="nm">'+esc(o.name)+'</span>'
     +'<span class="st '+o.status+'" onclick="cycleOutreach(\''+o.id+'\')" title="Tap to advance">'+OSTAT[o.status]+'</span>'
     +'<span class="warm '+o.warm+'">'+OWARM[o.warm]+'</span>'
-    +(c?'<span class="clashchip'+(c.hard?' hard':'')+'">'+(c.hard?'⚠️ you’re booked':'heads-up')+'</span>':'')+'</div>'
-    /* The panel already carries one clashbanner for the day. Repeating the whole
-       sentence under every lead just buried the leads. The chip above still marks
-       each row, which is the part worth keeping. */
+    +'</div>'
+    /* No clash marker per row at all. The day panel states it once at the top;
+       repeating "you're booked" beside all seventeen acts of one festival was the
+       loudest thing on the screen and said nothing new. */
     +'<div class="sub">'+esc(o.event||'—')+'</div>'
     +'<div class="sub'+(o.email?'':' ')+'" style="'+(o.email?'':'color:var(--owed);font-weight:600')+'">'
       +esc(o.email||'no email yet — find their booking contact')+'</div>'
     +(o.pitch?'<div class="sub">✉ <i>'+esc(o.pitch)+'</i></div>':'')
-    +(o.notes?'<div class="privnote">🔒 '+escLink(o.notes)+'</div>':'')
+    +(o.notes&&!/^From Edmtrain:/.test(o.notes)?'<div class="privnote">🔒 '+escLink(o.notes)+'</div>':'')
     +'<div class="acts"><button class="btn small" onclick="draftMail(\''+o.id+'\')">✉ Draft email</button>'
     +'<button class="btn small" onclick="openOutModal(\''+o.id+'\')">✎ Edit</button></div></div>';
 }
@@ -3700,17 +3716,9 @@ function renderShows(){
       +'</span>'
       +'<span class="sx">'
         +(reach.length?'<span class="shbadge" title="You have an address for: '+esc(reach.join(', '))+'">✉ '+reach.length+'</span>':'')
-        +(function(){
-            if(e.tier==='fest'&&e.t){
-              const done=(state.outreach||[]).some(o=>o.fest===e.t);
-              return done?'<span class="shdone">in Festivals ✓</span>'
-                :'<button class="btn small" onclick="importFestival('+e.id+')" title="Adds all '+(e.a||[]).length+' acts as chips in the Festivals section below, same as Lost Lands">＋ Work this festival</button>';
-            }
-            if(!reach.length)return '';
-            return inPipe>=reach.length
-              ? '<span class="shdone">in outreach ✓</span>'
-              : '<button class="btn small" onclick="showToOutreach('+e.id+')" title="Adds '+esc(reach.join(', '))+' to your outreach pipeline">＋ Add to outreach</button>';
-          })()
+        /* No import button. Every lineup renders as chips in the list view now, so
+           there is nothing to "add" before working a festival. */
+        +''
         +'<a class="shlink" href="'+esc(e.link)+'" target="_blank" rel="noopener" title="Open on Edmtrain">↗</a>'
       +'</span></div>';
   }).join('')||'<div style="color:var(--ink3);font-size:12.5px">Nothing in this window.</div>';
@@ -3838,6 +3846,67 @@ function applyOutView(){
       document.documentElement.style.setProperty('--calchrome',(top+tabH+14)+'px');
     }
   }
+}
+
+/* ONE list, not a feed card plus a pipeline section. Every upcoming show —
+   whether it came from Edmtrain or from lineups researched by hand — renders the
+   same way: month heading, event name, and the bill as chips you can select and
+   bulk-draft. No import step, no "work this festival" button; the lineup is just
+   there. */
+function renderUnifiedList(){
+  const host=$('festCard'); if(!host)return;
+  const today=todayISO();
+  const shows={};
+
+  /* Edmtrain, collapsed so a two-day festival is one entry */
+  collapseRuns(showsAll||[]).forEach(function(e){
+    if(e.d<today)return;
+    const name=e.t||(e.a||[])[0]||'Show';
+    if(FEST_DROPPED.test(name))return;
+    const k=nkey(name);
+    shows[k]=shows[k]||{name:name,from:e.d,to:e.dEnd||e.d,where:(e.v||''),
+                        fest:e.tier==='fest',names:[]};
+    (e.a||[]).forEach(n=>{if(shows[k].names.indexOf(n)<0)shows[k].names.push(n)});
+  });
+
+  /* Festivals already in the pipeline (Lost Lands, Escape) keep their richer
+     hand-researched lineups, so merge rather than let Edmtrain overwrite. */
+  const all=state.outreach||[];
+  const g=groupBy(all.filter(o=>outKind(o)==='festival'),festName);
+  Object.keys(g).filter(festIsLive).forEach(function(name){
+    const k=nkey(name), dates=g[name].map(x=>x.date).filter(Boolean).sort();
+    const fm=(state.festMeta||{})[name]||{};
+    const lu=(lineupFor(name)||[]).concat(g[name].map(o=>o.name));
+    shows[k]=shows[k]||{name:name,from:dates[0]||today,to:dates[dates.length-1]||today,
+                        where:fm.where||'',fest:true,names:[]};
+    shows[k].fest=true;
+    if(fm.where)shows[k].where=fm.where;
+    lu.forEach(n=>{if(n&&shows[k].names.indexOf(n)<0)shows[k].names.push(n)});
+  });
+
+  const list=Object.keys(shows).map(k=>shows[k])
+    .filter(x=>x.names.filter(n=>!/lineup|tbc|tba/i.test(n)).length)
+    .sort((a,b)=>a.from.localeCompare(b.from));
+
+  if(!list.length){host.innerHTML='';return}
+
+  let h='', lastMonth='';
+  list.forEach(function(x){
+    const mo=new Date(x.from+'T12:00').toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    if(mo!==lastMonth){lastMonth=mo;h+='<div class="mhead"><h2>'+esc(mo)+'</h2></div>'}
+    const names=x.names.filter(n=>n&&!/lineup|tbc|tba/i.test(n));
+    const reach=names.filter(n=>artistEmail(n)).length;
+    const dr=fmtDate(x.from)+(x.to!==x.from?'–'+fmtDate(x.to):'');
+    h+='<details class="grp"><summary>'
+      +'<span class="gname">'+esc(x.name)+'</span>'
+      +'<span class="gmeta">'
+        +'<span class="when">'+dr+'</span>'
+        +(x.fest?'<span class="shfest">FESTIVAL</span>':'')
+        +'<span class="chip'+(reach?' good':'')+'">'+reach+'/'+names.length+' reachable</span>'
+      +'</span></summary>'
+      +'<div class="gbody">'+lineupPanel(x.name,names,x.from,x.to)+'</div></details>';
+  });
+  host.innerHTML=h;
 }
 
 function renderOutreach(){
@@ -5095,7 +5164,7 @@ function render(){
   const wasOpen=openGroupNames();
 
   $('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  renderToday();renderCalendar();renderMoney();renderBills();renderShows();renderOutreach();applyOutView();renderDiscordLeads();renderGroups();renderCollect();renderInvoices();renderMoneyNudge();renderJobs();
+  renderToday();renderCalendar();renderMoney();renderBills();renderShows();renderOutreach();renderUnifiedList();applyOutView();renderDiscordLeads();renderGroups();renderCollect();renderInvoices();renderMoneyNudge();renderJobs();
 
   if(hadGroups && !switchingTab){
     document.querySelectorAll('details.grp').forEach(function(d){
