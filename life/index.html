@@ -1697,6 +1697,19 @@ function migrate(){
       if(i.status!=='paid'&&(!i.pay||i.pay===OLDPAY))i.pay=BIZ.pay;
     });
   }
+  // patch 62 (2026-09-08): Nolan and Ivy's wedding, Ho Chi Minh City, Saturday
+  // 2027-10-30. Personal, not a gig -- gig:false keeps it out of Money and stops
+  // ensureInvoices() ever drafting an invoice for it. Matched on title AND date, the
+  // way patch57 had to be fixed: a title-only check has already silently skipped an
+  // event once, when an older gig shared the name.
+  if(!state.patch62){
+    state.patch62=true;
+    if(!state.events.some(e=>e.title==='Nolan & Ivy\u2019s wedding'&&e.date==='2027-10-30'))
+      state.events.push({id:uid(),title:'Nolan & Ivy\u2019s wedding',
+        details:'Ho Chi Minh City, Vietnam',
+        date:'2027-10-30',endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+  }
   if(!state.patch57){
     state.patch57=true;
     const lacksEvt=t=>!state.events.some(e=>e.title===t);
