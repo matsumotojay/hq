@@ -1909,6 +1909,18 @@ function migrate(){
         invoiceId:null,invoiceDismissed:false,month:''});
     });
   }
+  // patch 67 (2026-09-10): the ILYA shoot moved a day — it is Thursday 2026-09-10 at
+  // 4 PM, not the 9th — and the rate is agreed: $900 for 4 videos. Matched on the old
+  // date as well as the title so a re-run can never touch a different ILYA booking.
+  if(!state.patch67){
+    state.patch67=true;
+    const e=state.events.find(x=>x.title==='ILYA \u2014 shoot'&&x.client==='ILYA'&&x.date==='2026-09-09');
+    if(e){
+      e.date='2026-09-10'; e.start='16:00'; e.end='19:00';
+      e.gross=900;
+      e.details='4 videos \u00b7 $900 agreed. Thu Sep 10, 4 PM.';
+    }
+  }
   rollAnnual();
   save();
 }
