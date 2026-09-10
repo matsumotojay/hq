@@ -2393,15 +2393,10 @@ function renderCalendar(){
       const isTrip=e.endDate&&e.date!==iso;
       cell.innerHTML+='<div class="evchip'+(e.gig?' gig':'')+'">'+esc(isTrip?'· '+e.title:e.title)+'</div>';
     });
-    /* Edmtrain shows sit alongside real bookings but are styled apart and never
-       written into state.events — they are somebody else's calendar, not Jay's,
-       and must not leak into gigs, money or invoices. */
-    const shw=showsOn(iso), room=Math.max(0,2-evs.length);
-    shw.slice(0,room).forEach(e=>{
-      cell.innerHTML+='<div class="evchip show" title="'+esc((e.v||'')+(e.loc?' · '+e.loc:''))+'">'
-        +esc(e.t||(e.a||[]).join(', ')||'Show')+'</div>';
-    });
-    const hidden=(evs.length>2?evs.length-2:0)+Math.max(0,shw.length-room);
+    /* This calendar is Jay's own life only. The Edmtrain show feed used to fill the
+       spare room in each cell here as well, which made days he is NOT booked look
+       booked. Shows belong to the Outreach tab and its own calendar, nowhere else. */
+    const hidden=evs.length>2?evs.length-2:0;
     if(hidden)cell.innerHTML+='<div class="evmore">+'+hidden+' more</div>';
     cell.onclick=()=>{selDate=iso;render()};
     grid.appendChild(cell);
