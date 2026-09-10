@@ -114,7 +114,11 @@
 
   /* ── CALENDAR ────────────────────────── */
   .calhead{display:flex;align-items:center;gap:10px;margin:18px 0 12px;flex-wrap:wrap}
-  .calhead h2{margin:0;font-size:18px;text-transform:none;letter-spacing:-.01em;color:var(--ink)}
+  /* Fixed width and centred: the month name changes length (May vs September), and
+     without this the › button slides sideways between clicks, so you have to chase
+     it with the mouse to page forward twice. Wide enough for the longest month. */
+  .calhead h2{margin:0;font-size:18px;text-transform:none;letter-spacing:-.01em;color:var(--ink);
+              min-width:8.6em;text-align:center;white-space:nowrap}
   .monthstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
   @media (max-width:560px){.monthstrip{grid-template-columns:1fr 1fr 1fr;gap:6px}}
   .stat{padding:12px 14px}
@@ -1074,6 +1078,28 @@ function migrate(){
   });
   state.contacts=state.contacts||{};
   if(!Array.isArray(state.jobs))state.jobs=[];
+  /* Collapse byte-identical events on EVERY load, with no patch flag. Two insert
+     patches (the Osaka stays, Luca's birthday) each landed fifteen times because the
+     patch re-ran on loads where the cloud copy had not yet caught up, and the
+     title+date guard inside the patch could not see the copies the other loads had
+     pushed. A guard inside a patch can only see local state; this runs after adopt
+     and sees everything. Only true duplicates go — same title, date, end, details,
+     gig and client — and the lowest id is kept, so every device deletes the same
+     copies and the set converges instead of flip-flopping. */
+  {
+    const seen={};
+    state.events=state.events.filter(e=>{
+      const k=[e.title,e.date,e.endDate||'',e.details||'',!!e.gig,e.client||''].join('\u0000');
+      if(seen[k]){ if(e.id<seen[k].id){const old=seen[k];seen[k]=e;return true}else return false; }
+      seen[k]=e; return true;
+    });
+    // the filter above may have kept a later copy before meeting the lowest id;
+    // one more pass guarantees exactly the lowest-id survivor per key
+    const keep={};
+    state.events.forEach(e=>{const k=[e.title,e.date,e.endDate||'',e.details||'',!!e.gig,e.client||''].join('\u0000');
+      if(!keep[k]||e.id<keep[k].id)keep[k]=e});
+    state.events=state.events.filter(e=>keep[[e.title,e.date,e.endDate||'',e.details||'',!!e.gig,e.client||''].join('\u0000')]===e);
+  }
   /* Some contacts were stored as a bare address STRING instead of {email,cc,phone}.
      Electrik Seoul was one, which made c.email undefined and silently defeated the
      existing-relationship guard for a client who owes $1,700. Normalise on every
@@ -2359,7 +2385,10 @@ function deleteTask(){
 }
 
 /* ─────────────────────── CALENDAR ─────────────────────── */
-let calY=2026,calM=7; // month index 0-based (7 = August)
+/* Open on the month you are actually in. This was hardcoded to August 2026 when the
+   file was written, so it drifted further out of date every month. */
+const _calNow=new Date();
+let calY=_calNow.getFullYear(),calM=_calNow.getMonth();
 let selDate=todayISO();
 function calNav(d){calM+=d;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}render()}
 function eventsOn(iso){
