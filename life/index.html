@@ -1844,7 +1844,91 @@ function migrate(){
     const c=state.tasks.find(t=>t.title.indexOf('Reply to Chelsea')>-1&&t.status==='open');
     if(c){c.notes='Content she wants done. (Her Escape question is settled — booked Oct 30, $400.)'}
   }
+  // patch 63 (2026-09-08): birthdays actually repeat now.
+  // Patch 14 seeded each birthday as ONE dated event and left a note saying "Google
+  // Calendar carries the yearly repeat". That stopped being true -- this tracker is
+  // the only calendar Jay reads -- so every one of these would have quietly fallen
+  // into the past and never come back. Erika Goto's is 2026-09-15, so the first one
+  // was a week away from doing exactly that.
+  if(!state.patch63){
+    state.patch63=true;
+    state.events.forEach(e=>{
+      if((e.title||'').indexOf('\uD83C\uDF82')===0||(e.details||'').trim().toLowerCase()==='birthday')
+        e.annual=true;
+    });
+    if(!state.events.some(e=>e.title==='\uD83C\uDF82 Luca'))
+      state.events.push({id:uid(),title:'\uD83C\uDF82 Luca',details:'Birthday',
+        date:'2026-09-06',endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:'',annual:true});
+  }
+  // patch 64 (2026-09-08): 24 January is Hikaru's birthday, not Ricardo's -- the
+  // original list had the wrong name on that date. Matched on month-day rather than
+  // the full date, because rollAnnual moves the year and this has to keep working
+  // whichever year the record has rolled to.
+  if(!state.patch64){
+    state.patch64=true;
+    const r=state.events.find(e=>e.title==='\uD83C\uDF82 Ricardo'&&(e.date||'').slice(5)==='01-24');
+    if(r)r.title='\uD83C\uDF82 Hikaru';
+  }
+  // patch 65 (2026-09-08): AJ's birthday was recorded with a caveat on it -- the date
+  // came from an "I believe" and the details field said to double-check it. Jay has
+  // now confirmed 20 September, so the hedge comes off and it reads like every other
+  // birthday. The date itself was already right; only the note was wrong.
+  if(!state.patch65){
+    state.patch65=true;
+    const aj=state.events.find(e=>e.title==='\uD83C\uDF82 AJ'&&(e.details||'').indexOf('double-check')>-1);
+    if(aj)aj.details='Birthday';
+  }
+  // patch 66 (2026-09-10): the two Osaka Airbnbs for the November trip, read off the
+  // live reservations. Address, map link and listing link go in `details` so the card
+  // is self-sufficient on a phone in a taxi. gig:false — these are a cost, not work.
+  if(!state.patch66){
+    state.patch66=true;
+    const stays=[
+      {t:'\uD83C\uDFE0 Osaka stay 1 \u2014 Minn Umeda Nakazakicho',d:'2026-11-11',e:'2026-11-17',
+       det:'Room in Kita Ward, Osaka \u00b7 hosted by Minn \u00b7 2 guests \u00b7 $469.90 paid\n'
+          +'Check in Wed Nov 11, 3:00 PM \u00b7 Check out Tue Nov 17, 10:00 AM \u00b7 self check-in, smart lock\n'
+          +'1-ch\u014dme-5-13 Ukida, Kita Ward, Osaka 530-0021\n'
+          +'Map: https://www.google.com/maps/search/?api=1&query=1-ch%C5%8Dme-5-13%20Ukida%2C%20Kita%20Ward%2C%20Osaka%2C%20Osaka%20530-0021%2C%20Japan\n'
+          +'Booking: https://www.airbnb.com/trips/v1/1771374756064036580\n'
+          +'6 min walk from Nakazakicho (Tanimachi line); 3 min from Tenjinbashisuji 6-chome exit 13. Walkable to Umeda.\n'
+          +'Confirmation HMYAJC4325 \u00b7 free cancellation until 3:00 PM Nov 6'},
+      {t:'\uD83C\uDFE0 Osaka stay 2 \u2014 Tamatsukuri (Suninc)',d:'2026-11-17',e:'2026-11-20',
+       det:'Apartment in Higashinari Ward, Osaka \u00b7 hosted by Suninc \u00b7 2 guests \u00b7 $183.83 paid\n'
+          +'Check in Tue Nov 17, 4:00 PM \u00b7 Check out Fri Nov 20, 11:00 AM \u00b7 self check-in, lockbox\n'
+          +'4-ch\u014dme-10-4 Nakamichi, Higashinari Ward, Osaka 537-0025\n'
+          +'Map: https://www.google.com/maps/search/?api=1&query=4-ch%C5%8Dme-10-4%20Nakamichi%2C%20Higashinari%20Ward%2C%20Osaka%2C%20Osaka%20537-0025%2C%20Japan\n'
+          +'Booking: https://www.airbnb.com/trips/v1/1770755135866148028\n'
+          +'6\u20138 min walk from JR Tamatsukuri, north exit \u2014 north up Tamatsukuri-suji, past Life supermarket, onto Nakamichi. White building, Life House Tamatsukuri.\n'
+          +'Confirmation HMSTXWY8PX \u00b7 free cancellation until 4:00 PM Nov 16'}
+    ];
+    stays.forEach(x=>{
+      if(state.events.some(e=>e.title===x.t&&e.date===x.d))return;
+      state.events.push({id:uid(),title:x.t,details:x.det,date:x.d,endDate:x.e,start:'',end:'',
+        gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,
+        invoiceId:null,invoiceDismissed:false,month:''});
+    });
+  }
+  rollAnnual();
   save();
+}
+/* An annual event keeps ONE record and moves to its next occurrence once the day has
+   passed, rather than being seeded a decade deep. Nothing downstream needs to know --
+   the calendar, the day panels and the upcoming lists all just see a normal date.
+   Runs on every load, so it is right the morning after as well as a year later. */
+function rollAnnual(){
+  const t=todayISO();
+  (state.events||[]).forEach(e=>{
+    if(!e.annual||!e.date)return;
+    const md=e.date.slice(5);                 // MM-DD, the part that is actually fixed
+    let y=+t.slice(0,4);
+    if(y+'-'+md<t)y++;                        // already gone this year, so next year
+    /* Feb 29 exists only in a leap year; a birthday on it observes Mar 1 otherwise,
+       which is the common convention and keeps the date valid. */
+    let next=y+'-'+md;
+    if(md==='02-29'&&new Date(y,1,29).getMonth()!==1)next=y+'-03-01';
+    if(e.date!==next)e.date=next;
+  });
 }
 function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state))}catch(e){} pushDiff();}
 
@@ -1938,6 +2022,17 @@ function toast(msg){
   clearTimeout(t._h);t._h=setTimeout(()=>{t.style.opacity='0'},2800);
 }
 window.__syncOn=function(){const d=$('syncdot');if(d)d.style.display=''};
+/* A viewer gets told plainly. The banner reuses the sync-blocked slot but says
+   something different: nothing is broken, this account simply cannot save. */
+window.__viewerMode=function(email){
+  const d=$('syncdot');
+  if(d){d.style.display='';d.style.color='var(--ink3)';d.textContent='\u25CF read-only'}
+  const b=$('rulesBanner');
+  if(b){b.style.display='';
+    b.innerHTML='<div class="msg">\uD83D\uDC41 <b>Read-only</b> \u2014 you\u2019re signed in as '
+      +String(email||'a guest').replace(/[&<>"]/g,'')
+      +'. You can look at everything here, but changes won\u2019t save.</div>';}
+};
 window.__syncDenied=function(){
   const d=$('syncdot');if(d){d.style.display='';d.style.color='var(--urgent)';d.textContent='● sync blocked'}
   const b=$('rulesBanner');if(b)b.style.display='';
@@ -5290,7 +5385,14 @@ if(window.FBCONFIG){
     const [{getFirestore,doc,setDoc,deleteDoc,onSnapshot,collection},{requireAuth}]=await Promise.all([
       import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
       import("../auth.js")]);
-    const {app}=await requireAuth(FBCONFIG,{label:"Your Life Tracker"});
+    const {app,user}=await requireAuth(FBCONFIG,{label:"Your Life Tracker"});
+    /* The rules let a named reader see the tracker but only Jay write to it. Without
+       knowing WHO is signed in, a viewer's edits would save to their localStorage,
+       look saved, and then be silently refused by Firestore -- the worst possible
+       failure, because nothing on screen says so. So writes are switched off up
+       front for anyone who is not the owner. */
+    window.__readOnly=String((user&&user.email)||'').toLowerCase()!=='matsumotojay@gmail.com';
+    if(window.__readOnly&&window.__viewerMode)window.__viewerMode(user&&user.email);
     const db=getFirestore(app);
     /* One-shot reader for collections the tracker doesn't live-sync — the
        Edmtrain feed and anything else that is refreshed by a local script
@@ -5302,6 +5404,7 @@ if(window.FBCONFIG){
     };
     if(typeof loadShows==="function")loadShows();
     window.__fbWrite=(k,raw)=>{
+      if(window.__readOnly)return;          // a viewer never writes to the ledger
       (raw==null?deleteDoc(doc(db,"jlt",k))
                 :setDoc(doc(db,"jlt",k),{v:raw,t:Date.now()}))
       .catch(e=>{
