@@ -706,7 +706,7 @@
       <div id="festCard"></div>
       <div id="discordCard" hidden></div>
       <div id="showsCard" hidden></div>
-      <div id="outFilters" hidden></div>
+      <div id="outFilters" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0"></div>
       <div id="tourCard" hidden></div>
       <div id="clubCard" hidden></div>
     </div>
@@ -1086,6 +1086,30 @@ function migrate(){
      and sees everything. Only true duplicates go — same title, date, end, details,
      gig and client — and the lowest id is kept, so every device deletes the same
      copies and the set converges instead of flip-flopping. */
+  /* Same collapse for invoices. Only DRAFTS that were never sent and that describe the
+     same event, date and amount — a deposit plus a balance on one gig are legitimately
+     two invoices and must survive, so status/sentAt/chases are all part of the test. */
+  {
+    const keepInv={};
+    (state.invoices||[]).forEach(function(i){
+      if(i.status!=='draft'||i.sentAt||(i.chases||[]).length)return;
+      const k=[invEventIds(i).join(','),i.svcDate||'',i.amount].join('\u0000');
+      if(!keepInv[k]||i.id<keepInv[k].id)keepInv[k]=i;
+    });
+    state.invoices=(state.invoices||[]).filter(function(i){
+      if(i.status!=='draft'||i.sentAt||(i.chases||[]).length)return true;
+      const k=[invEventIds(i).join(','),i.svcDate||'',i.amount].join('\u0000');
+      return keepInv[k]===i;
+    });
+    /* an event pointing at an invoice that just went away would draft a fresh one */
+    state.events.forEach(function(e){
+      if(!e.invoiceId)return;
+      if(!(state.invoices||[]).some(i=>i.id===e.invoiceId)){
+        const surv=(state.invoices||[]).find(i=>invEventIds(i).indexOf(e.id)>-1);
+        e.invoiceId=surv?surv.id:null;
+      }
+    });
+  }
   {
     const seen={};
     state.events=state.events.filter(e=>{
@@ -1947,6 +1971,44 @@ function migrate(){
       e.details='4 videos \u00b7 $900 agreed. Thu Sep 10, 4 PM.';
     }
   }
+  // patch 68 (2026-09-11): San Holo at the Hollywood Palladium, Fri 2026-09-11, $400.
+  // Run of show pasted in from production so the whole night is readable on a phone.
+  if(!state.patch68){
+    state.patch68=true;
+    if(!state.events.some(e=>e.title==='\uD83D\uDCF8 San Holo \u2014 Hollywood Palladium'&&e.date==='2026-09-11'))
+      state.events.push({id:uid(),title:'\uD83D\uDCF8 San Holo \u2014 Hollywood Palladium',
+        details:'Hollywood Palladium, LA \u00b7 $400\n'
+          +'RUN OF SHOW (Fri 2026-09-11)\n'
+          +'6:00 AM Semi park \u00b7 8:45 AM lobby call (Jeff drives SUV) \u00b7 9:30 AM venue access\n'
+          +'10:00 AM walk & chalk \u00b7 10:30 AM load in\n'
+          +'4:30 PM San Holo line check \u00b7 5:00 PM San Holo soundcheck \u00b7 6:00 PM haze allowed\n'
+          +'6:30\u20136:45 PM Saka SC \u00b7 6:45\u20137:00 PM Align b2b Babsy SC \u00b7 7:00\u20137:45 PM Ally Bakst load in + SC\n'
+          +'7:00 PM security meeting \u00b7 8:00 PM doors (Spotify playlist)\n'
+          +'9:00\u20139:25 Ally Bakst \u00b7 9:30\u201310:30 Align b2b Babsy \u00b7 10:30\u201311:30 Saka\n'
+          +'11:35 PM\u20131:10 AM SAN HOLO (85 min + 10 buffer)\n'
+          +'1:15 AM soft curfew / load out \u00b7 1:40 AM hard curfew\n'
+          +'Meals: breakfast at hotel on own \u00b7 lunch JJ picked up 12 PM \u00b7 dinner Chipotle\n'
+          +'\u26a0\uFE0F Same day as Erika\u2019s 30th (arrive ~2 PM, Palm Springs / Joshua Tree). Doors are 8 PM \u2014 leaving the desert by ~5:30 PM makes it.',
+        date:'2026-09-11',endDate:'',start:'20:00',end:'',
+        gig:true,client:'San Holo',gross:400,exp:0,paid:false,cleared:false,
+        invoiceId:null,invoiceDismissed:false,month:''});
+  }
+  // patch 69 (2026-09-14): Shawn's housewarming, Sunday 2026-10-04, 2 PM, Anaheim.
+  // Potluck with a sign-up, so the dish is a separate task — the event alone would
+  // remind him to turn up but not to claim something before the good slots go.
+  if(!state.patch69){
+    state.patch69=true;
+    if(!state.events.some(e=>e.title==='\uD83C\uDF7D\uFE0F Shawn\u2019s housewarming'&&e.date==='2026-10-04'))
+      state.events.push({id:uid(),title:'\uD83C\uDF7D\uFE0F Shawn\u2019s housewarming',
+        details:'Anaheim, CA \u00b7 from 2 PM \u00b7 potluck \u2014 sign up for a dish.\nExact address still needed.',
+        date:'2026-10-04',endDate:'',start:'14:00',end:'',
+        gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,
+        invoiceId:null,invoiceDismissed:false,month:''});
+    if(!state.tasks.some(t=>t.title==='Sign up for a dish \u2014 Shawn\u2019s housewarming'))
+      state.tasks.unshift({id:uid(),title:'Sign up for a dish \u2014 Shawn\u2019s housewarming',
+        tag:'Upcoming',notes:'Potluck sign-up for the 2026-10-04 party in Anaheim. Claim something before the easy slots go.',
+        due:'2026-09-27',status:'open',completedAt:null});
+  }
   rollAnnual();
   save();
 }
@@ -2149,7 +2211,14 @@ function invNumberFor(client,svcDate){
 function ensureInvoices(){
   const today=todayISO();
   state.events.forEach(e=>{
-    if(e.gig&&!e.paid&&!e.invoiceId&&!e.invoiceDismissed&&e.gross>0){
+    /* `e.invoiceId` alone is not enough. When the cloud copy arrives with invoiceId
+       still null — because this device's push had not landed yet — this ran again and
+       drafted another invoice for the same gig. One event produced 28 ILYA drafts that
+       way. Ask the invoice list instead: it is the thing that actually knows. */
+    const alreadyInvoiced=e.invoiceId||(state.invoices||[]).some(function(i){
+      return invEventIds(i).indexOf(e.id)>-1;
+    });
+    if(e.gig&&!e.paid&&!alreadyInvoiced&&!e.invoiceDismissed&&e.gross>0){
       const svcDate=e.date||((e.month||'2026-07')+'-31');
       if(svcDate<=today){
         const inv={
@@ -4049,19 +4118,24 @@ function applyOutView(){
    same way: month heading, event name, and the bill as chips you can select and
    bulk-draft. No import step, no "work this festival" button; the lineup is just
    there. */
-function renderUnifiedList(){
-  const host=$('festCard'); if(!host)return;
+/* The merged feed, unfiltered. Split out of renderUnifiedList so the filter buttons
+   count exactly what the list will show — counting a different set is how the old
+   buttons ended up disagreeing with the rows underneath them. */
+function unifiedShows(){
   const today=todayISO();
   const shows={};
 
-  /* Edmtrain, collapsed so a two-day festival is one entry */
+  /* Edmtrain, collapsed so a two-day festival is one entry. `tier` is the three-way
+     split the sync already makes: fest, tour (a run or residency), club (one-off). */
   collapseRuns(showsAll||[]).forEach(function(e){
     if(e.d<today)return;
     const name=e.t||(e.a||[])[0]||'Show';
     if(FEST_DROPPED.test(name))return;
     const k=nkey(name);
     shows[k]=shows[k]||{name:name,from:e.d,to:e.dEnd||e.d,where:(e.v||''),
-                        fest:e.tier==='fest',names:[]};
+                        fest:e.tier==='fest',
+                        kind:e.tier==='fest'?'festival':(e.tier==='tour'?'tour':'club'),
+                        names:[]};
     (e.a||[]).forEach(n=>{if(shows[k].names.indexOf(n)<0)shows[k].names.push(n)});
   });
 
@@ -4075,16 +4149,24 @@ function renderUnifiedList(){
     const lu=(lineupFor(name)||[]).concat(g[name].map(o=>o.name));
     shows[k]=shows[k]||{name:name,from:dates[0]||today,to:dates[dates.length-1]||today,
                         where:fm.where||'',fest:true,names:[]};
-    shows[k].fest=true;
+    shows[k].fest=true; shows[k].kind='festival';
     if(fm.where)shows[k].where=fm.where;
     lu.forEach(n=>{if(n&&shows[k].names.indexOf(n)<0)shows[k].names.push(n)});
   });
 
-  const list=Object.keys(shows).map(k=>shows[k])
+  return Object.keys(shows).map(k=>shows[k])
     .filter(x=>x.names.filter(n=>!/lineup|tbc|tba/i.test(n)).length)
     .sort((a,b)=>a.from.localeCompare(b.from));
+}
 
-  if(!list.length){host.innerHTML='';return}
+function renderUnifiedList(){
+  const host=$('festCard'); if(!host)return;
+  const list=unifiedShows().filter(x=>outFilter==='all'||x.kind===outFilter);
+
+  if(!list.length){
+    host.innerHTML='<div class="card"><div class="ledgerempty">Nothing in this filter.</div></div>';
+    return;
+  }
 
   let h='', lastMonth='';
   list.forEach(function(x){
@@ -4108,10 +4190,14 @@ function renderUnifiedList(){
 function renderOutreach(){
   const list=outVisible(), today=todayISO();
   const all=state.outreach||[];
-  const counts={all:all.length,festival:all.filter(o=>outKind(o)==='festival').length,club:all.filter(o=>outKind(o)==='club').length};
+  const U=unifiedShows();
+  const counts={all:U.length,
+                festival:U.filter(x=>x.kind==='festival').length,
+                tour:U.filter(x=>x.kind==='tour').length,
+                club:U.filter(x=>x.kind==='club').length};
   const fb=$('outFilters');
   const nMail=Object.keys(state.artistEmails||{}).length;
-  if(fb)fb.innerHTML=[['all','Everything'],['festival','Festivals'],['club','Clubs']].map(function(f){
+  if(fb)fb.innerHTML=[['all','Everything'],['festival','Festivals'],['club','Clubs'],['tour','Tours']].map(function(f){
     return '<button class="btn small'+(outFilter===f[0]?' primary':'')+'" onclick="setOutFilter(\''+f[0]+'\')">'
       +f[1]+' <span style="opacity:.65">'+counts[f[0]]+'</span></button>';
   }).join('')
