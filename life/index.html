@@ -2705,7 +2705,9 @@ function festSubject(name,fest,from){
   const yr=String(from||'').slice(0,4);
   const a=Array.isArray(name)?name:[name];
   const who=a.length>1?a.slice(0,-1).join(', ')+' + '+a[a.length-1]:a[0];
-  return fest+(yr?' '+yr:'')+': '+who+' (media inquiry)';
+  const d=daysToFest(from);
+  return fest+(yr?' '+yr:'')+': '+who
+    +((d!==null&&d<=10)?' (media \u2014 on site this week)':' (media inquiry)');
 }
 /* ═══════ IS THIS THE ARTIST'S OWN INBOX, OR A THIRD PARTY'S? (2026-08-26) ═══════
    The pitch asks "to see if HERSHE needs any media" — correct into a management
@@ -2757,8 +2759,51 @@ function onsiteWindow(fest,from,to){
   if(fm&&fm.dates)return String(fm.dates).replace(/[\u2013\u2014]/g,' to ');
   return fmtDate(from)+' to '+fmtDate(to);
 }
+/* Days until the festival starts, or null if we cannot tell. */
+function daysToFest(from){
+  if(!from)return null;
+  const d=Math.round((new Date(from+'T12:00')-new Date(todayISO()+'T12:00'))/86400000);
+  return isNaN(d)?null:d;
+}
+/* WEEK-OF variant. The approved pitch below is written for advance outreach — "reaching
+   out to see if you need any media at X this year" reads wrong when the festival starts
+   tomorrow. This one leads with the credential, because in the last week that is the
+   whole argument: nothing to arrange, no COI to chase, someone already inside the gate
+   if a shooter fell through. Used automatically when the festival is 10 days out or
+   less; outside that window the approved copy is untouched. */
+function festPitchLate(name,fest,from,to,email){
+  const direct=isArtistDirect(name,email);
+  const subj=direct?'you':artistList(name);
+  const verb=direct?' need':((Array.isArray(name)&&name.length>1)?' need':' needs');
+  return 'Hello,\n\n'
+    +'Reaching out last minute \u2014 it\u2019s '+fest+' week, and I wanted to offer in case '
+    +subj+verb+' any media, or something fell through.\n\n'
+    +emph('I\u2019m already credentialed and on site '+onsiteWindow(fest,from,to))
+    +' \u2014 wristband sorted and my COI is already submitted, so there\u2019s nothing to arrange '
+    +'on that side and no lead time needed.'
+    +(shotBefore(fest)?' I\u2019ve shot '+fest+' before, so I know the run of show and the venue layout.':'')
+    +'\n\n'
+    +'I shoot photos, video, multi-cam, vlog / behind the scenes \u2014 whatever your team needs:\n\n'
+    +'Photos\n'
+    +'\u2022 Full set coverage, 10-20 photos\n\n'
+    +'Video\n'
+    +'\u2022 Single-angle clips cut for socials\n'
+    +'\u2022 Multi-cam clips cut for socials, 5-10 clips\n'
+    +'\u2022 Full multi-cam set for YouTube\n\n'
+    +'Content\n'
+    +'\u2022 Vlog / behind the scenes\n'
+    +'\u2022 Social media UGC\n'
+    +'\u2022 Recap edit\n\n'
+    /* No price in the week-of version. Naming $100-200 anchors the number before they
+       have said yes to anything; this week the goal is a reply, not a rate. The standard
+       pitch keeps the travel-split line. */
+    +'If you\u2019re interested, let me know what you\u2019re looking for and I\u2019ll send a quote.\n\n'
+    +'Thanks,\nJay Matsu\n\n'
+    +'Website: '+MUSIC_URL
+    +(INSTA_URL?'\nInstagram: '+INSTA_URL:'')+'\n';
+}
 /* The wording Jay approved. Do not re-voice this copy. */
-function festPitch(name,fest,from,to,email){
+function festPitchEarly(name,fest,from,to,email){
   const yr=String(from||'').slice(0,4);
   const yrs=yr?(+yr-2018):8;
   /* Writing to the act themselves: say "you", not their own stage name at them. */
@@ -2790,6 +2835,12 @@ function festPitch(name,fest,from,to,email){
     +'Thanks,\nJay Matsu\n\n'
     +'Website: '+MUSIC_URL
     +(INSTA_URL?'\nInstagram: '+INSTA_URL:'')+'\n';
+}
+/* Every caller still asks for festPitch(); this just picks which wording fits the date. */
+function festPitch(name,fest,from,to,email){
+  const d=daysToFest(from);
+  return (d!==null&&d<=10)?festPitchLate(name,fest,from,to,email)
+                          :festPitchEarly(name,fest,from,to,email);
 }
 /* Plain-text email: there is no bold. EMPHASIS picks how the credential line stands out.
    'caps' = ALL CAPS · 'stars' = *wrapped in asterisks* · 'none' = plain */
