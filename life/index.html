@@ -691,6 +691,11 @@
       <button class="btn primary small" onclick="openOutModal()">＋ Add</button>
     </div>
 
+    <!-- Above both views on purpose: the filter applies to the calendar as well as the
+         list, and the artist-database link sits on this row. Inside #outListView it was
+         invisible in calendar mode, which is the default. -->
+    <div id="outFilters" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0"></div>
+
     <div id="outCalView">
       <div class="calhead">
         <button class="btn small" onclick="outNav(-1)">‹</button>
@@ -706,7 +711,6 @@
       <div id="festCard"></div>
       <div id="discordCard" hidden></div>
       <div id="showsCard" hidden></div>
-      <div id="outFilters" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0"></div>
       <div id="tourCard" hidden></div>
       <div id="clubCard" hidden></div>
     </div>
@@ -2049,6 +2053,20 @@ function migrate(){
     }
     const o=(state.outreach||[]).find(x=>nkey(x.name)==='yetep');
     if(o&&o.status!=='booked'){o.status='booked';o.event='Lost Lands 2026';o.date='2026-09-20'}
+  }
+  // patch 72 (2026-09-15): Sirena Tunes booked — campground Grove Stage, 5:40-6:30 AM
+  // on Thu 2026-09-17. Billed as "Wednesday night", which is the Wednesday party running
+  // past midnight; the calendar date is the Thursday it actually happens on, so it does
+  // not sort ahead of Wednesday's events. $200.
+  if(!state.patch72){
+    state.patch72=true;
+    if(!state.events.some(e=>e.client==='Sirena Tunes'&&e.date==='2026-09-17'))
+      state.events.push({id:uid(),title:'\uD83D\uDCF8 Sirena Tunes \u2014 Lost Lands',
+        details:'Grove Stage, campgrounds \u00b7 set 5:40\u20136:30 AM \u00b7 $200\n'
+               +'Billed as Wednesday night \u2014 this is the sunrise set, Thursday morning.',
+        date:'2026-09-17',endDate:'',start:'05:40',end:'06:30',
+        gig:true,client:'Sirena Tunes',gross:200,exp:0,paid:false,cleared:false,
+        invoiceId:null,invoiceDismissed:false,month:''});
   }
   rollAnnual();
   save();
@@ -4240,6 +4258,19 @@ function applyOutView(){
    same way: month heading, event name, and the bill as chips you can select and
    bulk-draft. No import step, no "work this festival" button; the lineup is just
    there. */
+/* Add artist names to a show, ignoring case and punctuation when deciding whether one
+   is already there. The lineup lists the act one way and the outreach row another —
+   "yetep" from the poster, "Yetep" from his contact record — and an exact-string check
+   treated those as two different artists. It showed 34 acts twice across four lineups.
+   First spelling seen wins, so the poster's own casing survives. */
+function addNames(show,list){
+  (list||[]).forEach(function(n){
+    if(!n)return;
+    const k=nkey(n);
+    if(!k||show._seen[k])return;
+    show._seen[k]=1; show.names.push(n);
+  });
+}
 /* The merged feed, unfiltered. Split out of renderUnifiedList so the filter buttons
    count exactly what the list will show — counting a different set is how the old
    buttons ended up disagreeing with the rows underneath them. */
@@ -4257,8 +4288,8 @@ function unifiedShows(){
     shows[k]=shows[k]||{name:name,from:e.d,to:e.dEnd||e.d,where:(e.v||''),
                         fest:e.tier==='fest',
                         kind:e.tier==='fest'?'festival':(e.tier==='tour'?'tour':'club'),
-                        names:[]};
-    (e.a||[]).forEach(n=>{if(shows[k].names.indexOf(n)<0)shows[k].names.push(n)});
+                        names:[],_seen:{}};
+    addNames(shows[k],e.a||[]);
   });
 
   /* Festivals already in the pipeline (Lost Lands, Escape) keep their richer
@@ -4270,10 +4301,10 @@ function unifiedShows(){
     const fm=(state.festMeta||{})[name]||{};
     const lu=(lineupFor(name)||[]).concat(g[name].map(o=>o.name));
     shows[k]=shows[k]||{name:name,from:dates[0]||today,to:dates[dates.length-1]||today,
-                        where:fm.where||'',fest:true,names:[]};
+                        where:fm.where||'',fest:true,names:[],_seen:{}};
     shows[k].fest=true; shows[k].kind='festival';
     if(fm.where)shows[k].where=fm.where;
-    lu.forEach(n=>{if(n&&shows[k].names.indexOf(n)<0)shows[k].names.push(n)});
+    addNames(shows[k],lu);
   });
 
   return Object.keys(shows).map(k=>shows[k])
