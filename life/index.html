@@ -1105,6 +1105,36 @@ function migrate(){
       const k=[invEventIds(i).join(','),i.svcDate||'',i.amount].join('\u0000');
       return keepInv[k]===i;
     });
+    /* An invoice pointing at an event that no longer exists. This is how a duplicate
+       survived being deduped: two San Holo events each drafted an invoice, the event
+       collapse removed one event, and its invoice stayed behind keyed to a dead id —
+       so the invoice dedupe above, which groups by eventId, saw two unrelated rows.
+       Re-point the orphan at the surviving event for the same client and date, and the
+       next pass collapses it properly. */
+    {
+      const live={};
+      state.events.forEach(function(e){live[e.id]=e});
+      (state.invoices||[]).forEach(function(i){
+        const ids=invEventIds(i);
+        if(!ids.length||ids.some(id=>live[id]))return;
+        const twin=state.events.find(function(e){
+          return e.client&&e.client===i.client&&(e.date||'')===(i.svcDate||'');
+        });
+        if(twin){ i.eventId=twin.id; delete i.eventIds; }
+      });
+      /* run the collapse once more now that the orphans point somewhere real */
+      const again={};
+      (state.invoices||[]).forEach(function(i){
+        if(i.status!=='draft'||i.sentAt||(i.chases||[]).length)return;
+        const k=[invEventIds(i).join(','),i.svcDate||'',i.amount].join('\u0000');
+        if(!again[k]||i.id<again[k].id)again[k]=i;
+      });
+      state.invoices=(state.invoices||[]).filter(function(i){
+        if(i.status!=='draft'||i.sentAt||(i.chases||[]).length)return true;
+        const k=[invEventIds(i).join(','),i.svcDate||'',i.amount].join('\u0000');
+        return again[k]===i;
+      });
+    }
     /* an event pointing at an invoice that just went away would draft a fresh one */
     state.events.forEach(function(e){
       if(!e.invoiceId)return;
@@ -2066,6 +2096,18 @@ function migrate(){
                +'Billed as Wednesday night \u2014 this is the sunrise set, Thursday morning.',
         date:'2026-09-17',endDate:'',start:'05:40',end:'06:30',
         gig:true,client:'Sirena Tunes',gross:200,exp:0,paid:false,cleared:false,
+        invoiceId:null,invoiceDismissed:false,month:''});
+  }
+  // patch 73 (2026-09-23): Halloween Horror Nights at Universal with Erika Goto and
+  // friends, Sat 2026-10-17. Personal — no time given, so it stays all-day rather than
+  // inventing one.
+  if(!state.patch73){
+    state.patch73=true;
+    if(!state.events.some(e=>e.title==='\uD83C\uDF83 Universal Studios Halloween'&&e.date==='2026-10-17'))
+      state.events.push({id:uid(),title:'\uD83C\uDF83 Universal Studios Halloween',
+        details:'With Erika Goto and friends. Universal Studios Hollywood.',
+        date:'2026-10-17',endDate:'',start:'',end:'',
+        gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,
         invoiceId:null,invoiceDismissed:false,month:''});
   }
   rollAnnual();
