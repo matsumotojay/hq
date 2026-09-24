@@ -2209,6 +2209,30 @@ function migrate(){
       });
     }
   }
+  // patch 78 (2026-09-24): Emmit Fenn, Sat 2026-10-03, 8-10 PM. Personal — Erika
+  // requested $145 on Venmo with the memo EMMIT FENN on 2026-09-10, which reads as
+  // tickets she bought for the pair of them, so this is a night out, not a shoot.
+  if(!state.patch78){
+    state.patch78=true;
+    if(!state.events.some(e=>e.title==='\uD83C\uDFB5 Emmit Fenn'&&e.date==='2026-10-03'))
+      state.events.push({id:uid(),title:'\uD83C\uDFB5 Emmit Fenn',
+        details:'Show with Erika \u00b7 $145 already paid to her for tickets. Venue TBC.',
+        date:'2026-10-03',endDate:'',start:'20:00',end:'22:00',
+        gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,
+        invoiceId:null,invoiceDismissed:false,month:''});
+  }
+  // patch 79 (2026-09-24): drop donghwan@koma.media from the saved cc fields. It was
+  // stored on three client records — Bedpop, Electrik Seoul and Jose Reyes — so every
+  // draft to any of them pre-filled that cc. Nothing in the code hardcoded it; it was
+  // data, which is why it looked like it was "everywhere". Other clients' ccs stay.
+  if(!state.patch79){
+    state.patch79=true;
+    const c=state.contacts||{};
+    Object.keys(c).forEach(function(k){
+      const v=c[k];
+      if(v&&typeof v==='object'&&/donghwan@koma\.media/i.test(v.cc||''))delete v.cc;
+    });
+  }
   rollAnnual();
   save();
 }
