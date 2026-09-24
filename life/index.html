@@ -2143,6 +2143,72 @@ function migrate(){
         i.billTo='Dam\u00e1s Agency';
     });
   }
+  // patch 76 (2026-09-23): the standing rate for both Damás acts is $1,050 for seven
+  // videos, not $900 for four. Corrects ILYA to 7 @ $1,050 (invoice $1,450 with the
+  // photographer's $400 on top) and spells the same out on Laya, which was already at
+  // the right number but described only as "shoot". Values are set absolutely, not
+  // conditionally, so this lands the same whether or not patch74 has run here yet.
+  if(!state.patch76){
+    state.patch76=true;
+    const ilya=(state.invoices||[]).find(i=>i.number==='ILYA-0910-26');
+    if(ilya){
+      const photo=(ilya.items||[]).find(i=>/photograph/i.test(i.desc||''));
+      ilya.items=[{desc:'Video \u2014 7 videos',svcDate:'2026-09-10',qty:1,price:1050,paid:false}]
+        .concat(photo?[photo]:[]);
+      ilya.desc=ilya.items.map(i=>i.desc).join(' \u00b7 ');
+      ilya.qty=1; ilya.price=null;
+      ilya.amount=ilya.items.reduce((t,i)=>t+(i.paid?0:(i.qty||1)*(i.price||0)),0);
+    }
+    const ev=state.events.find(e=>e.id==='7g5q9kt8')
+          ||state.events.find(e=>e.client==='ILYA'&&e.date==='2026-09-10');
+    if(ev){
+      ev.gross=1450; ev.exp=400;
+      ev.details='7 videos + photography (second shooter) \u00b7 billed $1,450, '
+               +'$400 of it owed on to the photographer. Thu Sep 10, 4 PM.';
+    }
+    const laya=(state.invoices||[]).find(i=>i.number==='LAYA-0904-26');
+    if(laya&&!(laya.items||[]).length){
+      laya.items=[{desc:'Video \u2014 7 videos',svcDate:'2026-09-04',qty:1,price:1050,paid:false}];
+      laya.desc='Video \u2014 7 videos'; laya.qty=1; laya.price=null; laya.amount=1050;
+    }
+  }
+  // patch 77 (2026-09-23): one invoice to Damás Agency instead of two. They book both
+  // acts and they are the payer, so the Laya and ILYA drafts merge into a single bill
+  // with a line per job. eventIds carries BOTH gigs, which is what makes "mark paid"
+  // settle the pair together. The $500 they sent on 2026-09-08 goes on as a negative
+  // line: on a combined bill it does not matter which act it was for — it is Damás
+  // money against a Damás total — which is the ambiguity this merge quietly resolves.
+  if(!state.patch77){
+    state.patch77=true;
+    const laya=(state.invoices||[]).find(i=>i.number==='LAYA-0904-26');
+    const ilya=(state.invoices||[]).find(i=>i.number==='ILYA-0910-26');
+    if(laya&&ilya){
+      const photo=(ilya.items||[]).find(i=>/photograph/i.test(i.desc||''));
+      const merged={
+        id:uid(), number:'DAMAS-0910-26',
+        eventIds:[laya.eventId,ilya.eventId].filter(Boolean),
+        client:'Damás Agency', billTo:'Damás Agency',
+        email:laya.email||ilya.email||'', addr:'',
+        items:[
+          {desc:'Laya \u2014 7 videos (shoot 4 Sep)',svcDate:'2026-09-04',qty:1,price:1050,paid:false},
+          {desc:'ILYA \u2014 7 videos (shoot 10 Sep)',svcDate:'2026-09-10',qty:1,price:1050,paid:false},
+          {desc:'ILYA \u2014 photography, second shooter',svcDate:'2026-09-10',qty:1,price:(photo?photo.price:400),paid:false},
+          {desc:'Less: payment received 8 Sep',svcDate:'2026-09-08',qty:1,price:-500,paid:false}
+        ],
+        svcDate:'2026-09-04', qty:1, price:null,
+        issue:todayISO(), terms:ilya.terms||'Net 15',
+        pay:ilya.pay||BIZ.pay, note:ilya.note||BIZ.note,
+        status:'draft', sentAt:'', chases:[], fresh:true
+      };
+      merged.desc=merged.items.map(i=>i.desc).join(' \u00b7 ');
+      merged.amount=merged.items.reduce((t,i)=>t+(i.paid?0:(i.qty||1)*(i.price||0)),0);
+      state.invoices=state.invoices.filter(i=>i!==laya&&i!==ilya);
+      state.invoices.push(merged);
+      state.events.forEach(function(e){
+        if(merged.eventIds.indexOf(e.id)>-1)e.invoiceId=merged.id;
+      });
+    }
+  }
   rollAnnual();
   save();
 }
