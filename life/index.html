@@ -2233,6 +2233,32 @@ function migrate(){
       if(v&&typeof v==='object'&&/donghwan@koma\.media/i.test(v.cc||''))delete v.cc;
     });
   }
+  // patch 80 (2026-09-24): Damás changed the deal again — $1,000 per client for 8
+  // reels, replacing the $1,050-for-7 rate. Rebuilds the two service lines on the
+  // merged invoice, leaves the photographer's $400 and the $500 already received
+  // alone, and brings both gig records in line so Money does not keep the old number.
+  if(!state.patch80){
+    state.patch80=true;
+    const inv=(state.invoices||[]).find(i=>i.number==='DAMAS-0910-26');
+    if(inv){
+      const keep=(inv.items||[]).filter(i=>/photograph|payment received/i.test(i.desc||''));
+      inv.items=[
+        {desc:'Laya \u2014 8 reels (shoot 4 Sep)',svcDate:'2026-09-04',qty:1,price:1000,paid:false},
+        {desc:'ILYA \u2014 8 reels (shoot 10 Sep)',svcDate:'2026-09-10',qty:1,price:1000,paid:false}
+      ].concat(keep);
+      inv.desc=inv.items.map(i=>i.desc).join(' \u00b7 ');
+      inv.qty=1; inv.price=null;
+      inv.amount=inv.items.reduce((t,i)=>t+(i.paid?0:(i.qty||1)*(i.price||0)),0);
+    }
+    const ilya=state.events.find(e=>e.client==='ILYA'&&e.date==='2026-09-10');
+    if(ilya){
+      ilya.gross=1400; ilya.exp=400;
+      ilya.details='8 reels + photography (second shooter) \u00b7 billed $1,400, '
+                 +'$400 of it owed on to the photographer. Thu Sep 10, 4 PM.';
+    }
+    const laya=state.events.find(e=>e.client==='Laya'&&e.date==='2026-09-04');
+    if(laya){laya.gross=1000;laya.details='8 reels \u00b7 $1,000.'}
+  }
   rollAnnual();
   save();
 }
