@@ -2259,6 +2259,24 @@ function migrate(){
     const laya=state.events.find(e=>e.client==='Laya'&&e.date==='2026-09-04');
     if(laya){laya.gross=1000;laya.details='8 reels \u00b7 $1,000.'}
   }
+
+  /* patch 81 (2026-09-24): the Jul 10 Electrik Seoul LA show finally paid — by
+     check, seven weeks after it was sent. Matched on number + service date +
+     amount, not the number alone. cleared stays false: a check is not money
+     until the bank says so. */
+  if(!state.patch81){
+    state.patch81=true;
+    const inv=(state.invoices||[]).find(function(i){
+      return i.number==='ES-0710-26'&&i.svcDate==='2026-07-10'&&+i.amount===800;
+    });
+    if(inv){
+      inv.status='paid'; inv.fresh=false;
+      invEventIds(inv).forEach(function(id){
+        const e=(state.events||[]).find(function(x){return x.id===id});
+        if(e){e.paid=true;e.cleared=false}
+      });
+    }
+  }
   rollAnnual();
   save();
 }
