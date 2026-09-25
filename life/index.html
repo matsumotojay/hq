@@ -120,6 +120,7 @@
   .calhead h2{margin:0;font-size:18px;text-transform:none;letter-spacing:-.01em;color:var(--ink);
               min-width:8.6em;text-align:center;white-space:nowrap}
   .monthstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  #collectStrip{grid-template-columns:1fr}
   @media (max-width:560px){.monthstrip{grid-template-columns:1fr 1fr 1fr;gap:6px}}
   .stat{padding:12px 14px}
   .stat .lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
@@ -5426,12 +5427,15 @@ function unsendGroup(client){
 function renderCollect(){
   const host=$('collectList');if(!host)return;
   const T=collectTotals();
+  /* One number. Unsent / waiting / overdue was a breakdown of the same money,
+     and the split is already visible per client in the rows below -- which is
+     where he acts on it. This is the figure he checks to know where he stands. */
   $('collectStrip').innerHTML=
-     '<div class="card stat upc"><div class="lbl">Not sent yet</div><div class="val num">'+fmt$(T.unsent)+'</div><div class="sub">you control this</div></div>'
-    +'<div class="card stat"><div class="lbl">Waiting</div><div class="val num">'+fmt$(T.waiting)+'</div><div class="sub">sent, not due yet</div></div>'
-    +'<div class="card stat"><div class="lbl">Overdue</div><div class="val num" style="color:var(--urgent)">'+fmt$(T.late)+'</div><div class="sub">past Net 15</div></div>';
+    '<div class="card stat upc"><div class="lbl">Total waiting for payment</div>'
+    +'<div class="val num">'+fmt$(T.all)+'</div>'
+    +'<div class="sub">'+(T.late>0?fmt$(T.late)+' of it past Net 15':'every unpaid invoice')+'</div></div>';
   const groups=collectGroups();
-  $('collectHint').textContent=groups.length?fmt$(T.all)+' outstanding across '+groups.length+' client'+(groups.length===1?'':'s'):'';
+  $('collectHint').textContent=groups.length?'across '+groups.length+' client'+(groups.length===1?'':'s'):'';
   if(!groups.length){
     host.innerHTML='<div class="card" style="padding:16px;color:var(--ink3);font-size:13.5px">Nothing outstanding — every invoice is paid.</div>';
     return;
