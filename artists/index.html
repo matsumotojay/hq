@@ -78,15 +78,15 @@ tr.none,tr.todo{color:#8b8378}
 </style>
 <header>
 <h1>Artist Contacts</h1>
-<div class=sub><b>532</b> artists across every lineup &middot;
- <b>381</b> have an email (72%) &middot;
- <b>266</b> have an Instagram (50%) &middot;
- <b>139</b> have neither &middot;
+<div class=sub><b>733</b> artists across every lineup &middot;
+ <b>531</b> have an email (72%) &middot;
+ <b>522</b> have an Instagram (71%) &middot;
+ <b>102</b> have neither &middot;
  <b class=dualstat>214</b> dual-verified &middot;
- 218 with a manager/media door &middot; 2026-09-05</div>
+ 309 with a manager/media door &middot; 2026-09-24</div>
 <div class=ctl>
  <input id=q placeholder="search artist, real name, manager, email, agency&hellip;" autocomplete=off>
- <select id=fest><option value="">all festivals</option><option value="Breakaway Utah 2026">Breakaway Utah</option><option value="Dreamstate SoCal 2026">Dreamstate SoCal</option><option value="Escape Halloween 2026">Escape Halloween</option><option value="Hulaween 2026">Hulaween</option><option value="Lights All Night 2026">Lights All Night</option><option value="Lost Lands 2026">Lost Lands</option><option value="Niteharts 2026">Niteharts</option><option value="San Marcos Block Party 2026">San Marcos Block Party</option><option value="Wasteland 2026">Wasteland</option></select>
+ <select id=fest><option value="">all festivals</option><option value="Breakaway Utah 2026">Breakaway Utah</option><option value="Dreamstate SoCal 2026">Dreamstate SoCal</option><option value="Escape Halloween 2026">Escape Halloween</option><option value="Hulaween 2026">Hulaween</option><option value="Lights All Night 2026">Lights All Night</option><option value="Lost Lands 2026">Lost Lands</option><option value="Niteharts 2026">Niteharts</option><option value="Proper NYE 2026">Proper NYE</option><option value="San Marcos Block Party 2026">San Marcos Block Party</option><option value="Tahoe Live 2026">Tahoe Live</option><option value="Wasteland 2026">Wasteland</option></select>
  <button id=bAll class=on>all</button>
  <button id=bAny>has an email</button>
  <button id=bIg>has an Instagram</button>
@@ -190,11 +190,13 @@ function openRow(i){
   if(d.rn) h+='<div class=rn>'+esc(d.rn)+'</div>';
   h+='<div class=meta>'+d.fs.map(function(f){return '<span class=chip>'+esc(f)+'</span>'}).join('')
     +(d.ag?'<span class=chip>agency: '+esc(d.ag)+'</span>':'')
-    +(d.ig?'<a class="chip iglink" target=_blank rel=noopener href="'+esc(d.ig)+'">@'+esc(handleOf(d.ig))+'</a>':'')
+    +(d.ig?'<a class="chip iglink" target=_blank rel=noopener href="'+esc(d.ig)+'">@'+esc(handleOf(d.ig))
+           +(d.igf?' &middot; '+fmtK(d.igf):'')+'</a>':'')
     +'</div>';
   if(d.mg.length){
     h+='<h3>Management</h3>'+d.mg.map(function(m){
-      return '<div class=nt>'+esc(m.n)+(m.o?' &middot; '+esc(m.o):'')+(m.r&&m.r!=='manager'?' ('+esc(m.r)+')':'')+'</div>';
+      var who=m.n?esc(m.n)+(m.o?' &middot; '+esc(m.o):''):esc(m.o);
+      return '<div class=nt>'+who+(m.r&&m.r!=='manager'?' ('+esc(m.r)+')':'')+'</div>';
     }).join('');
   }
   if(d.cs.length){
@@ -209,6 +211,11 @@ function openRow(i){
   }
   if(d.nt) h+='<h3>Notes</h3><div class=nt>'+esc(d.nt)+'</div>';
   pop.innerHTML=h; ov.classList.add('on');
+}
+function fmtK(n){
+  if(n>=1000000) return (n/1000000).toFixed(n%1000000?1:0).replace(/\.0$/,'')+'M followers';
+  if(n>=1000)    return Math.round(n/1000)+'K followers';
+  return n+' followers';
 }
 function closeRow(){ov.classList.remove('on')}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeRow()});
