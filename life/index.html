@@ -2324,6 +2324,19 @@ function migrate(){
         state.outreach.push(r);
     });
   }
+  /* patch 83 (2026-09-26): Rachel, the Airbnb cleaner. Tuesday 2026-09-29 is the day;
+     the time is genuinely unknown -- she texts Mon 28 Sep to set it, and Jay thinks
+     evening. Left with no start time rather than a guessed one, so the calendar shows
+     an unscheduled day instead of an appointment he never agreed to. */
+  if(!state.patch83){
+    state.patch83=true;
+    if(!state.events.some(function(e){return e.title==='\uD83E\uDDF9 Rachel \u2014 Airbnb cleaning'&&e.date==='2026-09-29'}))
+      state.events.push({id:uid(),title:'\uD83E\uDDF9 Rachel \u2014 Airbnb cleaning',
+        details:'Time not set yet. Rachel texts Mon 28 Sep to lock it in \u2014 Jay expects evening.',
+        date:'2026-09-29',endDate:'',start:'',end:'',
+        gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,
+        invoiceId:null,invoiceDismissed:false,month:''});
+  }
   rollAnnual();
   save();
 }
