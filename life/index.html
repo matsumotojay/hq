@@ -2337,6 +2337,33 @@ function migrate(){
         gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,
         invoiceId:null,invoiceDismissed:false,month:''});
   }
+  /* patch 84 (2026-09-27): the ANA booking, read off the e-ticket. Two things here
+     are easy to get wrong and both are written out in full. The outbound LEAVES on
+     Tue 10 Nov but LANDS Wed 11 Nov -- the e-ticket labels leg 2 with its departure
+     date, so the arrival day is nowhere on it. And the return goes out of ITAMI,
+     not Kansai: he flies into one Osaka airport and out of the other. */
+  if(!state.patch84){
+    state.patch84=true;
+    var fl=[
+      {t:'\u2708\uFE0F LAX \u2192 Osaka (Kansai)',d:'2026-11-10',ed:'2026-11-11',st:'07:25',
+       det:'ANA \u00b7 reservation DVRT6W \u00b7 Economy K \u00b7 both legs operated by United.\n'
+          +'NH7355 \u2014 LAX Terminal 7, dep 7:25 AM \u2192 San Francisco, arr 8:55 AM (Tue 10 Nov)\n'
+          +'NH7071 \u2014 SFO Terminal I, dep 11:25 AM \u2192 Kansai KIX, arr 4:45 PM (Wed 11 Nov, Japan time) \u00b7 12h20m\n'
+          +'2h30m to connect at SFO. Apartment check-in opens 3:00 PM \u2014 you land after it, and it is a smart lock, so arriving in the evening is fine.'},
+      {t:'\u2708\uFE0F Osaka (Itami) \u2192 LAX',d:'2026-11-20',ed:'',st:'17:50',
+       det:'ANA \u00b7 reservation DVRT6W \u00b7 Economy K.\n'
+          +'NH036 \u2014 Osaka ITAMI, dep 5:50 PM \u2192 Tokyo Haneda, arr 7:05 PM\n'
+          +'NH126 \u2014 Haneda Terminal 2, dep 9:05 PM \u2192 LAX, arr 2:05 PM the same day (Fri 20 Nov) \u00b7 10h\n'
+          +'DEPARTS ITAMI, NOT KANSAI \u2014 the other Osaka airport. Check-out is 11:00 AM; be at Itami around 4:50 PM.'}
+    ];
+    fl.forEach(function(f){
+      if(state.events.some(function(e){return e.title===f.t&&e.date===f.d}))return;
+      state.events.push({id:uid(),title:f.t,details:f.det,
+        date:f.d,endDate:f.ed,start:f.st,end:'',
+        gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,
+        invoiceId:null,invoiceDismissed:false,month:''});
+    });
+  }
   rollAnnual();
   save();
 }
