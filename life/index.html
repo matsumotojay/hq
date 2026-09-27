@@ -2061,6 +2061,20 @@ function migrate(){
      That is how a bounced address survived being deleted from the database. This runs
      last, on every load, so the lookup always matches the build. Regenerate with
      tools/gen_artist_lookup.py --apply — it targets the marker on the next line. */
+  /* A second agent wrote its own version of the ANA booking into the tracker on
+     2026-09-27 -- six events, all id-prefixed japan2026-, duplicating the two that
+     patch84 adds. Jay asked for that set gone and to keep this one. Unguarded on
+     purpose: a numbered patch fires once, and a browser tab still holding the old
+     events would push them straight back. pushDiff deletes the cloud doc when an
+     entity leaves state, so removing them here is the deletion. */
+  {
+    const before=(state.events||[]).length;
+    state.events=(state.events||[]).filter(function(e){
+      return String(e&&e.id||'').indexOf('japan2026-')!==0;
+    });
+    if(before!==state.events.length)state._flightPurge=true;
+  }
+
   /* Jay has asked twice for this address to be off his mail. patch79 removed it
      once, then sending the Damas invoice wrote it straight back -- a numbered
      patch fires once and is blind to anything saved afterwards. So this runs
@@ -2363,6 +2377,38 @@ function migrate(){
         gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,
         invoiceId:null,invoiceDismissed:false,month:''});
     });
+  }
+  /* patch 85 (2026-09-27): Brandon & Koko's wedding, off their own invitation site.
+     Her name is KOKO -- the tracker has carried "Coco" since it was first entered.
+     The site also gives the arrive-by time, the venue and the dress code, none of
+     which were recorded. Matched on the date, not the misspelled title. */
+  if(!state.patch85){
+    state.patch85=true;
+    const w=(state.events||[]).find(function(e){
+      return e.date==='2026-11-14'&&/brandon/i.test(e.title||'');
+    });
+    if(w){
+      w.title='\uD83D\uDC92 Brandon & Koko\u2019s wedding';
+      w.start='15:45';
+      w.details='The 33 Sense of Wedding, 33F \u2014 \u30B6\u30FB\u30B5\u30FC\u30C6\u30A3\u30B9\u30EA\u30FC\n'
+        +'Breeze Breeze 33F, 2-4-9 Umeda, Kita-ku, Osaka 530-0001\n'
+        +'\u3012530-0001 \u5927\u962A\u5E9C\u5927\u962A\u5E02\u5317\u533A\u6885\u75302-4-9 \u30D6\u30EA\u30FC\u30BC\u30D6\u30EA\u30FC\u30BE33\u968E\n\n'
+        +'Reception opens 3:45 PM \u00b7 ARRIVE BY 4:20 PM\n'
+        +'Dress code: formal \u2014 suit and tie.\n'
+        +'No gift table; they have a small registry instead.\n\n'
+        +'Closest station is Nishi-Umeda (Yotsubashi line, exit 10), 3 min. '
+        +'5 min from JR Osaka (Sakurabashi or West exit). Underground passage the whole way, '
+        +'so rain does not matter. Lift to the 33rd floor.';
+    }
+    /* the itinerary he sends to Hikaru and his parents, linked from the day he flies */
+    const out=(state.events||[]).find(function(e){
+      return e.date==='2026-11-10'&&/LAX/.test(e.title||'');
+    });
+    if(out&&(out.details||'').indexOf('claude.ai/artifact')<0){
+      out.details=(out.details||'')
+        +'\n\nLeave Torrance by 3:45 AM \u2014 at LAX Terminal 7 by 4:30.\n'
+        +'Full Japan itinerary: https://claude.ai/artifact/XdACe9KjMersA8WZbxA9j5';
+    }
   }
   rollAnnual();
   save();
