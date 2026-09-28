@@ -2475,6 +2475,24 @@ function migrate(){
         +'so the real earning on this shoot is $1,000. Thu Sep 10, 4 PM.';
     }
   }
+  /* patch 90 (2026-09-28): the three Electrik Seoul invoices were submitted through a
+     form Nino sent, not emailed, so they sat here as drafts while the money was already
+     requested. Marked sent. There is deliberately no Gmail trail for these -- a sent-log
+     reconcile will find nothing and that is expected, not a missing send. sentAt is
+     today because Jay did not give a submission date; correct it if it was earlier,
+     because Net 15 counts from it. */
+  if(!state.patch90){
+    state.patch90=true;
+    ['ES-0829-26','ES-0904-26','ES-0906-26'].forEach(function(num){
+      const inv=(state.invoices||[]).find(function(i){
+        return i.number===num&&i.client==='Electrik Seoul'&&i.status==='draft';
+      });
+      if(!inv)return;
+      inv.status='sent'; inv.fresh=false;
+      inv.sentAt=inv.sentAt||todayISO();
+      inv.note=(inv.note||'')+' Submitted through Nino\u2019s intake form, not by email.';
+    });
+  }
   rollAnnual();
   save();
 }
