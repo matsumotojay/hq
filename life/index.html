@@ -2440,6 +2440,16 @@ function migrate(){
         gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,
         invoiceId:null,invoiceDismissed:false,month:''});
   }
+  /* patch 88 (2026-09-27): Jay did not go to the yetep Pure Night Club booking on
+     25 Sep, so it comes off the calendar. Nothing was attached to it -- no rate, no
+     client, no invoice -- so removing it loses nothing. The Jason Ross cam-op gig is
+     on the same date and stays; match on date AND title so only this one goes. */
+  if(!state.patch88){
+    state.patch88=true;
+    state.events=(state.events||[]).filter(function(e){
+      return !(e.date==='2026-09-25'&&/pure\s*night\s*club/i.test(e.title||''));
+    });
+  }
   rollAnnual();
   save();
 }
@@ -3137,8 +3147,11 @@ function festSubject(name,fest,from){
   const a=Array.isArray(name)?name:[name];
   const who=a.length>1?a.slice(0,-1).join(', ')+' + '+a[a.length-1]:a[0];
   const d=daysToFest(from);
-  return fest+(yr?' '+yr:'')+': '+who
-    +((d!==null&&d<=10)?' (media \u2014 on site this week)':' (media inquiry)');
+  /* The credential is the only thing in the subject that is about them rather than
+     about Jay, so it leads. No leading symbols -- agency domains filter them and they
+     read as marketing to someone opening 200 mails a day. */
+  return 'Already credentialed \u2014 '+fest+(yr?' '+yr:'')+' media for '+who
+    +((d!==null&&d<=10)?' (on site this week)':'');
 }
 /* ═══════ IS THIS THE ARTIST'S OWN INBOX, OR A THIRD PARTY'S? (2026-08-26) ═══════
    The pitch asks "to see if HERSHE needs any media" — correct into a management
@@ -3206,63 +3219,63 @@ function festPitchLate(name,fest,from,to,email){
   const direct=isArtistDirect(name,email);
   const subj=direct?'you':artistList(name);
   const verb=direct?' need':((Array.isArray(name)&&name.length>1)?' need':' needs');
-  return 'Hello,\n\n'
-    +'Reaching out last minute \u2014 it\u2019s '+fest+' week, and I wanted to offer in case '
+  const fm=(state.festMeta||{})[fest]||{};
+  const access=fm.local
+    ? emph('I\u2019m local and already credentialed')
+      +' \u2014 wristband sorted and my COI is already submitted, so there is nothing to '
+      +'arrange, no lead time needed, and nothing to cover for travel or lodging.'
+    : emph('I\u2019m already credentialed and on site '+onsiteWindow(fest,from,to))
+      +' \u2014 wristband sorted and my COI is already submitted, so there\u2019s nothing to '
+      +'arrange on that side and no lead time needed.';
+  return 'Hey,\n\n'
+    +'My name\u2019s Jay \u2014 I\u2019m an LA-based photographer and videographer. '
+    +'Reaching out last minute: it\u2019s '+fest+' week and I wanted to offer in case '
     +subj+verb+' any media, or something fell through.\n\n'
-    +emph('I\u2019m already credentialed and on site '+onsiteWindow(fest,from,to))
-    +' \u2014 wristband sorted and my COI is already submitted, so there\u2019s nothing to arrange '
-    +'on that side and no lead time needed.'
+    +access
     +(shotBefore(fest)?' I\u2019ve shot '+fest+' before, so I know the run of show and the venue layout.':'')
     +'\n\n'
-    +'I shoot photos, video, multi-cam, vlog / behind the scenes \u2014 whatever your team needs:\n\n'
-    +'Photos\n'
-    +'\u2022 Full set coverage, 10-20 photos\n\n'
-    +'Video\n'
-    +'\u2022 Single-angle clips cut for socials\n'
-    +'\u2022 Multi-cam clips cut for socials, 5-10 clips\n'
-    +'\u2022 Full multi-cam set for YouTube\n\n'
-    +'Content\n'
-    +'\u2022 Vlog / behind the scenes\n'
-    +'\u2022 Social media UGC\n'
-    +'\u2022 Recap edit\n\n'
-    /* No price in the week-of version. Naming $100-200 anchors the number before they
-       have said yes to anything; this week the goal is a reply, not a rate. The standard
-       pitch keeps the travel-split line. */
-    +'If you\u2019re interested, let me know what you\u2019re looking for and I\u2019ll send a quote.\n\n'
+    +'Services\n'
+    +'\u2022 Photos \u2014 full set coverage, 10-20 images \u2014 $300\n'
+    +'\u2022 Video, single angle \u2014 clips cut for socials \u2014 $500\n'
+    +'\u2022 Video, multi-cam \u2014 10 clips cut for socials \u2014 $800\n'
+    +'\u2022 Full multi-cam set, edited for YouTube \u2014 $1,200\n\n'
+    +'Also available, rate on request: recap edit, vlog / behind the scenes, '
+    +'social media UGC.\n\n'
+    +'Happy to put a package together if you want more than one.\n\n'
     +'Thanks,\nJay Matsu\n\n'
     +'Website: '+MUSIC_URL
     +(INSTA_URL?'\nInstagram: '+INSTA_URL:'')+'\n';
 }
 /* The wording Jay approved. Do not re-voice this copy. */
 function festPitchEarly(name,fest,from,to,email){
-  const yr=String(from||'').slice(0,4);
-  const yrs=yr?(+yr-2018):8;
   /* Writing to the act themselves: say "you", not their own stage name at them. */
   const direct=isArtistDirect(name,email);
   const subj=direct?'you':artistList(name);
   const verb=direct?' need':((Array.isArray(name)&&name.length>1)?' need':' needs');
-  return 'Hello,\n\n'
-    +'My name is Jay and I\u2019ve been shooting photo/video in the EDM industry for the past '
-    +yrs+' years, and I\u2019m reaching out to see if '+subj
-    +verb+' any media at '+fest+' this year.\n'
-    +emph('I\u2019m already credentialed and on site '+onsiteWindow(fest,from,to))
-    +', so there\u2019s nothing to arrange on the credential side.'
+  /* "I'm local" is only true for the California shows. festMeta carries the flag, so
+     an out-of-state festival keeps the travel-split argument instead of claiming a
+     hometown it does not have. */
+  const fm=(state.festMeta||{})[fest]||{};
+  const access=fm.local
+    ? emph('I\u2019m local and already credentialed for the weekend')
+      +', so there\u2019s no wristband to sort out and nothing to cover for travel or lodging.'
+    : emph('I\u2019m already credentialed and on site '+onsiteWindow(fest,from,to))
+      +', so there\u2019s nothing to arrange on the credential side. I have a few artists '
+      +'splitting my travel and lodging, so there is no flight or hotel to cover either.';
+  return 'Hey,\n\n'
+    +'My name\u2019s Jay \u2014 I\u2019m an LA-based photographer and videographer. '
+    +'I\u2019m reaching out to see if '+subj+verb+' any media at '+fest+' this year.\n\n'
+    +access
     +(shotBefore(fest)?' I\u2019ve shot '+fest+' before, so I know the run of show and the venue layout.':'')
-    +'\n\n\n'
-    +'What I offer:\n'
-    +'Photos\n'
-    +'\u2022 Full set coverage, 10-20 photos\n\n'
-    +'Video\n'
-    +'\u2022 Single-angle clips cut for socials\n'
-    +'\u2022 Multi-cam clips cut for socials, 5-10 clips\n'
-    +'\u2022 Full multi-cam set for YouTube\n\n'
-    +'Content\n'
-    +'\u2022 Vlog / behind the scenes\n'
-    +'\u2022 Social media UGC\n'
-    +'\u2022 Recap edit\n\n'
-    +'I have a few artists splitting my travel and lodging, so coverage runs about $100-200 '
-    +'instead of the $800+ it takes to fly a shooter out and put them up.\n'
-    +'If you\u2019re interested, let me know what you\u2019re looking for and I\u2019m happy to send a quote.\n\n'
+    +'\n\n'
+    +'Services\n'
+    +'\u2022 Photos \u2014 full set coverage, 10-20 images \u2014 $300\n'
+    +'\u2022 Video, single angle \u2014 clips cut for socials \u2014 $500\n'
+    +'\u2022 Video, multi-cam \u2014 10 clips cut for socials \u2014 $800\n'
+    +'\u2022 Full multi-cam set, edited for YouTube \u2014 $1,200\n\n'
+    +'Also available, rate on request: recap edit, vlog / behind the scenes, '
+    +'social media UGC.\n\n'
+    +'Happy to put a package together if you want more than one.\n\n'
     +'Thanks,\nJay Matsu\n\n'
     +'Website: '+MUSIC_URL
     +(INSTA_URL?'\nInstagram: '+INSTA_URL:'')+'\n';
