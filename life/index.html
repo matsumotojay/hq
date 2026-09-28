@@ -2450,6 +2450,31 @@ function migrate(){
       return !(e.date==='2026-09-25'&&/pure\s*night\s*club/i.test(e.title||''));
     });
   }
+  /* patch 89 (2026-09-28): Damas paid the merged invoice in full, $1,900, and the
+     $400 second-shooter fee goes straight back out to Ken. That $400 was never Jay's
+     money -- it is billed through him and owed on -- so the event keeps exp:400 and
+     the note now records that it has actually been paid out, and to whom. */
+  if(!state.patch89){
+    state.patch89=true;
+    const inv=(state.invoices||[]).find(function(i){
+      return i.number==='DAMAS-0910-26'&&+i.amount===1900;
+    });
+    if(inv){
+      inv.status='paid'; inv.fresh=false;
+      (inv.eventIds||(inv.eventId?[inv.eventId]:[])).forEach(function(id){
+        const e=(state.events||[]).find(function(x){return x.id===id});
+        if(e){e.paid=true;e.cleared=true}
+      });
+    }
+    const ilya=(state.events||[]).find(function(e){
+      return e.client==='ILYA'&&e.date==='2026-09-10';
+    });
+    if(ilya&&(ilya.details||'').indexOf('Ken')<0){
+      ilya.details='8 reels + photography (second shooter) \u00b7 billed $1,400. '
+        +'$400 of that is Ken\u2019s fee for the photography \u2014 paid out to him 28 Sep, '
+        +'so the real earning on this shoot is $1,000. Thu Sep 10, 4 PM.';
+    }
+  }
   rollAnnual();
   save();
 }
