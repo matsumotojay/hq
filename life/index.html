@@ -2410,6 +2410,36 @@ function migrate(){
         +'Full Japan itinerary: https://claude.ai/artifact/XdACe9KjMersA8WZbxA9j5';
     }
   }
+  /* patch 86 (2026-09-27): Friday 25 Sep cam-op gig. OJAS books and pays; Jason Ross
+     is the artist on stage -- same split as Jose Reyes hiring for the William Black
+     show, so the client is the person who hires, not the name on the poster. Left
+     unpaid so it drafts an invoice to OJAS. Note there is already a separate yetep
+     gig on this date; this is a second booking, not a duplicate of it. */
+  if(!state.patch86){
+    state.patch86=true;
+    if(!state.events.some(function(e){
+        return e.date==='2026-09-25'&&/jason ross/i.test(e.title||'');
+      }))
+      state.events.push({id:uid(),title:'Jason Ross \u2014 cam op',
+        details:'Camera operator for Jason Ross. Booked by OJAS (media). $200.',
+        date:'2026-09-25',endDate:'',start:'',end:'',
+        gig:true,client:'OJAS',gross:200,exp:0,paid:false,cleared:false,
+        invoiceId:null,invoiceDismissed:false,month:''});
+  }
+  /* patch 87 (2026-09-27): Kevin Wong's wedding, Sunday 10 October 2027. Date only --
+     no venue, time or city given. Second wedding that month: Nolan & Ivy are on the
+     30th in Ho Chi Minh City. */
+  if(!state.patch87){
+    state.patch87=true;
+    if(!state.events.some(function(e){
+        return e.date==='2027-10-10'&&/kevin wong/i.test(e.title||'');
+      }))
+      state.events.push({id:uid(),title:'\uD83D\uDC92 Kevin Wong\u2019s wedding',
+        details:'Venue, time and city not set yet.',
+        date:'2027-10-10',endDate:'',start:'',end:'',
+        gig:false,client:'',gross:null,exp:0,paid:false,cleared:false,
+        invoiceId:null,invoiceDismissed:false,month:''});
+  }
   rollAnnual();
   save();
 }
