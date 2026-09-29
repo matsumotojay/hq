@@ -2574,6 +2574,20 @@ function migrate(){
     auto('Bouldering gym',3,'$10, on U.S. Bank debit');
     auto('ElevenLabs',30,'$6, on U.S. Bank debit');
   }
+  /* patch 95 (2026-09-29): Eddie loan check-in on 2027-04-20. Eddie lent $15K around
+     2026-04-20 at about 8%; a year on it is either repaid (about $16,200) or rolled
+     another year at 8%. Flexible, Eddie is easy about it. Personal finance: not a gig,
+     not a lead, no gross, so it never drafts an invoice or counts as income or expense. */
+  if(!state.patch95){
+    state.patch95=true;
+    state.events=state.events||[];
+    if(!state.events.some(function(e){return e.date==='2027-04-20'&&/Eddie loan/i.test(e.title||'')})){
+      state.events.push({id:uid(),title:'\ud83d\udcb5 Eddie loan check-in',
+        details:'Eddie loan check-in on 2027-04-20: repay about $16,200 ($15K + 8%), or roll another year at 8%. Flexible, Eddie is easy about it.',
+        date:'2027-04-20',endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    }
+  }
   rollAnnual();
   save();
 }
