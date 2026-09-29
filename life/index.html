@@ -219,6 +219,9 @@
   .billrow .sub{font-size:12px;color:var(--ink3);margin-top:1px}
   .billrow .when{text-align:right;font-size:13px;color:var(--ink2);white-space:nowrap}
   .billrow .when .dt{font-size:11.5px;color:var(--ink3)}
+  .bmode{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:1px}
+  .bmode.manual{background:var(--urgent-soft);color:var(--urgent)}
+  .bmode.auto{background:var(--line);color:var(--ink3)}
   .billrow.soon{background:var(--owed-soft)}
   .billrow.soon .when{color:var(--owed);font-weight:700}
   .billrow.due{background:var(--urgent-soft)}
@@ -2548,6 +2551,29 @@ function migrate(){
     add('Cancel Canva ($14.99 on U.S. Bank debit, next charge 3 Oct)','Money',
       'Jay approved cancelling. Billed directly by Canva on the 3rd of each month. Cancel in Canva account settings before 3 Oct.','2026-10-02');
   }
+  /* patch 94 (2026-09-29): tell the bills Jay must pay himself from the ones that take
+     themselves. Read off his U.S. Bank history: Amex and Discover are always paid by
+     hand (web payments, different amounts), the HELOC is a hand-made ACH from Chase, and
+     the subscriptions below are recurring debits. Auto bills never trigger a reminder. */
+  if(!state.patch94){
+    state.patch94=true;
+    state.bills=state.bills||[];
+    const setMode=function(name,mode,note){
+      const b=state.bills.find(function(x){return x.name===name});
+      if(b){b.mode=mode;if(note!==undefined)b.note=note}
+    };
+    setMode('Discover','manual');
+    setMode('Amex Gold','manual');
+    setMode('Cal Coast HELOC','manual','Pay from Chase. About $1,575 interest only; last year ran 1-10 days past the 28th');
+    const auto=function(name,day,note){
+      if(!state.bills.some(function(b){return b.name===name}))state.bills.push({id:uid(),name:name,day:day,lead:0,note:note,mode:'auto'});
+    };
+    auto('Adobe',8,'$69.99, on U.S. Bank debit');
+    auto('Wix',26,'$36, moved to Amex in Sep');
+    auto('Claude Max',10,'$100, on Amex');
+    auto('Bouldering gym',3,'$10, on U.S. Bank debit');
+    auto('ElevenLabs',30,'$6, on U.S. Bank debit');
+  }
   rollAnnual();
   save();
 }
@@ -4321,16 +4347,18 @@ function billNext(day,from){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 function billDaysAway(b){return Math.round((new Date(billNext(b.day)+'T12:00:00')-new Date(todayISO()+'T12:00:00'))/864e5)}
-function billsSoon(){return (state.bills||[]).filter(b=>billDaysAway(b)<=(b.lead||0))}
+/* mode 'auto' = the company takes it by itself, so it never nags; anything else means Jay has to pay it */
+function billIsAuto(b){return b.mode==='auto'}
+function billsSoon(){return (state.bills||[]).filter(b=>!billIsAuto(b)&&billDaysAway(b)<=(b.lead||0))}
 function renderBills(){
   const host=$('billsCard');if(!host)return;
   const bills=[...(state.bills||[])].sort((a,b)=>billDaysAway(a)-billDaysAway(b));
   if(!bills.length){host.innerHTML='';return}
   host.innerHTML='<div class="listhead"><h2>Monthly bills</h2></div>'
     +'<div class="card">'+bills.map(b=>{
-      const n=billDaysAway(b), due=n<=0, soon=n<=(b.lead||0);
+      const auto=billIsAuto(b), n=billDaysAway(b), due=!auto&&n<=0, soon=!auto&&n<=(b.lead||0);
       return '<div class="billrow'+(due?' due':(soon?' soon':''))+'">'
-        +'<div class="b"><div class="nm">'+esc(b.name)+'</div>'
+        +'<div class="b"><div class="nm">'+esc(b.name)+' <span class="bmode '+(auto?'auto':'manual')+'">'+(auto?'Auto':'You pay')+'</span></div>'
         +'<div class="sub">'+ordinal(b.day)+' of every month'+(b.note?' · '+esc(b.note):'')+'</div></div>'
         +'<div class="when">'+(due?'<b>due today</b>':(n===1?'tomorrow':'in '+n+' days'))
         +'<div class="dt">'+fmtDate(billNext(b.day))+'</div></div></div>';
