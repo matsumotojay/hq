@@ -3193,7 +3193,7 @@ function festSubject(name,fest,from){
   /* The credential is the only thing in the subject that is about them rather than
      about Jay, so it leads. No leading symbols -- agency domains filter them and they
      read as marketing to someone opening 200 mails a day. */
-  return 'Already credentialed \u2014 '+fest+(yr?' '+yr:'')+' media for '+who
+  return fest+(yr?' '+yr:'')+' Media Inquiry - '+who
     +((d!==null&&d<=10)?' (on site this week)':'');
 }
 /* ═══════ IS THIS THE ARTIST'S OWN INBOX, OR A THIRD PARTY'S? (2026-08-26) ═══════
@@ -3264,27 +3264,28 @@ function festPitchLate(name,fest,from,to,email){
   const verb=direct?' need':((Array.isArray(name)&&name.length>1)?' need':' needs');
   const fm=(state.festMeta||{})[fest]||{};
   const access=fm.local
-    ? emph('I\u2019m local and already credentialed')
-      +' \u2014 wristband sorted and my COI is already submitted, so there is nothing to '
-      +'arrange, no lead time needed, and nothing to cover for travel or lodging.'
+    ? emph('I\u2019m local and already credentialed for the weekend')
+      +', so we do not need to sort out any wristbands. My COI is already submitted '
+      +'too, so there is no lead time needed.'
     : emph('I\u2019m already credentialed and on site '+onsiteWindow(fest,from,to))
-      +' \u2014 wristband sorted and my COI is already submitted, so there\u2019s nothing to '
+      +'. Wristband sorted and my COI is already submitted, so there is nothing to '
       +'arrange on that side and no lead time needed.';
   return 'Hey,\n\n'
-    +'My name\u2019s Jay \u2014 I\u2019m an LA-based photographer and videographer. '
+    +'My name\u2019s Jay. I\u2019m an LA-based photographer and videographer. '
     +'Reaching out last minute: it\u2019s '+fest+' week and I wanted to offer in case '
     +subj+verb+' any media, or something fell through.\n\n'
     +access
     +(shotBefore(fest)?' I\u2019ve shot '+fest+' before, so I know the run of show and the venue layout.':'')
     +'\n\n'
     +'Services\n'
-    +'\u2022 Photos \u2014 full set coverage, 10-20 images \u2014 $300\n'
-    +'\u2022 Video, single angle \u2014 clips cut for socials \u2014 $500\n'
-    +'\u2022 Video, multi-cam \u2014 10 clips cut for socials \u2014 $800\n'
-    +'\u2022 Full multi-cam set, edited for YouTube \u2014 $1,200\n\n'
+    +'\u2022 Photos, full set coverage (10-20 images)  $300\n'
+    +'\u2022 Video, single angle, cut for socials  $500\n'
+    +'\u2022 Video, multi-cam (3 angles), 10 clips cut for socials  $800\n'
+    +'\u2022 Full multi-cam set (3 angles), edited for YouTube  $1,200\n\n'
     +'Also available, rate on request: recap edit, vlog / behind the scenes, '
-    +'social media UGC.\n\n'
-    +'Happy to put a package together if you want more than one.\n\n'
+    +'whatever social content your team needs.\n\n'
+    +'Happy to put together a package deal if you want to combine services as well.\n'
+    +'Let me know if you have any questions for me.\n\n'
     +'Thanks,\nJay Matsu\n\n'
     +'Website: '+MUSIC_URL
     +(INSTA_URL?'\nInstagram: '+INSTA_URL:'')+'\n';
@@ -3301,24 +3302,25 @@ function festPitchEarly(name,fest,from,to,email){
   const fm=(state.festMeta||{})[fest]||{};
   const access=fm.local
     ? emph('I\u2019m local and already credentialed for the weekend')
-      +', so there\u2019s no wristband to sort out and nothing to cover for travel or lodging.'
+      +', so we do not need to sort out any wristbands.'
     : emph('I\u2019m already credentialed and on site '+onsiteWindow(fest,from,to))
       +', so there\u2019s nothing to arrange on the credential side. I have a few artists '
       +'splitting my travel and lodging, so there is no flight or hotel to cover either.';
   return 'Hey,\n\n'
-    +'My name\u2019s Jay \u2014 I\u2019m an LA-based photographer and videographer. '
+    +'My name\u2019s Jay. I\u2019m an LA-based photographer and videographer. '
     +'I\u2019m reaching out to see if '+subj+verb+' any media at '+fest+' this year.\n\n'
     +access
     +(shotBefore(fest)?' I\u2019ve shot '+fest+' before, so I know the run of show and the venue layout.':'')
     +'\n\n'
     +'Services\n'
-    +'\u2022 Photos \u2014 full set coverage, 10-20 images \u2014 $300\n'
-    +'\u2022 Video, single angle \u2014 clips cut for socials \u2014 $500\n'
-    +'\u2022 Video, multi-cam \u2014 10 clips cut for socials \u2014 $800\n'
-    +'\u2022 Full multi-cam set, edited for YouTube \u2014 $1,200\n\n'
+    +'\u2022 Photos, full set coverage (10-20 images)  $300\n'
+    +'\u2022 Video, single angle, cut for socials  $500\n'
+    +'\u2022 Video, multi-cam (3 angles), 10 clips cut for socials  $800\n'
+    +'\u2022 Full multi-cam set (3 angles), edited for YouTube  $1,200\n\n'
     +'Also available, rate on request: recap edit, vlog / behind the scenes, '
-    +'social media UGC.\n\n'
-    +'Happy to put a package together if you want more than one.\n\n'
+    +'whatever social content your team needs.\n\n'
+    +'Happy to put together a package deal if you want to combine services as well.\n'
+    +'Let me know if you have any questions for me.\n\n'
     +'Thanks,\nJay Matsu\n\n'
     +'Website: '+MUSIC_URL
     +(INSTA_URL?'\nInstagram: '+INSTA_URL:'')+'\n';
