@@ -2493,6 +2493,45 @@ function migrate(){
       inv.note=(inv.note||'')+' Submitted through Nino\u2019s intake form, not by email.';
     });
   }
+  /* patch 91 (2026-09-28): five Escape entries in the sent log were Jay trying the
+     software out on 2026-09-21, not real outreach -- he has not emailed anyone about
+     Escape. Left in place they would have blocked the genuine send with a false
+     "already pitched" warning. Strips only the Escape fest from each record and drops
+     the record only when nothing else is left, so the 44 real Lost Lands sends survive
+     even if an address is shared between the two. */
+  if(!state.patch91){
+    state.patch91=true;
+    const log=state.sentLog||(state.meta&&state.meta.sentLog);
+    if(log){
+      Object.keys(log).forEach(function(addr){
+        const r=log[addr]; if(!r||typeof r!=='object')return;
+        let touched=false;
+        if(r.fests&&r.fests.Escape){delete r.fests.Escape;touched=true}
+        if(r.fest==='Escape'){delete r.fest;touched=true}
+        if(!touched)return;
+        const left=Object.keys(r.fests||{}).length+(r.fest?1:0);
+        if(!left)delete log[addr];
+      });
+    }
+  }
+  /* patch 92 (2026-09-28): the Escape event recorded $400 but never what it buys.
+     Read off the Gmail thread "HerShe Media - Escape Halloween": Brianna asked on
+     13 Aug for VIDEO at a $400 budget and Jay accepted the same day. Photos are not
+     mentioned anywhere in the thread, so they are not included. Written down because
+     the rate card now lists photos at $300 separately. */
+  if(!state.patch92){
+    state.patch92=true;
+    const e=(state.events||[]).find(function(x){
+      return x.date==='2026-10-30'&&/hershe|chelsea/i.test(x.title||'');
+    });
+    if(e&&(e.details||'').indexOf('VIDEO ONLY')<0){
+      e.details='CONFIRMED \u00b7 $400 \u00b7 VIDEO ONLY \u00b7 NOS Events Center, San Bernardino.\n'
+        +'Agreed by email with Brianna 13 Aug 2026: she asked for video coverage at a $400\n'
+        +'budget, Jay accepted the same day. Photos were never discussed and are NOT included.\n'
+        +'Thread also copies Darrick, and Leah was added 21 Aug.\n\n'
+        +(e.details||'');
+    }
+  }
   rollAnnual();
   save();
 }
