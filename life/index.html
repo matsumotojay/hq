@@ -2532,6 +2532,22 @@ function migrate(){
         +(e.details||'');
     }
   }
+  /* patch 93 (2026-09-29): Osaka house loose ends and the California sales-tax problem.
+     Daniel has not sent the settlement statement (in the chat he only said on 8 Sep that
+     he would calculate fees), and the Osaka Prefecture tax-agent form was due 2026-09-22. */
+  if(!state.patch93){
+    state.patch93=true;
+    const add=function(title,tag,notes,due){
+      if((state.tasks||[]).some(function(x){return x.title===title&&x.due===due}))return;
+      state.tasks.push({id:uid(),title:title,tag:tag,notes:notes,due:due,status:'open',completedAt:null});
+    };
+    add('Message Daniel: settlement statement + tax agent form','Urgent',
+      'Ask JP MY HOMES for (1) the settlement statement with every fee and cost of the 7 Sep sale, (2) when the sale money will be wired, and (3) to act as tax agent for the Osaka Prefecture acquisition tax. The tax-agent form was due 2026-09-22 and was missed; the payment slip is due 2026-11-02 (about 117,900 yen, about $750). Draft is in the Bank chat.','2026-09-30');
+    add('Log in to CDTFA: sales permit status, balance, unfiled returns','Urgent',
+      'Emails say sales tax was never paid and the permit may be at risk. Log in at onlineservices.cdtfa.ca.gov, check filing history and what is owed (tax, penalty, interest). Claude reads it, Jay clicks the payment. Store shows only $10.49 paid (Dec 2025) against $544 collected.','2026-09-30');
+    add('Cancel Canva ($14.99 on U.S. Bank debit, next charge 3 Oct)','Money',
+      'Jay approved cancelling. Billed directly by Canva on the 3rd of each month. Cancel in Canva account settings before 3 Oct.','2026-10-02');
+  }
   rollAnnual();
   save();
 }
