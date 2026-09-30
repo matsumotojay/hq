@@ -82,11 +82,17 @@ export async function requireAuth(FBCONFIG, opts = {}) {
      recognise it. */
 
   /* Not signed in — put up the gate and wait. Nothing behind it renders. */
-  const user = await gate(auth, { sendSignInLinkToEmail, signInWithEmailLink, label, linkError });
+  const user = await gate(auth, { sendSignInLinkToEmail, signInWithEmailLink, isSignInWithEmailLink, label, linkError });
   return { app, auth, user, signOut: () => signOut(auth) };
 }
 
-function gate(auth, { sendSignInLinkToEmail, signInWithEmailLink, label, linkError }) {
+function gate(auth, { sendSignInLinkToEmail, signInWithEmailLink, isSignInWithEmailLink, label, linkError }) {
+  /* Framed (Mini City embeds the tracker). A frame's storage is partitioned from the
+     top-level tab, so the emailed link signs in the tab it opens in and this frame never
+     sees it. Offer a paste box that finishes the same email-link sign-in inside the frame.
+     Same auth, same rules; only the place the link is redeemed changes. */
+  let framed = false;
+  try { framed = window.top !== window; } catch (_) { framed = true; }
   return new Promise((resolve) => {
     const wrap = document.createElement("div");
     wrap.id = "hq-gate";
@@ -107,6 +113,8 @@ function gate(auth, { sendSignInLinkToEmail, signInWithEmailLink, label, linkErr
         #hq-gate .msg{margin-top:12px;font-size:13.5px;color:#9A948B;min-height:1.2em}
         #hq-gate .msg.ok{color:#7BC08D}
         #hq-gate .msg.err{color:#E8846A}
+        #hq-gate .paste{margin-top:26px;padding-top:20px;border-top:1px solid #35302A}
+        #hq-gate .paste p{font-size:13px;margin-bottom:12px}
       </style>
       <div class="box">
         <h1>Sign in</h1>
@@ -114,6 +122,13 @@ function gate(auth, { sendSignInLinkToEmail, signInWithEmailLink, label, linkErr
         <input id="hq-mail" type="email" placeholder="you@example.com" autocomplete="email" autofocus>
         <button id="hq-go">Email me a link</button>
         <div class="msg" id="hq-msg"></div>
+        ${framed ? `
+        <div class="paste">
+          <p>Inside a frame the link can't sign this window in by itself. Copy the link from the email (right-click, Copy link address, and don't open it) and paste it here.</p>
+          <input id="hq-link" type="text" placeholder="Paste your sign-in link" autocomplete="off" spellcheck="false">
+          <button id="hq-paste">Sign in with pasted link</button>
+          <div class="msg" id="hq-pmsg"></div>
+        </div>` : ""}
       </div>`;
     document.documentElement.appendChild(wrap);
 
@@ -185,6 +200,41 @@ function gate(auth, { sendSignInLinkToEmail, signInWithEmailLink, label, linkErr
         go.disabled = false;
       }
     };
+    const pasteBtn = wrap.querySelector("#hq-paste");
+    if (pasteBtn) {
+      const linkIn = wrap.querySelector("#hq-link");
+      const pmsg = wrap.querySelector("#hq-pmsg");
+      const redeem = async () => {
+        const raw = (linkIn.value || "").trim();
+        pmsg.className = "msg";
+        if (!raw) { pmsg.textContent = "Paste the link first."; pmsg.className = "msg err"; return; }
+        if (!isSignInWithEmailLink(auth, raw)) {
+          pmsg.className = "msg err";
+          pmsg.textContent = "That isn't a sign-in link. Copy the whole address from the email.";
+          return;
+        }
+        /* The address rides in the link as ?e=. Fall back to what is typed above. */
+        let email = "";
+        try { email = new URL(raw).searchParams.get("e") || ""; } catch (_) {}
+        email = email || (mail.value || "").trim();
+        if (!email) { pmsg.className = "msg err"; pmsg.textContent = "Type your email in the box above too."; return; }
+        pasteBtn.disabled = true; pmsg.textContent = "Signing in…";
+        try {
+          await signInWithEmailLink(auth, email, raw);
+          /* onAuthStateChanged lifts the gate */
+        } catch (e) {
+          const c = (e && e.code) || "";
+          pmsg.className = "msg err";
+          pmsg.textContent = c === "auth/invalid-action-code"
+            ? "That link was already used or has expired. If you opened it, send a fresh one and copy it without opening."
+            : c === "auth/invalid-email" ? "That link is for a different email address."
+            : "Couldn't sign in" + (c ? " (" + c + ")" : "") + ".";
+          pasteBtn.disabled = false;
+        }
+      };
+      pasteBtn.addEventListener("click", redeem);
+      linkIn.addEventListener("keydown", (e) => { if (e.key === "Enter") redeem(); });
+    }
     go.addEventListener("click", send);
     mail.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
   });
