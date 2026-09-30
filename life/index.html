@@ -2588,6 +2588,54 @@ function migrate(){
         paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
     }
   }
+  /* patch 96 (2026-09-30): patch 93 raced and left three copies of the Canva task and two
+     of the CDTFA task. Jay cancelled Canva and filed and paid both overdue California
+     sales-tax returns on 2026-09-29. One copy of each is kept and ticked (it crosses out
+     and stays, per his rule); the exact duplicates are dropped. Matches on title + due. */
+  if(!state.patch96){
+    state.patch96=true;
+    const done=[
+      {title:'Cancel Canva ($14.99 on U.S. Bank debit, next charge 3 Oct)',due:'2026-10-02',at:'2026-09-29'},
+      {title:'Log in to CDTFA: sales permit status, balance, unfiled returns',due:'2026-09-30',at:'2026-09-29'}
+    ];
+    done.forEach(function(d){
+      const same=(state.tasks||[]).filter(function(t){return t.title===d.title&&t.due===d.due});
+      same.forEach(function(t,i){
+        if(i===0){t.status='done';t.completedAt=d.at}
+      });
+      if(same.length>1){
+        const drop=same.slice(1);
+        state.tasks=state.tasks.filter(function(t){return drop.indexOf(t)<0});
+      }
+    });
+  }
+  /* patch 97 (2026-09-30): Jay's running list of things only he can do, handed over by the
+     Mini City coordinator. Plain open tasks with absolute dates. Guarded by title + due so
+     a re-run or a stale snapshot cannot add a second copy. */
+  if(!state.patch97){
+    state.patch97=true;
+    state.tasks=state.tasks||[];
+    const add=function(title,tag,notes,due){
+      if(state.tasks.some(function(x){return x.title===title&&x.due===due}))return;
+      state.tasks.push({id:uid(),title:title,tag:tag,notes:notes,due:due,status:'open',completedAt:null});
+    };
+    add('Claude app: set Default permission mode to Auto','Urgent',
+      'Settings, then Claude Code, then Default permission mode, then Auto. Routines are frozen waiting for Allow.','2026-09-30');
+    add('Wix: point jaymatsu.com nameservers at Cloudflare','Urgent',
+      'Set the nameservers to malcolm.ns.cloudflare.com and treasure.ns.cloudflare.com. Turn DNSSEC off if it is on.','2026-09-30');
+    add('Cloudflare Zero Trust: pick the Free plan','Urgent',
+      'Pick the Free plan (card for $0), then tell the Mini City coordinator "go".','2026-09-30');
+    add('Decide whether Brandon can edit Sheephorn in the online city','Upcoming','','2026-10-01');
+    add('Adobe: change payment to Amex Gold','Money',
+      'Next charge is 2026-10-07, so switch it before then.','2026-10-06');
+    add('Adobe: pick a plan before the 2026-11-07 renewal','Money',
+      'The Mini City coordinator recommends Photography + Premiere Pro, about $43/mo.','2026-11-06');
+    add('U.S. Bank: ask what waives the $12/mo maintenance fee','Money',
+      'Or switch to a no-fee checking account.','2026-10-02');
+    add('Vimeo ($144/yr): move billing to Amex Gold','Money',
+      'Turn off auto-renew once the reels are self-hosted. It renews 2027-04-30.','2027-04-29');
+    add('Cut the next reel in DaVinci Resolve with the Premiere Pro keyboard preset','Upcoming','','');
+  }
   rollAnnual();
   save();
 }
