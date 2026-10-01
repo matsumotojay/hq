@@ -2636,6 +2636,96 @@ function migrate(){
       'Turn off auto-renew once the reels are self-hosted. It renews 2027-04-30.','2027-04-29');
     add('Cut the next reel in DaVinci Resolve with the Premiere Pro keyboard preset','Upcoming','','');
   }
+  /* patch 98 (2026-09-30): three of the nine Jay-only tasks from patch 97 were out of date
+     the same day. Cloudflare Zero Trust and the Claude permission mode are done. The Wix
+     nameserver task is closed as replaced: Wix does not allow it, so Jay moved jaymatsu.com
+     to Porkbun instead ($11.08). Ticks cross out and stay. Runs after patch 97 in the same
+     pass, so it also works on a device that has not run 97 yet. */
+  if(!state.patch98){
+    state.patch98=true;
+    state.tasks=state.tasks||[];
+    const tick=function(title,due,note){
+      state.tasks.forEach(function(t){
+        if(t.title===title&&t.due===due&&t.status!=='done'){
+          t.status='done';t.completedAt='2026-09-30';
+          if(note)t.notes=(t.notes?t.notes+' ':'')+note;
+        }
+      });
+    };
+    tick('Claude app: set Default permission mode to Auto','2026-09-30');
+    tick('Cloudflare Zero Trust: pick the Free plan','2026-09-30');
+    tick('Wix: point jaymatsu.com nameservers at Cloudflare','2026-09-30',
+      'Replaced: Wix does not allow it, so the domain moved to Porkbun ($11.08) instead.');
+    const nt='Approve the jaymatsu.com transfer email (Wix/Porkbun) to speed up the move';
+    if(!state.tasks.some(function(x){return x.title===nt&&x.due==='2026-10-01'})){
+      state.tasks.push({id:uid(),title:nt,tag:'Urgent',
+        notes:'Approving the transfer email speeds up the move of jaymatsu.com from Wix to Porkbun.',
+        due:'2026-10-01',status:'open',completedAt:null});
+    }
+  }
+  /* patch 99 (2026-09-30): Lost Lands changes relayed from Jay.
+     (1) three tentative Armnhmr/Virtual Riot/Kompany gigs for Trevor & Jordan, about $300
+     TOTAL across the three, unpaid, rate not agreed. gross stays null on purpose: a number
+     would auto-draft an invoice and count as owed. Day not given, so all sit on 17 Sep.
+     (2) Yetep's Lost Lands set cancelled. (3) trip costs now exact: stay $440 + flights
+     $358.40 + two United $50 fees = $898.40. (4) Chelsea Lost Lands: Jay did not shoot.
+     (5) draft invoice to Yetep for the Ohio flight, unsent. Cancelled = gig:false, gross
+     null, "(cancelled)" in the title, so it drops out of owed, TBD and the rate nudge. */
+  if(!state.patch99){
+    state.patch99=true;
+    state.events=state.events||[];
+    state.invoices=state.invoices||[];
+    const evFind=function(id,date){
+      return state.events.find(function(e){return e.id===id&&e.date===date});
+    };
+    ['Armnhmr','Virtual Riot','Kompany'].forEach(function(name){
+      const title=name+' (tentative)';
+      if(state.events.some(function(e){return e.title===title&&e.date==='2026-09-17'&&e.client==='Trevor & Jordan'}))return;
+      state.events.push({id:uid(),title:title,
+        details:'Lost Lands · hired by Trevor & Jordan · TENTATIVE, UNPAID · about $300 total across Armnhmr, Virtual Riot and Kompany, rate not agreed (they are checking a budget) · exact day to be set by Jay (17 Sep is a placeholder)',
+        date:'2026-09-17',endDate:'',start:'',end:'',gig:true,client:'Trevor & Jordan',
+        gross:null,exp:0,paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    });
+    const yt=evFind('pu2dk3mk','2026-09-20');
+    if(yt&&yt.client==='Yetep'){
+      yt.title='Yetep — Lost Lands (cancelled)';
+      yt.details='CANCELLED · Wompy Stage · set 2:00–3:00 AM · no pay';
+      yt.gig=false;yt.gross=null;yt.exp=0;yt.paid=false;yt.cleared=false;yt.invoiceDismissed=true;
+    }
+    const ch=evFind('e5oht4lf','2026-09-16');
+    if(ch&&ch.client==='Chelsea (HERSHE)'){
+      ch.title='Chelsea (HERSHE) — Lost Lands (no job)';
+      ch.details='No job — Jay did not shoot for her at Lost Lands';
+      ch.gig=false;ch.gross=null;ch.exp=0;ch.paid=false;ch.cleared=false;ch.invoiceDismissed=true;
+    }
+    const tc=evFind('iyek9b4u','2026-09-16');
+    if(tc&&tc.client==='Lost Lands trip'){
+      tc.details='UA flights $358.40 + stay $440 (Jose’s hotel share, 16–22 Sep) + United fees $50 on 2026-09-17 + United fees $50 on 2026-09-23\n'
+        +'Total $898.40. Counts against September so the ledger shows real profit after expenses';
+      tc.exp=898.4;
+    }
+    const um=evFind('glibc0t3','2026-09-16');
+    if(um&&um.title==='Lost Lands — Ohio'){
+      um.details='Festival trip · flights booked (G7ERLJ) $358.40 · stay $440 (Jose’s hotel share, 16–22 Sep) · United fees $100 ($50 each way)\n'
+        +'Trip costs $898.40. Yetep is covering $458.40 of that (flights + fees) through a draft invoice. '
+        +'Chelsea and Yetep are both cancelled with no pay, so profit = any lineup pickups − $898.40 + what Yetep pays back.';
+    }
+    const invNum='YETEP-0916-26';
+    if(!state.invoices.some(function(i){return i.client==='Yetep'&&i.number===invNum})){
+      state.invoices.push({
+        id:uid(),number:invNum,eventId:null,client:'Yetep',
+        email:(typeof contactFor==='function'?contactFor('Yetep'):''),addr:'',
+        desc:'Flight to Ohio',svcDate:'2026-09-16',qty:1,price:null,amount:458.4,
+        issue:'2026-09-30',terms:'Net 15',
+        pay:BIZ.pay,note:BIZ.note,
+        status:'draft',sentAt:'',chases:[],fresh:true,
+        items:[
+          {desc:'Flight to Ohio',svcDate:'2026-09-16',qty:1,price:458.4,paid:false},
+          {desc:'Cancellation fee (shoot cancelled): waived',svcDate:'2026-09-22',qty:1,price:0,paid:false}
+        ]
+      });
+    }
+  }
   rollAnnual();
   save();
 }
@@ -3274,7 +3364,7 @@ function clearPaid(){
    Leads are lifted out of Discord and kept here with the date they were posted
    and how many people replied — a three-week-old post with ten replies is a
    different proposition from yesterday's with none. */
-const LL={start:'2026-09-16',end:'2026-09-21',sunk:758.40};
+const LL={start:'2026-09-16',end:'2026-09-21',sunk:898.40};
 function leadsFor(ev){return (state.leads||[]).filter(l=>l.event===ev)
   .sort((a,b)=>(b.posted||'').localeCompare(a.posted||''))}
 function setLeadStatus(id,st){
