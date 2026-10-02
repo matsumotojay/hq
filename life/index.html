@@ -2726,6 +2726,33 @@ function migrate(){
       });
     }
   }
+  /* patch 100 (2026-10-02): the Big Bear Lake vacation rental license VRR-2025-1973 for
+     43342 Sheephorn Rd expired on 2026-10-02 (GovPilot expiration notice, 1:26 AM that
+     day). The city gives 30 days to become compliant, so the deadline is 2026-11-01.
+     Two tasks go to the top of Top 3. Guarded by title+due so a rerun adds nothing. */
+  if(!state.patch100){
+    state.patch100=true;
+    state.tasks=state.tasks||[];
+    const mk=function(title,notes){
+      const hit=state.tasks.find(function(x){return x.title===title&&x.due==='2026-10-02'});
+      if(hit)return hit.id;
+      const id=uid();
+      state.tasks.push({id:id,title:title,tag:'Urgent',notes:notes,due:'2026-10-02',status:'open',completedAt:null});
+      return id;
+    };
+    const a=mk('Renew the Big Bear Lake vacation rental license (it expired 2 Oct)',
+      'City notice of 2 Oct 2026: license VRR-2025-1973 for 43342 Sheephorn Rd has expired. 30 days to become compliant (until 1 Nov 2026). Renting or advertising without a valid license can bring citations.\n'
+      +'1. Open the GovPilot link in the 2 Oct "URGENT - CITY OF BIG BEAR LAKE VACATION RENTAL REGISTRATION" email in Jay’s own Gmail (the city says the renewal must be done by the person it was sent to; do not forward it).\n'
+      +'2. Application type: Renewal. Reference # VRR-2025-1973, year constructed 1967.\n'
+      +'3. Attach proof of current liability insurance. First confirm the policy is current: agent on record in 2023 was Beth at alittinsurance.com (REInsurePro policy REIP0020819-00).\n'
+      +'4. Pass the yearly certification exam, then pay the fee.\n'
+      +'5. Wait for the approval email with the license attached and post it in the cabin. The city says allow up to 4 weeks, so start today.\n'
+      +'Questions: VRregistration@bigbearlake.gov. Claude can help with every step except the exam, the payment and the sign-in.');
+    const b=mk('Tell Brandon the cabin license expired, and what we are doing about it',
+      'The Big Bear Lake vacation rental license expired on 2 Oct 2026. Renewal is task one. Brandon should know today, and be asked whether the liability policy is still active (proof of cover is part of the renewal).');
+    const rest=(state.top3||[]).filter(function(x){return x&&x!==a&&x!==b});
+    state.top3=[a,b,rest[0]||null];
+  }
   rollAnnual();
   save();
 }
