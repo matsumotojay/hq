@@ -2753,6 +2753,19 @@ function migrate(){
     const rest=(state.top3||[]).filter(function(x){return x&&x!==a&&x!==b});
     state.top3=[a,b,rest[0]||null];
   }
+  /* patch 101 (2026-10-02): meeting with Manila Killa, Monday 2026-10-05, 10:30 AM. Jay
+     confirmed it by replying to their email. Place and agenda were not given, so none is
+     invented. Not a gig and no money, so it never drafts an invoice. */
+  if(!state.patch101){
+    state.patch101=true;
+    state.events=state.events||[];
+    if(!state.events.some(function(e){return e.date==='2026-10-05'&&/manila killa/i.test(e.title||'')})){
+      state.events.push({id:uid(),title:'Meeting with Manila Killa',
+        details:'Mon 2026-10-05, 10:30 AM. Jay confirmed by replying to their email.',
+        date:'2026-10-05',endDate:'',start:'10:30',end:'',gig:false,client:'',gross:null,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    }
+  }
   rollAnnual();
   save();
 }
