@@ -2766,6 +2766,27 @@ function migrate(){
         paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
     }
   }
+  /* patch 102 (2026-10-03): Jay texted Daniel (JP MY HOMES) about the Nishinari house sale:
+     the settlement statement, when and how the proceeds arrive, and help paying the
+     117,900 yen (about $750) Osaka acquisition tax due 2026-11-02. That closes the "Message
+     Daniel" task from patch 93 (ticked, it crosses out and stays) and opens a follow-up
+     for when the reply should be in. */
+  if(!state.patch102){
+    state.patch102=true;
+    state.tasks=state.tasks||[];
+    state.tasks.forEach(function(t){
+      if(t.title==='Message Daniel: settlement statement + tax agent form'&&t.due==='2026-09-30'&&t.status!=='done'){
+        t.status='done';t.completedAt='2026-10-03';
+        t.notes=(t.notes?t.notes+' ':'')+'Texted Daniel on 2026-10-03: settlement statement, when and how the proceeds arrive, and help paying the acquisition tax.';
+      }
+    });
+    const nt='Waiting on Daniel\u2019s reply: settlement statement, proceeds, acquisition tax';
+    if(!state.tasks.some(function(x){return x.title===nt&&x.due==='2026-10-07'})){
+      state.tasks.push({id:uid(),title:nt,tag:'Waiting',
+        notes:'Texted Daniel (JP MY HOMES) on 2026-10-03. Asked for the settlement statement, when and how the sale proceeds arrive, and help paying the 117,900 yen (about $750) Osaka acquisition tax due 2026-11-02. Follow up if there is no reply by 2026-10-07.',
+        due:'2026-10-07',status:'open',completedAt:null});
+    }
+  }
   /* Task duplicates from the 2026-09-30 patch race (patches 93, 96, 97, 98 each left up to
      13 copies of one task, because stale snapshots and open tabs re-pushed their old task
      arrays after the one-shot patch had fired). Runs every load, unguarded, like the other
