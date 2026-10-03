@@ -2787,6 +2787,26 @@ function migrate(){
         due:'2026-10-07',status:'open',completedAt:null});
     }
   }
+  /* Escape sent-log test entries, take two. Patch 91 meant to remove the five entries Jay
+     made trying the software out on 2026-09-21 (he has emailed nobody about Escape), but it
+     ran against one device's copy while the cloud and other browsers kept theirs, so
+     "ALREADY PITCHED FOR ESCAPE" kept firing on Funk Assault, Galantis, Jamie Jones B2B
+     Franky Rizardo, Kai Wachi and Maddix. Runs every load, unguarded. Narrow on purpose:
+     only an Escape record dated 2026-09-21 whose artists are those five. A real Escape send
+     is dated later and is never touched. */
+  {
+    const log=state.sentLog;
+    const test=['Funk Assault','Galantis','Jamie Jones B2B Franky Rizardo','Kai Wachi','Maddix'];
+    if(log)Object.keys(log).forEach(function(addr){
+      const r=log[addr]; if(!r||typeof r!=='object')return;
+      const f=r.fests&&r.fests.Escape;
+      if(!f||f.when!=='2026-09-21')return;
+      if(!(f.artists||[]).length||!(f.artists||[]).every(function(n){return test.indexOf(n)>=0}))return;
+      delete r.fests.Escape;
+      r.artists=(r.artists||[]).filter(function(n){return test.indexOf(n)<0});
+      if(!Object.keys(r.fests).length)delete log[addr];
+    });
+  }
   /* Task duplicates from the 2026-09-30 patch race (patches 93, 96, 97, 98 each left up to
      13 copies of one task, because stale snapshots and open tabs re-pushed their old task
      arrays after the one-shot patch had fired). Runs every load, unguarded, like the other
@@ -2911,6 +2931,11 @@ window.__adoptCloud=function(cloud){
     state.bills=meta.bills||state.bills||[];
     state.lineups=meta.lineups||state.lineups||{};
     state.festMeta=meta.festMeta||state.festMeta||{};
+    /* sentLog was written to the cloud on every save but never read back, so each browser
+       kept only its own copy. Entries made by a test, or on another device, never converged
+       and a cleanup on one device never reached the others. The cloud copy wins, as it
+       does for every other field in meta. */
+    if(meta.sentLog&&typeof meta.sentLog==='object')state.sentLog=meta.sentLog;
     /* The cloud is authoritative on which patches have actually LANDED. A flag set locally
        before adoption must not survive it — otherwise the patch is marked done while the
        data it wrote gets replaced by the cloud copy, and it never reaches any device. */
@@ -3777,6 +3802,7 @@ function sendState(email){
    state.contacts (she is Chelsea's cc) and state.outreach (warm:'worked').
    A cold pitch to someone you already work with is the single worst-reading
    email this tool can produce, so this outranks every other warning. */
+const FREE_MAIL=/^(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|msn|icloud|me|mac|aol|proton|protonmail|pm|gmx|mail|zoho|fastmail|hey|yandex|qq|163|126|naver|daum|hanmail)\.[a-z.]+$/i;
 function relationshipWith(email){
   const e=String(email||'').toLowerCase().trim(); if(!e)return null;
   const hits=[];
@@ -3799,6 +3825,10 @@ function relationshipWith(email){
   if(!hits.length){
     const dom=e.split('@')[1]||'';
     if(!dom) return null;
+    /* A shared mail provider is not a company. Without this, any @gmail.com artist
+       "matched" every client who also uses Gmail, and the warning told Jay he already
+       works with a stranger because he deals with Yetep, Hoang and Alvyn. */
+    if(FREE_MAIL.test(dom)) return null;
     const known=[];
     Object.keys(state.contacts||{}).forEach(function(client){
       let c=state.contacts[client]||{}; if(typeof c==='string')c={email:c,cc:''};
@@ -3966,7 +3996,7 @@ function bulkDraft(fest,from,to){
       m+='ALREADY PITCHED FOR '+fest.toUpperCase()+':\n';
       dupe.forEach(function(e){
         const r=sentForFest(e,fest);
-        m+='  '+e+'\n     emailed on '+r.when+' about '+r.artists.join(', ')+'\n';
+        m+='  '+e+'  (pitching now: '+groups[e].join(', ')+')\n     emailed on '+r.when+' about '+r.artists.join(', ')+'\n';
       });
       /* Jay's rule (2026-08-26): opening a draft IS sending. Yellow means emailed, and
          un-marking is his job if he abandons one. The "may not have left your outbox"
@@ -3976,9 +4006,9 @@ function bulkDraft(fest,from,to){
     if(other.length){
       m+='WRITTEN TO BEFORE, BUT ABOUT A DIFFERENT FESTIVAL:\n';
       other.forEach(function(e){
-        m+='  '+e+'\n'+sentOtherFest(e,fest).map(x=>'     '+x.fest+' on '+x.when+' ('+x.artists.join(', ')+')').join('\n')+'\n';
+        m+='  '+e+'  (pitching now: '+groups[e].join(', ')+')\n'+sentOtherFest(e,fest).map(x=>'     '+x.fest+' on '+x.when+' ('+x.artists.join(', ')+')').join('\n')+'\n';
       });
-      m+='\nThat is a fair new pitch — they will just recognise your name.\n\n';
+      m+='\nThe acts listed under each address are the ones you pitched there before. Same agent or manager, different act, so a fair new pitch.\n\n';
     }
     if(!confirm(m+'Go ahead?')) return;
   }
