@@ -2766,6 +2766,44 @@ function migrate(){
         paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
     }
   }
+  /* Task duplicates from the 2026-09-30 patch race (patches 93, 96, 97, 98 each left up to
+     13 copies of one task, because stale snapshots and open tabs re-pushed their old task
+     arrays after the one-shot patch had fired). Runs every load, unguarded, like the other
+     dedupes: a numbered patch cannot clean up what is written after it. Narrow on purpose:
+     only the exact title + due pairs those patches created, and a done copy always wins
+     over an open one, so a ticked task is never un-ticked. */
+  /* taskDupeStrip */
+  {
+    const mine=[
+      ['Message Daniel: settlement statement + tax agent form','2026-09-30'],
+      ['Log in to CDTFA: sales permit status, balance, unfiled returns','2026-09-30'],
+      ['Cancel Canva ($14.99 on U.S. Bank debit, next charge 3 Oct)','2026-10-02'],
+      ['Claude app: set Default permission mode to Auto','2026-09-30'],
+      ['Wix: point jaymatsu.com nameservers at Cloudflare','2026-09-30'],
+      ['Cloudflare Zero Trust: pick the Free plan','2026-09-30'],
+      ['Decide whether Brandon can edit Sheephorn in the online city','2026-10-01'],
+      ['Adobe: change payment to Amex Gold','2026-10-06'],
+      ['Adobe: pick a plan before the 2026-11-07 renewal','2026-11-06'],
+      ['U.S. Bank: ask what waives the $12/mo maintenance fee','2026-10-02'],
+      ['Vimeo ($144/yr): move billing to Amex Gold','2027-04-29'],
+      ['Cut the next reel in DaVinci Resolve with the Premiere Pro keyboard preset',''],
+      ['Approve the jaymatsu.com transfer email (Wix/Porkbun) to speed up the move','2026-10-01']
+    ];
+    const rank=function(t){return t.status==='done'?0:t.status==='archived'?1:2};
+    const keep={};
+    (state.tasks||[]).forEach(function(t){
+      if(!t||!mine.some(function(m){return m[0]===t.title&&m[1]===(t.due||'')}))return;
+      const k=t.title+'|'+(t.due||'');
+      if(!keep[k]||rank(t)<rank(keep[k]))keep[k]=t;
+    });
+    const before=(state.tasks||[]).length;
+    state.tasks=(state.tasks||[]).filter(function(t){
+      if(!t)return false;
+      const k=t.title+'|'+(t.due||'');
+      return keep[k]===undefined||keep[k]===t;
+    });
+    if(before!==state.tasks.length)state._taskDupes=true;
+  }
   rollAnnual();
   save();
 }
