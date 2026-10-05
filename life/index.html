@@ -562,6 +562,11 @@
   .jobmeta{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
   .jobpay{font-weight:700;color:var(--good);background:var(--good-soft)}
   .jobfresh{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+  .jobremote{background:var(--good-soft);color:var(--good);font-weight:700}
+  .jobtag{font-weight:700}
+  .jobfilters{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 12px}
+  .jobfilters button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+  .jobfilters button.on{background:var(--accent-soft);color:var(--accent-ink);border-color:var(--accent-ink);font-weight:700}
   .jobstale{background:var(--owed-soft);color:var(--owed)}
   .jobwhy{font-size:13px;line-height:1.5;margin-bottom:9px}
   .jobmg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
@@ -6330,6 +6335,17 @@ document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeOverlays()});
    than an application schedule, so there is no streak, no daily target and no
    nagging. A job either scores well enough to be worth an afternoon or it does not. */
 const JOB_STATUS=['new','shortlist','applied','interview','offer','rejected','passed'];
+let jobFilter='all';
+/* The AI lane (added 2026-10-05). A posting carries lane:'ai', remote:true|false and
+   type:'full-time'|'contract'|'part-time'|'freelance'. Older postings carry none of these
+   and simply show under All. */
+function setJobFilter(f){jobFilter=f;renderJobs()}
+function jobMatches(j){
+  if(jobFilter==='ai')return j.lane==='ai';
+  if(jobFilter==='remote')return !!j.remote;
+  if(jobFilter==='parttime')return !!j.type&&j.type!=='full-time';
+  return true;
+}
 function jobDays(iso){
   if(!iso)return null;
   const d=Math.floor((Date.now()-new Date(iso+'T12:00:00').getTime())/86400000);
@@ -6363,7 +6379,10 @@ function jobCard(j,rank){
   h+='<div class="jobhead"><div><div class="jobtitle">'+esc(j.title)+'</div>'
     +'<div class="jobco">'+esc(j.company)+' · '+esc(j.location)+'</div></div>'
     +'<div class="jobfit"><b>'+j.fit+'</b><span>FIT</span></div></div>';
-  h+='<div class="jobmeta"><span class="chip jobpay">'+esc(j.pay)+'</span>'+jobAgeChip(d)
+  h+='<div class="jobmeta"><span class="chip jobpay">'+esc(j.pay)+'</span>'
+    +(j.remote?'<span class="chip jobremote">REMOTE</span>':'')
+    +(j.type&&j.type!=='full-time'?'<span class="chip jobtag">'+esc(j.type.toUpperCase())+'</span>':'')
+    +(j.lane==='ai'?'<span class="chip jobtag">AI</span>':'')+jobAgeChip(d)
     +(j.bar?'<span class="chip">'+esc(j.bar)+'</span>':'')+'</div>';
   h+='<div class="jobwhy">'+esc(j.why)+'</div>';
   h+='<div class="jobmg"><div class="m"><h5>Your resume matches</h5><ul>'
@@ -6380,7 +6399,8 @@ function jobCard(j,rank){
 }
 function renderJobs(){
   const list=$('jobList');if(!list)return;
-  const jobs=(state.jobs||[]).slice();
+  const allJobs=(state.jobs||[]).slice();
+  const jobs=allJobs.filter(jobMatches);
   const live=jobs.filter(j=>j.status!=='rejected'&&j.status!=='passed'&&j.status!=='applied')
                  .sort((a,b)=>(b.fit||0)-(a.fit||0));
   const done=jobs.filter(j=>j.status==='applied'||j.status==='interview'||j.status==='offer')
@@ -6389,8 +6409,8 @@ function renderJobs(){
 
   const st=$('jobStats');
   if(st){
-    const fresh=jobs.filter(j=>{const d=jobDays(j.posted);return d!==null&&d<=7}).length;
-    st.innerHTML='<span class="chip">'+jobs.length+' tracked</span>'
+    const fresh=allJobs.filter(j=>{const d=jobDays(j.posted);return d!==null&&d<=7}).length;
+    st.innerHTML='<span class="chip">'+allJobs.length+' tracked</span>'
       +'<span class="chip">'+live.length+' to consider</span>'
       +(done.length?'<span class="chip st-applied">'+done.length+' in flight</span>':'')
       +(fresh?'<span class="chip jobfresh">'+fresh+' posted this week</span>':'');
@@ -6398,9 +6418,13 @@ function renderJobs(){
   const up=$('jobUpdated');
   if(up)up.textContent=state.jobsUpdated?('updated '+state.jobsUpdated):'';
 
-  let h='';
+  const cnt=function(f){const k=jobFilter;jobFilter=f;const n=allJobs.filter(jobMatches).length;jobFilter=k;return n};
+  let h='<div class="jobfilters">'
+    +[['all','All'],['ai','AI roles'],['remote','Remote'],['parttime','Part-time and contract']].map(function(x){
+        return '<button class="'+(jobFilter===x[0]?'on':'')+'" onclick="setJobFilter(\''+x[0]+'\')">'+x[1]+' · '+cnt(x[0])+'</button>';
+      }).join('')+'</div>';
   if(!jobs.length){
-    h='<div class="jobempty">Nothing tracked yet. The morning sweep adds new postings here.</div>';
+    h+='<div class="jobempty">'+(allJobs.length?'Nothing in this filter yet.':'Nothing tracked yet. The morning sweep adds new postings here.')+'</div>';
   }else{
     if(live.length){
       h+='<div class="jobsect">Top choices for you</div>';
@@ -6413,7 +6437,7 @@ function renderJobs(){
 
   const b=$('jobBadge');
   if(b){
-    const n=live.filter(j=>(j.fit||0)>=75).length;
+    const n=allJobs.filter(j=>j.status!=='rejected'&&j.status!=='passed'&&j.status!=='applied'&&(j.fit||0)>=75).length;
     b.style.display=n?'':'none';b.textContent=n;
   }
 }
