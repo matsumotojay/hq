@@ -2793,6 +2793,19 @@ function migrate(){
         due:'2026-10-07',status:'open',completedAt:null});
     }
   }
+  /* patch 103 (2026-10-05): recruiter phone screen with Impulse for the Senior Operations
+     Engineer role, Wednesday 2026-10-07, 3:00 PM Pacific, 30 minutes. Stephanie Kroah calls
+     Jay at the scheduled time. Not a gig, no money, so it never drafts an invoice. */
+  if(!state.patch103){
+    state.patch103=true;
+    state.events=state.events||[];
+    if(!state.events.some(function(e){return e.date==='2026-10-07'&&/impulse/i.test(e.title||'')})){
+      state.events.push({id:uid(),title:'\ud83d\udcde Impulse phone screen',
+        details:'Recruiter phone screen for the Senior Operations Engineer role. Stephanie Kroah calls you at the scheduled time. Wed 2026-10-07, 3:00 PM Pacific, 30 minutes. Intro call about Impulse, your background and what you want next. Have questions ready about the company.',
+        date:'2026-10-07',endDate:'',start:'15:00',end:'15:30',gig:false,client:'',gross:null,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    }
+  }
   /* Escape sent-log test entries, take two. Patch 91 meant to remove the five entries Jay
      made trying the software out on 2026-09-21 (he has emailed nobody about Escape), but it
      ran against one device's copy while the cloud and other browsers kept theirs, so
