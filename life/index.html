@@ -2820,6 +2820,19 @@ function migrate(){
         paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
     }
   }
+  /* patch 105 (2026-10-07): release day for "Waves" by Yetep ft. Lux Tides, Wednesday
+     2026-11-04. Jay gave only the title, artists and date, so no time, deliverable or fee is
+     written here. Not a gig and no money. */
+  if(!state.patch105){
+    state.patch105=true;
+    state.events=state.events||[];
+    if(!state.events.some(function(e){return e.date==='2026-11-04'&&/waves/i.test(e.title||'')})){
+      state.events.push({id:uid(),title:'\ud83c\udfb5 \u201cWaves\u201d release \u00b7 Yetep ft. Lux Tides',
+        details:'Release day for \u201cWaves\u201d by Yetep ft. Lux Tides. Wed 2026-11-04.',
+        date:'2026-11-04',endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    }
+  }
   /* Escape sent-log test entries, take two. Patch 91 meant to remove the five entries Jay
      made trying the software out on 2026-09-21 (he has emailed nobody about Escape), but it
      ran against one device's copy while the cloud and other browsers kept theirs, so
