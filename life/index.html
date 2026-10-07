@@ -3524,7 +3524,7 @@ function emailLead(id){
     +'Saw your post in No Travel. I\u2019m already shooting Lost Lands \u2014 credentialed and on site '
     +fmtDate(LL.start)+'\u2013'+fmtDate(LL.end)+' for other artists, so covering yours is easy.\n\n'
     +'Recent work: '+BIZ.site+'\n\nHappy to talk rate.\n\nThanks,\nJay\n'+BIZ.phone;
-  window.open('https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to='+encodeURIComponent(l.contact)
+  window.open(GMAIL_COMPOSE+'&to='+encodeURIComponent(l.contact)
     +'&su='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body),'_blank');
   setLeadStatus(id,'emailed');
 }
@@ -3719,7 +3719,7 @@ const MUSIC_URL='https://www.jaymatsu.com/music';
 const INSTA_URL='https://www.instagram.com/jay_matsu/';
 function draftArtist(name,email,fest,from,to){
   const sub=festSubject(name,fest,from);
-  const url='https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
+  const url=GMAIL_COMPOSE
     +(email?'&to='+encodeURIComponent(email):'')
     +'&su='+encodeURIComponent(sub)
     +'&body='+encodeURIComponent(festPitch(name,fest,from,to));
@@ -3962,7 +3962,7 @@ function artistAsked(n){
 const ARTIST_DB_URL='https://matsumotojay.github.io/hq/artists/';
 const DRAFT_DWELL=800;   /* ms between pop-ups — just enough that Chrome doesn't block the burst */
 function composeUrl(n,fest,from,to){
-  return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
+  return GMAIL_COMPOSE
     +(artistEmail(n)?'&to='+encodeURIComponent(artistEmail(n)):'')
     +'&su='+encodeURIComponent(festSubject(n,fest,from))
     +'&body='+encodeURIComponent(festPitch(n,fest,from,to));
@@ -4029,11 +4029,13 @@ function bulkDraft(fest,from,to){
       });
       m+='\nThe acts listed under each address are the ones you pitched there before. Same agent or manager, different act, so a fair new pitch.\n\n';
     }
-    if(!confirm(m+'Go ahead?')) return;
+    if(!confirm('SENDING FROM: '+MAIL_FROM+'\n\n'+m+'Go ahead?')) return;
+  }else{
+    if(!confirm('SENDING FROM: '+MAIL_FROM+'\n\nOpen '+addrs.length+' draft'+(addrs.length>1?'s':'')+' for '+fest+' in that Gmail account?')) return;
   }
   const urls=addrs.map(function(e){
     const who=groups[e];
-    return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
+    return GMAIL_COMPOSE
       +'&to='+encodeURIComponent(e)
       +'&su='+encodeURIComponent(festSubject(who,fest,from))
       +'&body='+encodeURIComponent(festPitch(who,fest,from,to,e));
@@ -4060,7 +4062,7 @@ function clubPitch(name,venue,date){
     +(INSTA_URL?'\nInstagram: '+INSTA_URL:'')+'\n';
 }
 function clubComposeUrl(o,venue){
-  return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
+  return GMAIL_COMPOSE
     +(o.email?'&to='+encodeURIComponent(o.email):'')
     +'&su='+encodeURIComponent(venue+' '+(o.date?fmtDate(o.date):'')+' \u2014 media')
     +'&body='+encodeURIComponent(clubPitch(o.name,venue,o.date));
@@ -4236,6 +4238,7 @@ function pickBarHTML(fest,artists,from,to){
     +(seenElse.length?'<span class="chip">'+seenElse.length+' contacted before (other festival)</span>':'')
     +(igOnly.length?'<span class="chip money">'+igOnly.length+' IG only</span>':'')
     +(nothing?'<span class="chip">'+nothing+' no contact</span>':'')
+    +'<span class="chip jobremote" title="Every draft opens in this Gmail account">From: '+MAIL_FROM+'</span>'
     +(mailable.length
        ? '<button class="btn primary small" onclick="bulkDraft('+JSON.stringify(fest).replace(/"/g,'&quot;')+',\''+from+'\',\''+to+'\')">\u2709 Draft '+nAddr+(nAddr!==mailable.length?' ('+mailable.length+' artists)':'')+'</button>'
        : '<span class="nodraft" title="Nothing selected has an address on file">\u2709 no address to draft to</span>')
@@ -4475,6 +4478,7 @@ function clubPanel(k,rows){
   if(picked.length){
     const q=JSON.stringify(picked.map(o=>o.name)).replace(/"/g,'&quot;');
     h+='<div class="pickbar"><b>'+picked.length+' selected</b>'
+      +'<span class="chip jobremote" title="Every draft opens in this Gmail account">From: '+MAIL_FROM+'</span>'
       +'<button class="btn primary small" onclick="bulkDraftClub('+JSON.stringify(k).replace(/"/g,'&quot;')+')">✉ Draft '+picked.length+'</button>'
       +'<button class="btn small" onclick="setArtistStatus('+q+',\'emailed\')">Mark emailed</button>'
       +'<button class="btn small" onclick="setArtistStatus('+q+',\'confirmed\')">Mark confirmed</button>'
@@ -5759,7 +5763,7 @@ function cmRefreshThumbs(){
 }
 function gmailUrl(){
   const cc=$('cmCc').value.trim();
-  return 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1'
+  return GMAIL_COMPOSE
     +'&to='+encodeURIComponent($('cmTo').value.trim())
     +(cc?'&cc='+encodeURIComponent(cc):'')
     +'&su='+encodeURIComponent($('cmSubj').value)
@@ -6348,6 +6352,15 @@ document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeOverlays()});
    than an application schedule, so there is no streak, no daily target and no
    nagging. A job either scores well enough to be worth an afternoon or it does not. */
 const JOB_STATUS=['new','shortlist','applied','interview','offer','rejected','passed'];
+/* Every outreach and invoice email Jay sends from this app goes out from ONE Gmail account.
+   Gmail's /u/0/ means "the first account signed in to this Chrome", and on 2026-10-07 another
+   chat's session left a different account first, so drafts opened in the wrong mailbox.
+   authuser=<address> pins the account by name instead: if it is signed in, the draft opens in it;
+   if it is not, Gmail asks to sign in rather than silently using another account.
+   Big Bear Weather and More mail does NOT come from this app, it goes from
+   nikkbigbearweatherandmore@gmail.com in its own tools. */
+const MAIL_FROM='matsumotojay@gmail.com';
+const GMAIL_COMPOSE='https://mail.google.com/mail/?authuser='+encodeURIComponent(MAIL_FROM)+'&view=cm&fs=1&tf=1';
 let jobFilter='all';
 /* The AI lane (added 2026-10-05). A posting carries lane:'ai', remote:true|false and
    type:'full-time'|'contract'|'part-time'|'freelance'. Older postings carry none of these
