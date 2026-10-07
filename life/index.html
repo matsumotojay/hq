@@ -2833,6 +2833,18 @@ function migrate(){
         paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
     }
   }
+  /* patch 106 (2026-10-07): Comic Con, Wednesday 2026-10-28, Shawn b2b Seduza. Not a gig and no
+     money: an event Jay may or may not go to, so it carries no fee and cannot draft an invoice. */
+  if(!state.patch106){
+    state.patch106=true;
+    state.events=state.events||[];
+    if(!state.events.some(function(e){return e.date==='2026-10-28'&&/comic con/i.test(e.title||'')})){
+      state.events.push({id:uid(),title:'\ud83c\udfad Comic Con \u00b7 Shawn b2b Seduza',
+        details:'Shawn b2b Seduza. Wed 2026-10-28. Not a gig, just an event you might go to.',
+        date:'2026-10-28',endDate:'',start:'',end:'',gig:false,client:'',gross:null,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    }
+  }
   /* Escape sent-log test entries, take two. Patch 91 meant to remove the five entries Jay
      made trying the software out on 2026-09-21 (he has emailed nobody about Escape), but it
      ran against one device's copy while the cloud and other browsers kept theirs, so
