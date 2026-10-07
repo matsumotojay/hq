@@ -2806,6 +2806,20 @@ function migrate(){
         paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
     }
   }
+  /* patch 104 (2026-10-07): Impulse Space technical phone screen for the Senior Operations
+     Engineer role, Friday 2026-10-09, 10:00 AM Pacific, 30 minutes. Lauren Moore calls Jay at the
+     scheduled time. Technical, so come ready to go deep on background and experience. Not a gig,
+     no money. */
+  if(!state.patch104){
+    state.patch104=true;
+    state.events=state.events||[];
+    if(!state.events.some(function(e){return e.date==='2026-10-09'&&/impulse/i.test(e.title||'')})){
+      state.events.push({id:uid(),title:'\ud83d\udcde Impulse Space technical screen',
+        details:'Technical phone screen for the Senior Operations Engineer role. Lauren Moore calls you at the scheduled time. Fri 2026-10-09, 10:00 AM Pacific, 30 minutes. Be ready to go into your background and experience in technical depth, and have questions about Impulse Space.',
+        date:'2026-10-09',endDate:'',start:'10:00',end:'10:30',gig:false,client:'',gross:null,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    }
+  }
   /* Escape sent-log test entries, take two. Patch 91 meant to remove the five entries Jay
      made trying the software out on 2026-09-21 (he has emailed nobody about Escape), but it
      ran against one device's copy while the cloud and other browsers kept theirs, so
