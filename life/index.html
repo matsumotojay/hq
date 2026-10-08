@@ -2883,6 +2883,18 @@ function migrate(){
       [oldA,oldB].forEach(function(o){o.status='merged';o.mergedInto=NEW;o.mergedAt='2026-10-08';o.fresh=false});
     }
   }
+  /* patch 108 (2026-10-08): movie tonight, Other Mommy, 8:20 PM at AMC Rolling Hills 20, from
+     Jay's AMC ticket email. 8:20 is when trailers begin, per the email. Not a gig, no money. */
+  if(!state.patch108){
+    state.patch108=true;
+    state.events=state.events||[];
+    if(!state.events.some(function(e){return e.date==='2026-10-08'&&/other mommy/i.test(e.title||'')})){
+      state.events.push({id:uid(),title:'\ud83c\udfac Other Mommy \u00b7 AMC Rolling Hills 20',
+        details:'Movie at AMC Rolling Hills 20. Thu 2026-10-08, 8:20 PM. That is when trailers begin, per your AMC confirmation email.',
+        date:'2026-10-08',endDate:'',start:'20:20',end:'',gig:false,client:'',gross:null,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    }
+  }
   /* Escape sent-log test entries, take two. Patch 91 meant to remove the five entries Jay
      made trying the software out on 2026-09-21 (he has emailed nobody about Escape), but it
      ran against one device's copy while the cloud and other browsers kept theirs, so
