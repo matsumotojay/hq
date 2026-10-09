@@ -2895,6 +2895,41 @@ function migrate(){
         paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
     }
   }
+  /* patch 109 (2026-10-09): two bookings at Fresnoween, Friday 2026-10-16, one day trip to Fresno
+     and back the same day. St. Mary $500 (10 multicam clips + 10 photos) and Linney $400
+     (10 clips, one angle, about 10 photos), $900 together. Venue and address read off the
+     promoter's ticket page (K-Lin Events): Island Waterpark, 6099 W Barstow Ave, Fresno, event
+     starts 6:00 PM. Set times are not published anywhere public and neither act is on the public
+     lineup, so they are marked TBD. Guarded per client + date so a re-run or a stale snapshot
+     cannot add a second copy. */
+  if(!state.patch109){
+    state.patch109=true;
+    state.events=state.events||[];
+    const WHERE='Fresnoween at Island Waterpark, 6099 W Barstow Ave, Fresno, CA 93723.\nMap: https://www.google.com/maps/search/?api=1&query=Island%20Waterpark%2C%206099%20W%20Barstow%20Ave%2C%20Fresno%2C%20CA%2093723\nFri 2026-10-16, the event starts 6:00 PM. Day trip: drive to Fresno and back the same day. Set times TBD.';
+    const addGig=function(client,gross,what,other){
+      if(state.events.some(function(e){return e.date==='2026-10-16'&&e.client===client&&e.gig}))return;
+      state.events.push({id:uid(),title:client+' \u2014 Fresnoween',
+        details:'CONFIRMED \u00b7 $'+gross+' \u00b7 '+what+'\n'+WHERE+'\nSame day and trip as '+other+', so $900 for the day.',
+        date:'2026-10-16',endDate:'',start:'',end:'',gig:true,client:client,gross:gross,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    };
+    addGig('St. Mary',500,'10 multicam clips + 10 photos.','Linney ($400)');
+    addGig('Linney',400,'10 clips, one angle, plus about 10 photos (confirm the photo count).','St. Mary ($500)');
+  }
+  /* patch 110 (2026-10-09): Robert, who owns Hempy's, will send Jay one product of his choice in
+     exchange for free promo videos. Jay has to look through the Hempy's website, pick a product,
+     and get back to Robert before winter. Jay said "before the winter" without a date, so the due
+     date is 2026-11-30, comfortably ahead of the 2026-12-21 solstice. Guarded by title. */
+  if(!state.patch110){
+    state.patch110=true;
+    state.tasks=state.tasks||[];
+    const title='Hempy\u2019s: pick a product for Robert to send you';
+    if(!state.tasks.some(function(x){return x.title===title})){
+      state.tasks.push({id:uid(),title:title,tag:'Upcoming',
+        notes:'Robert, who owns Hempy\u2019s, will send you one product of your choice and you are doing free promo videos for him. Look through the Hempy\u2019s website, pick the product, then get back to him. Needs to be settled before winter, so due 2026-11-30.',
+        due:'2026-11-30',status:'open',completedAt:null});
+    }
+  }
   /* Escape sent-log test entries, take two. Patch 91 meant to remove the five entries Jay
      made trying the software out on 2026-09-21 (he has emailed nobody about Escape), but it
      ran against one device's copy while the cloud and other browsers kept theirs, so
