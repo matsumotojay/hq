@@ -2930,6 +2930,20 @@ function migrate(){
         due:'2026-11-30',status:'open',completedAt:null});
     }
   }
+  /* patch 111 (2026-10-09): Manila Killa shoot today, Friday 2026-10-09, 4 to 6 PM, at 1925 W 62nd
+     St. Unit 3, Los Angeles, CA 90047. $750 for four videos, one of them a teaser. The song is
+     "Rude" with a DJ named SJ. Jay said 3 PM and then corrected to 4 PM, so 4 PM is used. He may
+     keep shooting after 6 PM, tentative. Guarded per client + date. */
+  if(!state.patch111){
+    state.patch111=true;
+    state.events=state.events||[];
+    if(!state.events.some(function(e){return e.date==='2026-10-09'&&e.client==='Manila Killa'&&e.gig})){
+      state.events.push({id:uid(),title:'Manila Killa \u2014 \u201cRude\u201d with SJ',
+        details:'CONFIRMED \u00b7 $750 \u00b7 4 videos, one of them a teaser.\nSong: \u201cRude\u201d with DJ SJ.\n1925 W 62nd St. Unit 3, Los Angeles, CA 90047\nMap: https://www.google.com/maps/search/?api=1&query=1925%20W%2062nd%20St%20Unit%203%2C%20Los%20Angeles%2C%20CA%2090047\nFri 2026-10-09, 4 to 6 PM. Might keep going after 6, tentative.',
+        date:'2026-10-09',endDate:'',start:'16:00',end:'18:00',gig:true,client:'Manila Killa',gross:750,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    }
+  }
   /* Escape sent-log test entries, take two. Patch 91 meant to remove the five entries Jay
      made trying the software out on 2026-09-21 (he has emailed nobody about Escape), but it
      ran against one device's copy while the cloud and other browsers kept theirs, so
