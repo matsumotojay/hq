@@ -3002,6 +3002,24 @@ function migrate(){
     });
     if(before!==state.tasks.length)state._taskDupes=true;
   }
+  /* patch 112 (2026-10-12): Thu 2026-10-15 Jay drives up to Sheephorn to refill propane and shoot
+     content with Nikk. Cabin has no guests. Not a gig. Also one Today task. Guarded by title + date. */
+  if(!state.patch112){
+    state.patch112=true;
+    state.events=state.events||[];
+    state.tasks=state.tasks||[];
+    const evT='Drive up to Sheephorn: refill propane + content with Nikk';
+    if(!state.events.some(function(e){return e&&e.title===evT&&e.date==='2026-10-15'})){
+      state.events.push({id:uid(),title:evT,
+        details:'Cabin has no guests that day. Nikk swapped one propane tank on 2026-10-10 (5 tanks in total now, one new tank cost about $70); still need to refill more tanks ASAP. Also shoot content with Nikk.',
+        date:'2026-10-15',endDate:'',start:'',end:'',gig:false,client:'',gross:0,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''});
+    }
+    const tkT='Refill propane tanks at Sheephorn (5 tanks, refill the empty ones)';
+    if(!state.tasks.some(function(x){return x&&x.title===tkT&&x.due==='2026-10-15'})){
+      state.tasks.push({id:uid(),title:tkT,tag:'Upcoming',notes:'',due:'2026-10-15',status:'open',completedAt:null});
+    }
+  }
   rollAnnual();
   save();
 }
