@@ -3216,7 +3216,10 @@ function ensureInvoices(){
     const alreadyInvoiced=e.invoiceId||(state.invoices||[]).some(function(i){
       return invEventIds(i).indexOf(e.id)>-1;
     });
-    if(e.gig&&!e.paid&&!alreadyInvoiced&&!e.invoiceDismissed&&e.gross>0){
+    /* A gig with no client used to draft an invoice with a blank client, and every such invoice landed
+       together in one "(no client)" box on the collections desk (2026-10-11: Seth and Manila Killa).
+       No invoice is drafted until the gig has a client; the Invoices tab nudges to set one. */
+    if(e.gig&&!e.paid&&!alreadyInvoiced&&!e.invoiceDismissed&&e.gross>0&&String(e.client||'').trim()){
       const svcDate=e.date||((e.month||'2026-07')+'-31');
       if(svcDate<=today){
         const inv={
@@ -3662,8 +3665,8 @@ function emailLead(id){
     +'Saw your post in No Travel. I\u2019m already shooting Lost Lands \u2014 credentialed and on site '
     +fmtDate(LL.start)+'\u2013'+fmtDate(LL.end)+' for other artists, so covering yours is easy.\n\n'
     +'Recent work: '+BIZ.site+'\n\nHappy to talk rate.\n\nThanks,\nJay\n'+BIZ.phone;
-  window.open(GMAIL_COMPOSE+'&to='+encodeURIComponent(l.contact)
-    +'&su='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body),'_blank');
+  window.open(acctUrl(GMAIL_COMPOSE+'&to='+encodeURIComponent(l.contact)
+    +'&su='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body)),'_blank');
   setLeadStatus(id,'emailed');
 }
 /* The poster carries the day-by-day layout that a list of names throws away. */
@@ -3861,7 +3864,7 @@ function draftArtist(name,email,fest,from,to){
     +(email?'&to='+encodeURIComponent(email):'')
     +'&su='+encodeURIComponent(sub)
     +'&body='+encodeURIComponent(festPitch(name,fest,from,to));
-  window.open(url,'_blank');
+  window.open(acctUrl(url),'_blank');
   if(!email)toast('No email on file — paste theirs into the To field');
 }
 /* Selection lives in memory, not state — it is a working set, not a record. */
@@ -4111,10 +4114,10 @@ function runDraftQueue(urls,noEmail){
      drafts landed with no subject and no body. Never reuse a window here, and
      never navigate one of these to Drafts. */
   const stamp=Date.now();
-  const w=window.open(urls[0],'jlt-c'+stamp+'-0');
+  const w=window.open(acctUrl(urls[0]),'jlt-c'+stamp+'-0');
   if(!w){toast('Chrome blocked the window — allow pop-ups for this site');return false}
   urls.slice(1).forEach(function(u,i){
-    setTimeout(function(){window.open(u,'jlt-c'+stamp+'-'+(i+1))},(i+1)*DRAFT_DWELL);
+    setTimeout(function(){window.open(acctUrl(u),'jlt-c'+stamp+'-'+(i+1))},(i+1)*DRAFT_DWELL);
   });
   toast(urls.length+' compose window'+(urls.length>1?'s':'')+' opening — check the name, then send each'
     +(noEmail?' · '+noEmail+' still need an address':''));
@@ -4207,7 +4210,7 @@ function clubComposeUrl(o,venue){
 }
 function clubDraftOne(id,venue){
   const o=(state.outreach||[]).find(x=>x.id===id);if(!o)return;
-  window.open(clubComposeUrl(o,venue),'_blank');
+  window.open(acctUrl(clubComposeUrl(o,venue)),'_blank');
   setArtistStatus([o.name],'emailed');
 }
 function bulkDraftClub(venue){
@@ -5903,11 +5906,11 @@ function cmRefreshThumbs(){
 }
 function gmailUrl(){
   const cc=$('cmCc').value.trim();
-  return GMAIL_COMPOSE
+  return acctUrl(GMAIL_COMPOSE
     +'&to='+encodeURIComponent($('cmTo').value.trim())
     +(cc?'&cc='+encodeURIComponent(cc):'')
     +'&su='+encodeURIComponent($('cmSubj').value)
-    +'&body='+encodeURIComponent(composeBody());
+    +'&body='+encodeURIComponent(composeBody()));
 }
 function composeRemember(){
   if(composeCtx.client)saveContact(composeCtx.client,{email:$('cmTo').value.trim(),cc:$('cmCc').value.trim(),phone:$('cmPhone').value.trim()});
@@ -6249,6 +6252,11 @@ function renderInvoices(){
   // nudges — the drafts themselves live in the collections cards above
   const nudges=$('invNudges');
   let html='';
+  // gigs with money but no client: no invoice can be drafted until one is set
+  state.events.filter(e=>e.gig&&!e.paid&&e.gross>0&&!String(e.client||'').trim()&&!(state.invoices||[]).some(i=>invEventIds(i).indexOf(e.id)>-1)).forEach(e=>{
+    html+='<div class="card nudge"><div class="msg">💬 <b>'+esc(e.title)+'</b> is a gig with no client, so no invoice was drafted. Set the client and I\u2019ll draft it.</div>'
+      +'<button class="btn small" onclick="openEventModal(\''+e.id+'\')">Set client</button></div>';
+  });
   // TBD gigs that already passed
   state.events.filter(e=>e.gig&&!e.paid&&!(e.gross>0)&&e.date&&e.date<=todayISO()).forEach(e=>{
     html+='<div class="card nudge"><div class="msg">💬 <b>'+esc(e.client)+'</b> gig passed but has no rate yet — add the amount and I’ll draft the invoice.</div>'
@@ -6501,6 +6509,12 @@ const JOB_STATUS=['new','shortlist','applied','interview','offer','rejected','pa
    nikkbigbearweatherandmore@gmail.com in its own tools. */
 const MAIL_FROM='matsumotojay@gmail.com';
 const GMAIL_COMPOSE='https://mail.google.com/mail/?authuser='+encodeURIComponent(MAIL_FROM)+'&view=cm&fs=1&tf=1';
+/* authuser alone is NOT safe. On 2026-10-11 Jay's account had been signed out of this Chrome and
+   Gmail silently opened the compose in Nikk's account instead of asking him to sign in. Routing
+   through Google's account chooser pins the address: if matsumotojay@gmail.com is signed in the
+   compose opens in it, and if it is not, Google asks to verify THAT account instead of falling
+   back to another one. Every compose URL goes through acctUrl() at the point it is opened. */
+function acctUrl(u){return 'https://accounts.google.com/AccountChooser?Email='+encodeURIComponent(MAIL_FROM)+'&continue='+encodeURIComponent(u)}
 let jobFilter='all';
 /* The AI lane (added 2026-10-05). A posting carries lane:'ai', remote:true|false and
    type:'full-time'|'contract'|'part-time'|'freelance'. Older postings carry none of these
