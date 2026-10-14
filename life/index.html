@@ -3020,6 +3020,47 @@ function migrate(){
       state.tasks.push({id:uid(),title:tkT,tag:'Upcoming',notes:'',due:'2026-10-15',status:'open',completedAt:null});
     }
   }
+  /* patch 113 (2026-10-13): Sheephorn property tax installments and funding checks.
+     Match each record by title + date so a repeated migration cannot add duplicates. */
+  if(!state.patch113){
+    state.patch113=true;
+    state.events=state.events||[];
+    state.tasks=state.tasks||[];
+    const events=[
+      {id:uid(),title:'Sheephorn property tax due: 1st installment $3,134.30',
+        details:'Two installments of $3,134.30, total $6,268.60. Check the bill for the exact last day before the penalty.',
+        date:'2026-11-01',endDate:'',start:'',end:'',gig:false,client:'',gross:0,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''},
+      {id:uid(),title:'Sheephorn property tax due: 2nd installment $3,134.30',
+        details:'Two installments of $3,134.30, total $6,268.60. Check the bill for the exact last day before the penalty.',
+        date:'2027-02-01',endDate:'',start:'',end:'',gig:false,client:'',gross:0,exp:0,
+        paid:false,cleared:false,invoiceId:null,invoiceDismissed:false,month:''}
+    ];
+    events.forEach(function(event){
+      if(!state.events.some(function(e){return e&&e.title===event.title&&e.date===event.date})){
+        state.events.push(event);
+      }
+    });
+    const tasks=[
+      {id:uid(),title:'Check the cabin account can cover $3,134.30 property tax (due 2026-11-01)',tag:'Upcoming',
+        notes:'Two installments of $3,134.30, total $6,268.60. Check the bill for the exact last day before the penalty.',
+        due:'2026-10-18',status:'open',completedAt:null},
+      {id:uid(),title:'Pay Sheephorn property tax $3,134.30 (due 2026-11-01)',tag:'Upcoming',
+        notes:'Two installments of $3,134.30, total $6,268.60. Check the bill for the exact last day before the penalty.',
+        due:'2026-10-28',status:'open',completedAt:null},
+      {id:uid(),title:'Check the cabin account can cover $3,134.30 property tax (due 2027-02-01)',tag:'Upcoming',
+        notes:'Two installments of $3,134.30, total $6,268.60. Check the bill for the exact last day before the penalty.',
+        due:'2027-01-18',status:'open',completedAt:null},
+      {id:uid(),title:'Pay Sheephorn property tax $3,134.30 (due 2027-02-01)',tag:'Upcoming',
+        notes:'Two installments of $3,134.30, total $6,268.60. Check the bill for the exact last day before the penalty.',
+        due:'2027-01-28',status:'open',completedAt:null}
+    ];
+    tasks.forEach(function(task){
+      if(!state.tasks.some(function(t){return t&&t.title===task.title&&t.due===task.due})){
+        state.tasks.push(task);
+      }
+    });
+  }
   rollAnnual();
   save();
 }
