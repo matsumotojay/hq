@@ -1102,6 +1102,7 @@ function migrate(){
   });
   state.contacts=state.contacts||{};
   if(!Array.isArray(state.jobs))state.jobs=[];
+  if(!Array.isArray(state.payments))state.payments=[];
   /* Collapse byte-identical events on EVERY load, with no patch flag. Two insert
      patches (the Osaka stays, Luca's birthday) each landed fifteen times because the
      patch re-ran on loads where the cloud copy had not yet caught up, and the
@@ -1111,18 +1112,19 @@ function migrate(){
      gig and client — and the lowest id is kept, so every device deletes the same
      copies and the set converges instead of flip-flopping. */
   /* Same collapse for invoices. Only DRAFTS that were never sent and that describe the
-     same event, date and amount — a deposit plus a balance on one gig are legitimately
-     two invoices and must survive, so status/sentAt/chases are all part of the test. */
+     same event, date, amount and invoice number — a deposit plus a balance on one gig are legitimately
+     two invoices and must survive (2026-10-19: two 50% drafts for one shoot were being deleted as
+     twins, so the number is part of the test), and so are status/sentAt/chases. */
   {
     const keepInv={};
     (state.invoices||[]).forEach(function(i){
       if(i.status!=='draft'||i.sentAt||(i.chases||[]).length)return;
-      const k=[invEventIds(i).join(','),i.svcDate||'',i.amount].join('\u0000');
+      const k=[invEventIds(i).join(','),i.svcDate||'',i.amount,i.number||''].join('\u0000');
       if(!keepInv[k]||i.id<keepInv[k].id)keepInv[k]=i;
     });
     state.invoices=(state.invoices||[]).filter(function(i){
       if(i.status!=='draft'||i.sentAt||(i.chases||[]).length)return true;
-      const k=[invEventIds(i).join(','),i.svcDate||'',i.amount].join('\u0000');
+      const k=[invEventIds(i).join(','),i.svcDate||'',i.amount,i.number||''].join('\u0000');
       return keepInv[k]===i;
     });
     /* An invoice pointing at an event that no longer exists. This is how a duplicate
@@ -1146,12 +1148,12 @@ function migrate(){
       const again={};
       (state.invoices||[]).forEach(function(i){
         if(i.status!=='draft'||i.sentAt||(i.chases||[]).length)return;
-        const k=[invEventIds(i).join(','),i.svcDate||'',i.amount].join('\u0000');
+        const k=[invEventIds(i).join(','),i.svcDate||'',i.amount,i.number||''].join('\u0000');
         if(!again[k]||i.id<again[k].id)again[k]=i;
       });
       state.invoices=(state.invoices||[]).filter(function(i){
         if(i.status!=='draft'||i.sentAt||(i.chases||[]).length)return true;
-        const k=[invEventIds(i).join(','),i.svcDate||'',i.amount].join('\u0000');
+        const k=[invEventIds(i).join(','),i.svcDate||'',i.amount,i.number||''].join('\u0000');
         return again[k]===i;
       });
     }
@@ -1177,6 +1179,26 @@ function migrate(){
     state.events.forEach(e=>{const k=[e.title,e.date,e.endDate||'',e.details||'',!!e.gig,e.client||''].join('\u0000');
       if(!keep[k]||e.id<keep[k].id)keep[k]=e});
     state.events=state.events.filter(e=>keep[[e.title,e.date,e.endDate||'',e.details||'',!!e.gig,e.client||''].join('\u0000')]===e);
+  }
+  /* Same collapse for OPEN tasks. An inserting patch (patch 113, the Sheephorn property
+     tax tasks, 2026-10-14) ran ten times inside one second because every cloud adopt
+     re-ran it against a stale list, and its title+due guard can only see local state.
+     Events and invoices were already cleaned on every load; tasks were not, so ten
+     copies of each tax task piled up. Identical title, due date, notes and tag, still
+     open: keep the lowest id so every device deletes the same copies and converges.
+     Done and archived tasks are never touched. */
+  {
+    const tk=t=>[t.title,t.due||'',t.notes||'',t.tag||''].join('\u0000');
+    const keepT={};
+    (state.tasks||[]).forEach(t=>{
+      if(t.status&&t.status!=='open')return;
+      const k=tk(t);
+      if(!keepT[k]||t.id<keepT[k].id)keepT[k]=t;
+    });
+    state.tasks=(state.tasks||[]).filter(t=>{
+      if(t.status&&t.status!=='open')return true;
+      return keepT[tk(t)]===t;
+    });
   }
   /* Some contacts were stored as a bare address STRING instead of {email,cc,phone}.
      Electrik Seoul was one, which made c.email undefined and silently defeated the
@@ -3097,6 +3119,7 @@ function snapshotDocs(){
   (state.outreach||[]).forEach(o=>{m['o.'+o.id]=JSON.stringify(o)});
   (state.leads||[]).forEach(l=>{m['l.'+l.id]=JSON.stringify(l)});
   (state.jobs||[]).forEach(j=>{m['j.'+j.id]=JSON.stringify(j)});
+  (state.payments||[]).forEach(p=>{m['p.'+p.id]=JSON.stringify(p)});
   const meta={top3:state.top3,taskOrder:state.tasks.map(t=>t.id),invSeq:state.invSeq,contacts:state.contacts||{},bills:state.bills||[],lineups:state.lineups||{},festMeta:state.festMeta||{},sentLog:state.sentLog||{}};
   Object.keys(state).forEach(k=>{if(k.slice(0,5)==='patch')meta[k]=state[k]});
   m['meta']=JSON.stringify(meta);
@@ -3119,7 +3142,7 @@ function pushDiff(){
 window.__pushAll=function(){lastPush={};pushDiff()};
 window.__adoptCloud=function(cloud){
   try{
-    const tasks=[],events=[],invoices=[],outreach=[],leads=[],jobs=[],fundJunk=[];let meta=null;
+    const tasks=[],events=[],invoices=[],outreach=[],leads=[],jobs=[],payments=[],fundJunk=[];let meta=null;
     for(const k in cloud){
       let v;try{v=JSON.parse(cloud[k])}catch(e){continue}
       if(k==='meta')meta=v;
@@ -3130,12 +3153,14 @@ window.__adoptCloud=function(cloud){
       else if(k.slice(0,2)==='o.')outreach.push(v);
       else if(k.slice(0,2)==='l.')leads.push(v);
       else if(k.slice(0,2)==='j.')jobs.push(v);
+      else if(k.slice(0,2)==='p.')payments.push(v);   /* bank-alert payment suggestions */
     }
     if(!meta)return;
     if(fundJunk.length)state.fundPurge=(state.fundPurge||[]).concat(fundJunk);
     state.outreach=outreach;
     state.leads=leads;
     state.jobs=jobs;
+    state.payments=payments;
     const order=meta.taskOrder||[];
     tasks.sort((a,b)=>{let ia=order.indexOf(a.id),ib=order.indexOf(b.id);
       if(ia<0)ia=9999;if(ib<0)ib=9999;return ia-ib});
@@ -6279,10 +6304,87 @@ function renderCollect(){
   }).join('');
 }
 
+/* ───────────── payments to confirm ─────────────
+   A routine reads the Zelle / Venmo / Mercury alert emails in Jay's Gmail and writes one
+   small record per payment to the cloud (p.<id>): who paid, how much, the memo, and a
+   best-guess match to an open invoice or unpaid gig. This card shows each one with a plain
+   question. NOTHING is marked paid until Jay taps Yes (his rule, 2026-10-09). */
+function payOpen(){return (state.payments||[]).filter(function(p){return p&&p.status==='pending'})}
+function payById(id){return (state.payments||[]).find(function(p){return p.id===id})}
+function payCandidates(){
+  const out=[];
+  (state.invoices||[]).forEach(function(i){
+    if(i.status==='paid'||i.status==='merged'||!(i.amount>0))return;
+    out.push({v:'i:'+i.id,label:i.number+' · '+(i.client||'')+' · '+fmt$(i.amount)});
+  });
+  (state.events||[]).forEach(function(e){
+    if(!e.gig||e.paid||!(e.gross>0))return;
+    if((state.invoices||[]).some(function(i){return invEventIds(i).indexOf(e.id)>-1&&i.status!=='paid'}))return;
+    out.push({v:'e:'+e.id,label:'Gig · '+e.title+' · '+fmt$(e.gross)});
+  });
+  return out;
+}
+function payCardsHTML(){
+  const ps=payOpen();if(!ps.length)return '';
+  const via={zelle:'Zelle',venmo:'Venmo',mercury:'Mercury'};
+  return ps.map(function(p,n){
+    const m=p.match, amt=fmt$(p.amount), who=esc(p.from||'Someone');
+    const head='💸 <b class="num">'+amt+'</b> from <b>'+who+'</b> ('+esc(via[p.source]||p.source||'bank')+(p.date?', '+esc(fmtDate(p.date)):'')+')'
+      +(p.memo?'<br><span style="color:var(--ink2)">“'+esc(p.memo)+'”</span>':'');
+    let body,btns;
+    if(m&&m.label){
+      body=head+'<br>Looks like <b>'+esc(m.label)+'</b>'+(m.why?' <span style="color:var(--ink3)">('+esc(m.why)+')</span>':'')+'. Mark it paid?';
+      btns='<button class="btn primary small" onclick="payYes(\''+p.id+'\')">Yes, mark paid</button>'
+          +'<button class="btn small" onclick="payNo(\''+p.id+'\')">Not that</button>';
+    }else{
+      const opts=payCandidates().map(function(c){return '<option value="'+esc(c.v)+'">'+esc(c.label)+'</option>'}).join('');
+      body=head+'<br><b>What is this?</b> '
+        +'<select id="paysel-'+p.id+'" style="max-width:100%;margin-top:6px"><option value="">Pick what it paid…</option>'+opts+'</select>';
+      btns='<button class="btn primary small" onclick="payPick(\''+p.id+'\')">This one</button>'
+          +'<button class="btn small" onclick="payNo(\''+p.id+'\')">Not work</button>';
+    }
+    return '<div class="card nudge" style="margin-top:'+(n?'0':'14px')+'"><div class="msg">'+body+'</div><div style="display:flex;flex-direction:column;gap:6px">'+btns+'</div></div>';
+  }).join('');
+}
+function payApply(p,m){
+  /* a payment that cleared by Zelle or Venmo is usable at once; an ACH wire (Mercury) is paid but not yet confirmed landed */
+  const cleared=p.source!=='mercury';
+  const note='PAID '+(p.date||todayISO())+': '+fmt$(p.amount)+' from '+(p.from||'unknown')+' by '+(p.source||'bank')+(p.memo?', memo "'+p.memo+'"':'')+'.';
+  function stamp(e){e.paid=true;e.cleared=cleared;if(String(e.details||'').indexOf(note)<0)e.details=(String(e.details||'')+'\n'+note).trim()}
+  if(m.type==='invoice'){
+    const inv=invById(m.id);
+    if(inv&&inv.status!=='paid'){
+      inv.status='paid';inv.fresh=false;
+      (inv.items||[]).forEach(function(it){it.paid=true});
+      invEventIds(inv).forEach(function(id){const e=eventById(id);if(e)stamp(e)});
+    }
+  }else if(m.type==='event'){
+    const e=eventById(m.id);if(e&&!e.paid)stamp(e);
+  }
+}
+function payYes(id){
+  const p=payById(id);if(!p||!p.match)return;
+  payApply(p,p.match);
+  p.status='confirmed';p.resolvedAt=todayISO();
+  save();render();toast('Marked paid');
+}
+function payNo(id){
+  const p=payById(id);if(!p)return;
+  p.status='dismissed';p.resolvedAt=todayISO();
+  save();render();toast('Okay, left it alone');
+}
+function payPick(id){
+  const p=payById(id), sel=$('paysel-'+id);if(!p||!sel||!sel.value){toast('Pick one first');return}
+  const m={type:sel.value.charAt(0)==='i'?'invoice':'event',id:sel.value.slice(2)};
+  payApply(p,m);
+  p.match=m;p.status='confirmed';p.resolvedAt=todayISO();
+  save();render();toast('Marked paid');
+}
+
 function renderMoneyNudge(){
   const host=$('moneyNudge');if(!host)return;
   const T=collectTotals();
-  let h='';
+  let h=payCardsHTML();
   if(T.late>0){
     h+='<div class="card nudge" style="border-left-color:var(--urgent);margin-top:14px"><div class="msg">🔴 <b class="num">'+fmt$(T.late)+'</b> is past due. Nobody else is going to chase it.</div>'
       +'<button class="btn primary small" onclick="showTab(\'invoices\')">Chase it</button></div>';
