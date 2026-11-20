@@ -524,6 +524,10 @@ body{background:var(--paper)}
 .sb-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;background:#FBF6EC}
 .sb-face.front{border-radius:0 6px 6px 0}
 .sb-face.back{transform:rotateY(180deg);border-radius:6px 0 0 6px}
+/* Safari ignores backface-visibility here and shows the other side of the page mirrored (Jay 20 Nov),
+   so a face is switched off outright once it turns away: at 90 degrees, 41% into the turn (--vd) */
+.sb-face{transition:visibility 0s linear var(--vd,0s)}
+.sb-leaf.flip .sb-face.front,.sb-leaf:not(.flip) .sb-face.back{visibility:hidden}
 .sb-book.single .sb-face{border-radius:6px}
 .sb-face::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;z-index:20;
   background:linear-gradient(90deg,rgba(40,25,10,.28),rgba(40,25,10,0) 55%)}
@@ -645,6 +649,7 @@ body{background:var(--paper)}
 }
 @media(prefers-reduced-motion:reduce){
   .sb-leaf,.sb-book{transition-duration:.01s!important}
+  .sb-face{transition:none!important}
   .sb-open{animation:none}
   .sb-stage:not(.is-open) .sb-leaf.cov{animation:none}
 }
@@ -756,9 +761,8 @@ body{background:var(--paper)}
   </div>
 </section>
 <script>
-/* The cover crop lives outside this file so Jay can nudge it from the
-   dashboard. Same origin (the page is loaded with srcdoc), so localStorage
-   is shared; the parent also pings us directly after each change. */
+/* Cover framing: the same for every guest on every screen. heroSafe keeps
+   the umbrellas in frame in wide windows; the ripple calls it too. */
 (function(){
   var want=40, zoom=1;
   function safe(){
@@ -768,22 +772,8 @@ body{background:var(--paper)}
     el.style.setProperty("--cy", py.toFixed(2)+"%");
   }
   window.heroSafe=safe;
-  function apply(){
-    try{
-      var v=JSON.parse(localStorage.getItem("lt4.invcover")||"null");
-      var el=document.querySelector("#hero-photo .ph"); if(!el) return;
-      if(v){
-        if(v.cx!=null) el.style.setProperty("--cx", v.cx+"%");
-        if(v.cy!=null) want=+v.cy;
-        if(v.cz!=null){ el.style.setProperty("--cz", v.cz); zoom=+v.cz||1; }
-      }
-    }catch(e){}
-    safe();
-  }
-  apply();
+  safe();
   addEventListener("resize", safe);
-  addEventListener("storage", apply);
-  addEventListener("message", function(e){ if(e&&e.data&&e.data.invcover) apply(); });
 })();
 </script>
 
@@ -1355,7 +1345,7 @@ window.Momiji=Momiji;
   /* phones: only the two leaves you can see (plus any mid-turn) stay drawn, so Safari never runs out of 3D layers */
   function cull(keep){ if(mode!=='peek') return; leaves.forEach(function(L,i){ var on=L.classList.contains('turning')||i===n-1||i===n||(keep&&keep.indexOf(i)>=0); L.classList.toggle('gone',!on) }) }
   /* a turn is over: transitionend, or a timer as backup (on phones the cover's turn starts from its peek animation and never reports an end) */
-  function settle(L){ clearTimeout(L._st); if(!L.classList.contains('turning')) return; L.classList.remove('turning'); L.style.transitionDelay=''; zorder(); cull(); }
+  function settle(L){ clearTimeout(L._st); if(!L.classList.contains('turning')) return; L.classList.remove('turning'); L.style.transitionDelay=''; L.style.removeProperty('--vd'); zorder(); cull(); }
   function hydrate(){ leaves.forEach(function(L,i){ if(Math.abs(i-n)<=2) L.querySelectorAll('img[data-sb]:not([src])').forEach(function(im){ var s=SB.img[im.getAttribute('data-sb')]; if(s) im.src=s; }) }) }
   function go(to){
     to=Math.max(0,Math.min(maxN,to)); if(to===n) return;
@@ -1363,7 +1353,7 @@ window.Momiji=Momiji;
     leaves.forEach(function(L,i){ if((i<to)!==L.classList.contains('flip')) ch.push(L) });
     if(!fwd) ch.reverse();
     var from=n; cull([from-1,from,to-1,to]);
-    ch.forEach(function(L,k){ L.classList.remove('gone'); L.style.transitionDelay=(k*.12)+'s'; L.classList.add('turning'); L.style.zIndex=200+k; L.style.setProperty('--z',((leaves.length+2+k)*.5)+'px'); });
+    ch.forEach(function(L,k){ L.classList.remove('gone'); L.style.transitionDelay=(k*.12)+'s'; L.style.setProperty('--vd',(k*.12+(L.classList.contains('cov')?1.5:1.25)*.413).toFixed(3)+'s'); L.classList.add('turning'); L.style.zIndex=200+k; L.style.setProperty('--z',((leaves.length+2+k)*.5)+'px'); });
     void book.offsetWidth;
     ch.forEach(function(L,k){ L.classList.toggle('flip'); clearTimeout(L._st); L._st=setTimeout(function(){settle(L)},k*120+(L.classList.contains('cov')?1500:1250)+200); });
     n=to; hydrate(); sync();
