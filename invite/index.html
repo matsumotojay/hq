@@ -694,17 +694,14 @@ body{background:var(--paper)}
 .ask-msg.ok{color:#BFE3D5}.ask-msg.err{color:#F3B8A6}
 .rsvp-btn:disabled{opacity:.55;cursor:default}
 
-/* ---------- Japanese-only wording (Hikaru 22 Nov: change the Japanese, leave the English) ---------- */
-.ja-only{display:none}
-html.is-ja .ja-only{display:block}
-html.is-ja .en-only{display:none}
-
-/* ---------- メッセージ: the Japanese greeting, right after the cover ---------- */
+/* ---------- Message: Hikaru's greeting (22 Nov), right after the cover. Japanese lines are set to fit one per row on a phone ---------- */
 #message{background:var(--mist);text-align:center;padding-top:84px;padding-bottom:84px}
 #message .eyebrow{justify-content:center;margin-bottom:22px}
-.msg-text{font-family:'Shippori Mincho B1','Noto Serif JP',serif;font-weight:500;color:var(--ink);
-  font-size:clamp(11.5px,calc((100vw - 48px)/26),17px);line-height:2.4;letter-spacing:.03em;margin:0 auto}
-.msg-text span{display:block}
+.msg-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:400;color:var(--ink);
+  font-size:clamp(18px,4.8vw,22px);line-height:1.75;margin:0 auto;max-width:30em}
+.msg-text span{display:block;text-wrap:balance}
+html.is-ja .msg-text{font-family:'Shippori Mincho B1','Noto Serif JP',serif;font-style:normal;font-weight:500;
+  font-size:clamp(11.5px,calc((100vw - 48px)/26),17px);line-height:2.4;letter-spacing:.03em;max-width:none}
 #message .petal-divider{margin:26px auto 0}
 
 /* ---------- Lake Toya map (Hikaru 22 Nov), last section ---------- */
@@ -853,11 +850,11 @@ html.is-ja .tm-memo p{font-family:'Yomogi',cursive}
 })();
 </script>
 
-<!-- MESSAGE: Japanese only (Hikaru 22 Nov) -->
-<section id="message" class="section-wrap ja-only" lang="ja">
+<!-- MESSAGE (Hikaru 22 Nov) -->
+<section id="message" class="section-wrap">
   <div class="inner">
-    <p class="eyebrow fi">メッセージ</p>
-    <p class="msg-text fi"><span>皆様いかがお過ごしでしょうか。</span><span>このたび 私たちは結婚式を挙げることとなりました。</span><span>日頃お世話になっている皆様へ感謝の気持ちを込めて</span><span>ささやかな宴を催したいと存じます。</span><span>皆様と楽しいひとときを過ごせる</span><span>アットホームな一日にしたいと思っております。</span><span>ぜひご出席いただけましたら幸いです。</span></p>
+    <p class="eyebrow fi" data-en="Message" data-ja="メッセージ">Message</p>
+    <p class="msg-text fi"><span data-en="We hope this finds you well." data-ja="皆様いかがお過ごしでしょうか。">We hope this finds you well.</span><span data-en="We are getting married." data-ja="このたび 私たちは結婚式を挙げることとなりました。">We are getting married.</span><span data-en="To thank everyone who has always looked out for us," data-ja="日頃お世話になっている皆様へ感謝の気持ちを込めて">To thank everyone who has always looked out for us,</span><span data-en="we would like to host a small celebration." data-ja="ささやかな宴を催したいと存じます。">we would like to host a small celebration.</span><span data-en="We hope it will be a warm, relaxed day" data-ja="皆様と楽しいひとときを過ごせる">We hope it will be a warm, relaxed day</span><span data-en="full of good times with all of you." data-ja="アットホームな一日にしたいと思っております。">full of good times with all of you.</span><span data-en="We would be so happy if you could join us." data-ja="ぜひご出席いただけましたら幸いです。">We would be so happy if you could join us.</span></p>
     <div class="petal-divider fi"><svg viewBox="0 0 70 16" aria-hidden="true"><ellipse cx="35" cy="8" rx="5" ry="1.8"/><ellipse cx="35" cy="8" rx="15" ry="4.2" opacity=".65"/><ellipse cx="35" cy="8" rx="30" ry="7" opacity=".32"/></svg></div>
   </div>
 </section>
@@ -866,7 +863,7 @@ html.is-ja .tm-memo p{font-family:'Yomogi',cursive}
 <section id="venue" class="section-wrap">
   <div class="inner">
     <p class="eyebrow fi" data-en="The Details" data-ja="詳細">The Details</p>
-    <h2 class="section-title fi en-only" data-en="Come Celebrate With Us" data-ja="Come Celebrate With Us">Come Celebrate With Us</h2>
+    
     <div class="petal-divider fi"><svg viewBox="0 0 70 16" aria-hidden="true"><ellipse cx="35" cy="8" rx="5" ry="1.8"/><ellipse cx="35" cy="8" rx="15" ry="4.2" opacity=".65"/><ellipse cx="35" cy="8" rx="30" ry="7" opacity=".32"/></svg></div>
     <div class="venue-grid">
       <div class="fi">
@@ -883,12 +880,12 @@ html.is-ja .tm-memo p{font-family:'Yomogi',cursive}
       <div class="fi">
         <p class="venue-block-label" data-en="Dress Code" data-ja="服装">Dress Code</p>
         <p class="venue-block-value" data-en="Formal" data-ja="フォーマル">Formal</p>
-        <p class="venue-block-sub" data-en="Suit and a coat for the gents. Dress and a cardigan for the ladies. It may be cold outside, but the tent will have heaters to keep everyone warm. Japanese formal wear also very welcome 🙏" data-ja="男性はスーツ、女性はドレスでお越しください。屋外は冷え込む場合がございますので、コートやカーディガンなど、羽織るものをお持ちいただくと安心です。テント内はヒーターを設置しておりますので、暖かくお過ごしいただけます。">Suit and a coat for the gents. Dress and a cardigan for the ladies. It may be cold outside, but the tent will have heaters to keep everyone warm. Japanese formal wear also very welcome 🙏</p>
+        <p class="venue-block-sub" data-en="Suits for men, dresses for women. It can get chilly outside, so bring something to layer on, like a coat or a cardigan. The tent will have heaters, so you will stay warm inside." data-ja="男性はスーツ、女性はドレスでお越しください。屋外は冷え込む場合がございますので、コートやカーディガンなど、羽織るものをお持ちいただくと安心です。テント内はヒーターを設置しておりますので、暖かくお過ごしいただけます。">Suits for men, dresses for women. It can get chilly outside, so bring something to layer on, like a coat or a cardigan. The tent will have heaters, so you will stay warm inside.</p>
       </div>
       <div class="fi">
         <p class="venue-block-label" data-en="Getting There" data-ja="アクセス">Getting There</p>
         <p class="venue-block-value" data-en="Fly into Sapporo" data-ja="新千歳空港へ">Fly into Sapporo</p>
-        <p class="venue-block-sub" data-en="New Chitose Airport (CTS) · About 2 hours to Lake Toya by car or train. A beautiful drive through Hokkaido 🚗" data-ja="新千歳空港（CTS）より洞爺湖まで約2時間。">New Chitose Airport (CTS) · About 2 hours to Lake Toya by car or train. A beautiful drive through Hokkaido 🚗</p>
+        <p class="venue-block-sub" data-en="From New Chitose Airport (CTS), about 2 hours to Lake Toya." data-ja="新千歳空港（CTS）より洞爺湖まで約2時間。">From New Chitose Airport (CTS), about 2 hours to Lake Toya.</p>
       </div>
     </div>
   </div>
@@ -905,27 +902,27 @@ html.is-ja .tm-memo p{font-family:'Yomogi',cursive}
         <span class="sched-time" data-en="3:30 pm" data-ja="15:30">3:30 pm</span><span class="sched-petal"></span>
         <div class="sched-body">
           <p class="sched-name" data-en="Arrival" data-ja="受付開始">Arrival</p>
-          <p class="sched-note en-only" data-en="Cars run from the hotels. Come early if you want a walk by the lake." data-ja="各ホテルから送迎いたします。湖畔を歩かれたい方はお早めにどうぞ。">Cars run from the hotels. Come early if you want a walk by the lake.</p>
+          
         </div>
       </div>
       <div class="sched-row">
         <span class="sched-time" data-en="4:00 pm" data-ja="16:00">4:00 pm</span><span class="sched-petal"></span>
         <div class="sched-body">
           <p class="sched-name" data-en="Ceremony" data-ja="挙式">Ceremony</p>
-          <p class="sched-note" data-en="On the lawn, with the lake behind us." data-ja="湖を望む芝生にて執り行います。一部ウッドチップが敷かれているため、ヒールでお越しの方は低めのものや太めのものをおすすめいたします。">On the lawn, with the lake behind us.</p>
+          <p class="sched-note" data-en="On the lawn, with the lake behind us. Part of it is covered in wood chips, so if you are wearing heels, low or chunky ones work best." data-ja="湖を望む芝生にて執り行います。一部ウッドチップが敷かれているため、ヒールでお越しの方は低めのものや太めのものをおすすめいたします。">On the lawn, with the lake behind us. Part of it is covered in wood chips, so if you are wearing heels, low or chunky ones work best.</p>
         </div>
       </div>
       <div class="sched-row">
         <span class="sched-time" data-en="4:45 pm" data-ja="16:45">4:45 pm</span><span class="sched-petal"></span>
         <div class="sched-body">
           <p class="sched-name" data-en="Dinner" data-ja="お食事">Dinner</p>
-          <p class="sched-note" data-en="Served under the tent. Hokkaido wagyu, scallops, and a long table." data-ja="テントの下で、北海道の旬の食材をふんだんに使ったイタリアンをお楽しみください。">Served under the tent. Hokkaido wagyu, scallops, and a long table.</p>
+          <p class="sched-note" data-en="Under the tent: Italian, made with plenty of seasonal Hokkaido ingredients." data-ja="テントの下で、北海道の旬の食材をふんだんに使ったイタリアンをお楽しみください。">Under the tent: Italian, made with plenty of seasonal Hokkaido ingredients.</p>
         </div>
       </div>
       <div class="sched-row">
         <span class="sched-time" data-en="7:00 pm" data-ja="19:00">7:00 pm</span><span class="sched-petal"></span>
         <div class="sched-body">
-          <p class="sched-name" data-en="Closing speeches" data-ja="お開き">Closing speeches</p>
+          <p class="sched-name" data-en="Closing" data-ja="お開き">Closing</p>
           <p class="sched-note" data-en="A few we have asked in advance, then the microphone is open." data-ja="事前にお願いした方に加え、どなたでもお話しいただけます。">A few we have asked in advance, then the microphone is open.</p>
         </div>
       </div>
@@ -933,7 +930,7 @@ html.is-ja .tm-memo p{font-family:'Yomogi',cursive}
         <span class="sched-time" data-en="7:30 pm" data-ja="19:30">7:30 pm</span><span class="sched-petal"></span>
         <div class="sched-body">
           <p class="sched-name" data-en="After party" data-ja="アフターパーティー">After party</p>
-          <p class="sched-note" data-en="For anyone who would like to stay on." data-ja="お開きの後も、温かい飲み物やお酒を楽しみながら、皆様とのんびり過ごせたらと思います。">For anyone who would like to stay on.</p>
+          <p class="sched-note" data-en="After the closing, we would love to keep relaxing with everyone over warm drinks and something stronger." data-ja="お開きの後も、温かい飲み物やお酒を楽しみながら、皆様とのんびり過ごせたらと思います。">After the closing, we would love to keep relaxing with everyone over warm drinks and something stronger.</p>
         </div>
       </div>
       </div>
@@ -1562,13 +1559,14 @@ window.Momiji=Momiji;
 
 /* ---------- language switch: one soft ring across the page ---------- */
 var _toggle=window.toggleLang;
-window.toggleLang=function(){
+window.toggleLang=function(instant){
   var b=document.getElementById('lang-btn'), r=b?b.getBoundingClientRect():{left:innerWidth-60,top:30,width:0,height:0};
   var x=r.left+r.width/2, y=r.top+r.height/2;
-  if(!RM){ var far=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y))*2;
+  if(!RM&&instant!==true){ var far=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y))*2;
     [0,180].forEach(function(dl){ var d=document.createElement('div'); d.className='lang-ring'; d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+far+'px;height:'+far+'px;animation-delay:'+dl+'ms';
       document.body.appendChild(d); setTimeout(function(){d.remove()},1500+dl); }); }
-  setTimeout(function(){ _toggle(); document.documentElement.classList.toggle('is-ja',isJA()); renderDays(); if(window.SBook) window.SBook.sync(); },RM?0:140);
+  var go=function(){ _toggle(); var h=document.documentElement; h.classList.toggle('is-ja',isJA()); h.lang=isJA()?'ja':'en'; renderDays(); if(window.SBook) window.SBook.sync(); };
+  if(instant===true) go(); else setTimeout(go,RM?0:140);
 };
 })();
 
@@ -1593,6 +1591,13 @@ window.toggleLang=function(){
       .catch(function(){ say('That did not send. Check your connection and try again.','送信できませんでした。通信状況をご確認のうえ、もう一度お試しください。','err'); })
       .then(function(){ btn.disabled=false; });
   });
+})();
+
+/* ---------- two links (Jay 22 Nov): hq/invite/ opens in English, hq/invite/ja/ (or ?lang=ja) opens in Japanese.
+   The language button still works on both. ---------- */
+(function(){
+  var want=(new URLSearchParams(location.search).get('lang')||'').toLowerCase();
+  if((want==='ja'||want==='jp')&&!(typeof lang!=='undefined'&&lang==='ja')) window.toggleLang(true);
 })();
 </script>
 </body>
