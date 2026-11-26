@@ -756,6 +756,14 @@ html.is-ja .tm-memo p{font-family:'Yomogi',cursive}
 }
 @media (min-width:700px){.tm-lb b,.tm-pill b{font-size:14px}.tm-pill small{font-size:11.5px}.tm-tx{font-size:17px}.tm-tx.tm-lake{font-size:22px}}
 
+
+/* Cover: the WebGL layer draws the photo (lantern glow); the plain photo is only the no-WebGL fallback. */
+#hero-photo.gl-on .ph{visibility:hidden}
+#dfly{position:absolute;left:0;top:0;pointer-events:none;z-index:0;opacity:0;transition:opacity 1.4s ease;will-change:transform}
+#dfly.on{opacity:1}
+/* No stray characters or lone words on a line (Jay 25 Nov). Japanese breaks only between phrases (see the script at the end). */
+body{text-wrap:pretty}
+html.jwrap body{word-break:keep-all;overflow-wrap:break-word}
 </style>
 </head>
 <body>
@@ -1206,7 +1214,10 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 document.querySelectorAll('img[data-img]').forEach(function(el){var s=IMG[el.getAttribute('data-img')]; if(s) el.src=s;});
 
 /* ---------- days to go ---------- */
-function daysLeft(){var t=new Date(2027,5,5),n=new Date();n.setHours(0,0,0,0);return Math.max(0,Math.round((t-n)/864e5))}
+/* Counted in Japan time so every guest sees the same number; it ticks over at midnight in Japan while the page is open. */
+function daysLeft(){var y,m,d;try{new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Tokyo',year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date()).forEach(function(x){if(x.type==='year')y=+x.value;if(x.type==='month')m=+x.value;if(x.type==='day')d=+x.value})}catch(e){}
+  if(!y||!m||!d){var n=new Date();y=n.getFullYear();m=n.getMonth()+1;d=n.getDate()}
+  return Math.max(0,Math.round((Date.UTC(2027,5,5)-Date.UTC(y,m-1,d))/864e5))}
 var DAYS=daysLeft(), shownDays=RM?DAYS:0;
 function renderDays(){
   var el=document.getElementById('hero-days'); if(!el) return;
@@ -1214,13 +1225,14 @@ function renderDays(){
   document.querySelectorAll('.js-count').forEach(function(b){b.innerHTML=isJA()?'あと<b>'+DAYS+'</b>日':'<b>'+DAYS+'</b> days to go'});
 }
 renderDays();
+setInterval(function(){var d=daysLeft(); if(d!==DAYS){DAYS=d; shownDays=d; renderDays();}},30000);
 if(!RM){ setTimeout(function(){ var t0=performance.now(), dur=1600;
-  (function tick(now){ var p=Math.min(1,(now-t0)/dur); shownDays=Math.round(DAYS*(1-Math.pow(1-p,3))); renderDays(); if(p<1) requestAnimationFrame(tick); })(t0);
+  (function tick(now){ var p=Math.max(0,Math.min(1,(performance.now()-t0)/dur)); shownDays=Math.round(DAYS*(1-Math.pow(1-p,3))); renderDays(); if(p<1) requestAnimationFrame(tick); })(t0);
  },2300); setTimeout(function(){ if(shownDays!==DAYS){ shownDays=DAYS; renderDays(); } },4300); }
 
 /* ---------- water ripple on the cover (kept light) ---------- */
 function Ripple(host,box,o){
-  var self=this; this.host=host; this.box=box; this.gw=o.grid; this.iw=1; this.ih=1; this.ok=false;
+  var self=this; this.host=host; this.box=box; this.gw=o.grid; this.still=o.water===false; this.iw=1; this.ih=1; this.ok=false;
   var cv=document.createElement('canvas'); cv.setAttribute('aria-hidden','true'); box.insertBefore(cv,box.firstChild); this.cv=cv;
   var gl=null; try{gl=cv.getContext('webgl',{alpha:false,antialias:false,premultipliedAlpha:false})||cv.getContext('experimental-webgl')}catch(e){}
   if(!gl){cv.remove(); return;}
@@ -1228,16 +1240,21 @@ function Ripple(host,box,o){
   function sh(t,s){var x=gl.createShader(t);gl.shaderSource(x,s);gl.compileShader(x);return x}
   var p=gl.createProgram();
   gl.attachShader(p,sh(gl.VERTEX_SHADER,'attribute vec2 a;varying vec2 v;void main(){v=a*.5+.5;gl_Position=vec4(a,0.,1.);}'));
-  gl.attachShader(p,sh(gl.FRAGMENT_SHADER,'precision mediump float;varying vec2 v;uniform sampler2D img,hm;uniform vec2 tx,sc,of;uniform float st;'+
+  gl.attachShader(p,sh(gl.FRAGMENT_SHADER,'precision mediump float;varying vec2 v;uniform sampler2D img,hm;uniform vec2 tx,sc,of;uniform float st;uniform vec4 LB[10];uniform float LI[10];uniform float ia;'+
    'float h(vec2 q){return texture2D(hm,q).r;}'+
    'void main(){vec2 t=vec2(v.x,1.-v.y);float gx=h(t+vec2(tx.x,0.))-h(t-vec2(tx.x,0.));float gy=h(t+vec2(0.,tx.y))-h(t-vec2(0.,tx.y));vec2 g=vec2(gx,gy);'+
    'vec2 it=clamp(of+(t+g*st)*sc,.001,.999);vec3 c=texture2D(img,vec2(it.x,1.-it.y)).rgb;'+
+   'float lum=dot(c,vec3(.299,.587,.114));float pap=smoothstep(.40,.78,lum);float em=0.;vec3 hal=vec3(0.);'+
+   'for(int k=0;k<10;k++){float I=LI[k];vec4 b=LB[k];vec2 ce=(b.xy+b.zw)*.5;vec2 hs=max((b.zw-b.xy)*.5,vec2(.0005));'+
+   'vec2 qn=(it-ce)/hs;float bx=1.-smoothstep(.8,1.15,max(abs(qn.x),abs(qn.y)));em+=I*bx*pap*(.55+.45*exp(-dot(qn,qn)*1.2));'+
+   'vec2 d=it-ce;d.x*=ia;float r=max(hs.x*ia,hs.y)*2.8;hal+=vec3(1.,.66,.32)*I*exp(-dot(d,d)/(r*r));}'+
+   'em=clamp(em,0.,1.);c=mix(c,vec3(1.,.9,.72)*(1.02+.12*em),em*.82);c+=hal*.13*(1.-lum*.6);'+
    'float l=dot(g,vec2(-.7071,-.7071));c+=clamp(l*7.,0.,1.)*.15;c-=clamp(-l*7.,0.,1.)*.06;gl_FragColor=vec4(c,1.);}'));
   gl.linkProgram(p); if(!gl.getProgramParameter(p,gl.LINK_STATUS)){cv.remove(); return;}
   gl.useProgram(p);
   var b=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,b); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
   var al=gl.getAttribLocation(p,'a'); gl.enableVertexAttribArray(al); gl.vertexAttribPointer(al,2,gl.FLOAT,false,0,0);
-  this.U={}; ['img','hm','tx','sc','of','st'].forEach(function(n){self.U[n]=gl.getUniformLocation(p,n)});
+  this.U={}; ['img','hm','tx','sc','of','st','LB','LI','ia'].forEach(function(n){self.U[n]=gl.getUniformLocation(p,n)});
   gl.uniform1i(this.U.img,0); gl.uniform1i(this.U.hm,1); gl.uniform1f(this.U.st,o.strength);
   function mk(){var t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);return t}
   this.ti=mk(); this.th=mk(); this.vis=true; this.raf=0; this.lastIn=0; this.nextDrop=0; this.last=null; this.ambient=false;
@@ -1256,9 +1273,31 @@ function Ripple(host,box,o){
   var im=new Image(); im.onload=function(){ self.iw=im.naturalWidth; self.ih=im.naturalHeight;
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,self.ti); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,im); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+    var bxs=new Float32Array(40); LANT.forEach(function(q,i){ bxs[i*4]=q[0]/self.iw; bxs[i*4+1]=q[1]/self.ih; bxs[i*4+2]=q[2]/self.iw; bxs[i*4+3]=q[3]/self.ih; });
+    if(self.U.LB) gl.uniform4fv(self.U.LB,bxs); if(self.U.ia) gl.uniform1f(self.U.ia,self.iw/self.ih); self.lt0=performance.now(); self.lit=!!self.U.LI;
     self.ok=true; box.classList.add('gl-on'); self.cover(); self.draw(); if(!RM){self.disturb(self.gw*.66,self.gh*.74,3.4,1.1); self.kick()} };
   im.src=o.src;
 }
+/* The ten paper lanterns on the bridge, in cover-photo pixels (2000x1333): x0,y0,x1,y1 of the paper. */
+var LANT=[[99,920,173,985],[261,913,307,956],[491,912,531,933],[595,851,642,896],[798,866,843,897],[930,824,972,869],[1124,840,1138,878],[1256,810,1300,862],[1488,832,1520,876],[1740,845,1770,880]];
+/* Each lantern catches in turn along the bridge, then breathes slowly with a small flame flicker,
+   and now and then one sags and recovers like a flame in a draught. Reduced motion: lit, still. */
+Ripple.prototype.lights=function(now){
+  var out=this.LIv||(this.LIv=new Float32Array(10)), n=LANT.length, i;
+  if(RM||!this.lt0){ for(i=0;i<n;i++) out[i]=RM?.85:0; return out; }
+  var t=(now-this.lt0)/1000;
+  var S=this.ls||(this.ls=LANT.map(function(_,k){ return {ph:Math.random()*6.283,P:5+Math.random()*4,f:0,fv:0,ft:0,dip:6+k*1.3+Math.random()*10}; }));
+  for(i=0;i<n;i++){ var s=S[i], on=t-(1.1+i*.17);
+    if(on<=0){ out[i]=0; continue; }
+    var ig=on<.09?on/.09*.55:on<.16?.55-(on-.09)/.07*.4:on<.55?.15+(on-.16)/.39*.85:1;
+    if(now>s.ft){ s.fv=Math.random()-.5; s.ft=now+70+Math.random()*130; }
+    s.f+=(s.fv-s.f)*.12;
+    var dip=0, u=t-s.dip;
+    if(u>0){ if(u<2.2) dip=(u<.5?u/.5:1-(u-.5)/1.7)*.38; else s.dip=t+9+Math.random()*16; }
+    out[i]=ig*(.84+.07*Math.sin(t*6.283/s.P+s.ph)+.06*s.f-dip);
+  }
+  return out;
+};
 Ripple.prototype.resize=function(){
   var gl=this.gl,d=Math.min(window.devicePixelRatio||1,2),w=Math.max(2,this.box.clientWidth),ht=Math.max(2,this.box.clientHeight);
   this.cv.width=Math.round(w*d); this.cv.height=Math.round(ht*d); gl.viewport(0,0,this.cv.width,this.cv.height);
@@ -1282,7 +1321,7 @@ Ripple.prototype.cover=function(){
   this.gl.uniform2f(this.U.sc,sx,sy); this.gl.uniform2f(this.U.of,ox,oy);
 };
 Ripple.prototype.disturb=function(x,y,r,amp){
-  if(!this.a) return; var W=this.gw,H=this.gh,a=this.a,R=Math.ceil(r);
+  if(!this.a||this.still) return; var W=this.gw,H=this.gh,a=this.a,R=Math.ceil(r);
   for(var j=-R;j<=R;j++)for(var i=-R;i<=R;i++){var d=Math.hypot(i,j); if(d>r)continue; var X=Math.round(x)+i,Y=Math.round(y)+j; if(X<1||Y<1||X>=W-1||Y>=H-1)continue; a[Y*W+X]+=amp*(.5+.5*Math.cos(Math.PI*d/r))}
   this.lastIn=performance.now();
 };
@@ -1295,14 +1334,15 @@ Ripple.prototype.step=function(){
   var gl=this.gl; gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,this.th); gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
   gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,W,H,gl.LUMINANCE,gl.UNSIGNED_BYTE,by);
 };
-Ripple.prototype.draw=function(){ if(!this.ok) return; var gl=this.gl; gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,this.ti); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,this.th); gl.drawArrays(gl.TRIANGLE_STRIP,0,4)};
+Ripple.prototype.draw=function(){ if(!this.ok) return; var gl=this.gl; this.lastDraw=performance.now(); if(this.U.LI) gl.uniform1fv(this.U.LI,this.lights(this.lastDraw)); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,this.ti); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,this.th); gl.drawArrays(gl.TRIANGLE_STRIP,0,4)};
 Ripple.prototype.kick=function(){
   if(RM||this.raf||!this.ok) return; var self=this;
   function loop(now){
     if(!self.vis||document.hidden){self.raf=0;return}
     if(self.ambient&&now>self.nextDrop){ if(self.nextDrop) self.disturb(2+Math.random()*(self.gw-4),self.gh*(.5+Math.random()*.45),2.4,.7); self.nextDrop=now+3800+Math.random()*4200 }
-    self.step(); self.draw();
-    if(!self.ambient&&now-self.lastIn>7000){self.raf=0;return}   /* water has settled: stop until something touches it */
+    var wet=self.ambient||now-self.lastIn<=7000;
+    if(wet){ self.step(); self.draw(); } else if(now-(self.lastDraw||0)>=33) self.draw();   /* water settled: lanterns only, ~30 fps */
+    if(!wet&&!self.lit){self.raf=0;return}
     self.raf=requestAnimationFrame(loop)}
   this.raf=requestAnimationFrame(loop);
 };
@@ -1310,10 +1350,184 @@ var hero=document.getElementById('hero'), heroBox=document.getElementById('hero-
 var heroRipple=null;
 if(hero&&heroBox){
   var bgm=/url\(["']?(data:[^"')]+)["']?\)/.exec(getComputedStyle(heroBox.querySelector('.ph')).backgroundImage||'');
-  if(bgm) heroRipple=new Ripple(hero,heroBox,{grid:innerWidth<700?100:170,src:bgm[1],strength:.24});
+  if(bgm) heroRipple=new Ripple(hero,heroBox,{grid:innerWidth<700?100:170,src:bgm[1],strength:.24,water:false});
   if(heroRipple&&!heroRipple.gl) heroRipple=null;
 }
 window.heroRipple=heroRipple;
+
+/* ---------- a red dragonfly (akatombo) living in the cover photo (Jay 25 Nov) ----------
+   Drawn in 3D every frame on a small canvas inside the photo layer, so it scrolls with the picture and sits
+   under the same shading. It hovers with tiny drifts, darts in quick curves, pivots on the spot, now and then
+   rests on a lantern pole or the rail, and leaves the frame for a while before coming back.
+   Its size follows the photo's scale (life size, a little in front of the bridge). It darts away from the mouse
+   or a tap. Reduced motion: no dragonfly. */
+(function(){
+  if(RM||!heroBox||!hero) return;
+  var ph=heroBox.querySelector('.ph'), IW=2000, IH=1333;
+  var cv=document.createElement('canvas'); cv.id='dfly'; cv.setAttribute('aria-hidden','true'); heroBox.appendChild(cv);
+  var ctx=cv.getContext('2d'); if(!ctx){cv.remove(); return;}
+  var BODY=24;                                                        /* body length in photo pixels */
+  var PERCH=[[253,851],[588,790],[930,759],[1509,772],[1440,885]];    /* pole tips, a lantern hook, the rail (photo pixels) */
+  var FACES=[880,450,1300,740];                                       /* never hovers in front of their faces */
+  var CA=Math.cos(.32), SA=Math.sin(.32);                             /* the camera looks down a little */
+  var C=null, cs=0, dp=0, vis=true, raf=0, last=0, fr=0, T=performance.now()/1000, f, u, l;
+  function R(a,b){return a+Math.random()*(b-a)}
+
+  function crop(){                                                    /* same crop maths as the cover */
+    var W=heroBox.clientWidth||innerWidth, H=heroBox.clientHeight||innerHeight, st=ph?ph.style:null;
+    var px=(parseFloat(st&&st.getPropertyValue('--cx'))||48)/100, py=(parseFloat(st&&st.getPropertyValue('--cy'))||40)/100, z=parseFloat(st&&st.getPropertyValue('--cz'))||1;
+    var ca=W/H, ia=IW/IH, sx=1, sy=1; if(ca>ia) sy=ia/ca; else sx=ca/ia;
+    var ox=px*(1-sx), oy=py*(1-sy); ox+=sx*px*(1-1/z); oy+=sy*py*(1-1/z); sx/=z; sy/=z;
+    var tr=null, hc=document.getElementById('hero-content'), br=heroBox.getBoundingClientRect();
+    if(hc) [].forEach.call(hc.children,function(el){ var r=el.getBoundingClientRect(); if(!r.width||!r.height) return;
+      var q=[r.left-br.left-22, r.top-br.top-22, r.right-br.left+22, r.bottom-br.top+22];
+      tr=tr?[Math.min(tr[0],q[0]),Math.min(tr[1],q[1]),Math.max(tr[2],q[2]),Math.max(tr[3],q[3])]:q; });
+    C={W:W,H:H,sx:sx,sy:sy,ox:ox,oy:oy,k:W/(sx*IW),tr:tr};
+  }
+  function toS(x,y){return [(x/IW-C.ox)/C.sx*C.W,(y/IH-C.oy)/C.sy*C.H]}
+  function toI(x,y){return [(C.ox+x/C.W*C.sx)*IW,(C.oy+y/C.H*C.sy)*IH]}
+  function okSpot(ix,iy,s){
+    if(iy<150||iy>1240) return false;
+    if(ix>FACES[0]&&ix<FACES[2]&&iy>FACES[1]&&iy<FACES[3]) return false;
+    var m=Math.min(C.W,C.H)*.07, t=C.tr;
+    if(s[0]<m||s[0]>C.W-m||s[1]<C.H*.1||s[1]>C.H-m) return false;
+    return !(t&&s[0]>t[0]&&s[0]<t[2]&&s[1]>t[1]&&s[1]<t[3]);
+  }
+  function pickHover(far){
+    var cur=toS(S.x,S.y), hi=Math.max(140,Math.min(C.W,C.H)*(far?.7:.42)), best=null;
+    for(var i=0;i<60;i++){
+      var s=[R(0,C.W),R(0,C.H)];
+      if(Math.random()<.5) s[1]=toS(0,R(700,990))[1];               /* half the time near the bridge */
+      var p=toI(s[0],s[1]); if(!okSpot(p[0],p[1],s)) continue;
+      if(S.mode==='out') return p;
+      var d=Math.hypot(s[0]-cur[0],s[1]-cur[1]);
+      if(d<28||d>hi){ best=best||p; continue; }
+      return p;
+    }
+    return best||toI(C.W*.62,C.H*.3);
+  }
+  function pickPerch(){
+    var c=PERCH.filter(function(p){ return okSpot(p[0],p[1],toS(p[0],p[1])); });
+    return c.length?c[Math.floor(Math.random()*c.length)]:null;
+  }
+  function edge(){ var L=C.k*BODY*2, left=Math.random()<.5; return toI(left?-L:C.W+L, R(C.H*.15,C.H*.55)); }
+
+  var S={x:0,y:0,th:0,tT:0,pt:0,pT:0,mode:'out',until:T+R(3.5,5),hops:0,max:7,ax:0,ay:0,vx:0,vy:0,j0:0,scan:0,P:null,at:null,q:[R(0,6),R(0,6),R(0,6),R(0,6)]};
+  function dart(to,next,slow){
+    var dx=to[0]-S.x, dy=to[1]-S.y, D=Math.hypot(dx,dy)||1, b=R(-.28,.28)*D;
+    S.P={x0:S.x,y0:S.y,x1:to[0],y1:to[1],cx:(S.x+to[0])/2-dy/D*b,cy:(S.y+to[1])/2+dx/D*b,t0:T,dur:Math.min(1.7,(.16+D/R(1000,1500))*(slow?1.9:1)),next:next};
+    if(D>45&&Math.abs(dx)>.35*D) S.tT=(dx>0?0:Math.PI)+R(-.55,.55);
+    S.mode='dart';
+  }
+  function hover(){ S.mode='hover'; S.ax=S.x; S.ay=S.y; S.vx=S.vy=0; S.j0=T; S.until=T+(Math.random()<.25?R(.3,.8):R(1.4,4.2)); S.scan=T+R(.5,1.6); }
+  function land(){ S.mode='perch'; S.until=T+R(3.5,8.5); S.x=S.at[0]; S.y=S.at[1]-BODY*.1; S.tT=(Math.cos(S.th)>=0?0:Math.PI)+R(-.6,.6); }
+  function next(){
+    if(++S.hops>=S.max){ S.hops=0; S.max=R(6,12)|0; dart(edge(),'out',true); return; }
+    if(Math.random()<.22){ var p=pickPerch(); if(p){ S.at=p; dart([p[0],p[1]-BODY*.1],'perch'); return; } }
+    dart(pickHover(),'hover');
+  }
+  function update(dt){
+    var m=S.mode;
+    if(m==='out'){
+      if(T<S.until) return;
+      var e=edge(); S.x=e[0]; S.y=e[1]; S.th=S.tT=toS(e[0],e[1])[0]<0?0:Math.PI;
+      dart(pickHover(true),'hover',true); cv.classList.add('on'); return;
+    }
+    if(m==='dart'){
+      var P=S.P, k=Math.min(1,(T-P.t0)/P.dur), e2=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2, a=1-e2;
+      S.x=a*a*P.x0+2*a*e2*P.cx+e2*e2*P.x1; S.y=a*a*P.y0+2*a*e2*P.cy+e2*e2*P.y1;
+      S.pT=k<.5?-.16:.1;
+      if(k>=1){ if(P.next==='hover') hover(); else if(P.next==='perch') land(); else { S.mode='out'; S.until=T+R(7,16); cv.classList.remove('on'); } }
+    } else if(m==='hover'){
+      var ramp=Math.min(1,(T-S.j0)/.45), q=S.q;
+      S.vx+=(R(-1,1)*14-S.vx*1.5)*dt; S.vy+=(R(-1,1)*10-S.vy*1.5)*dt; S.ax+=S.vx*dt; S.ay+=S.vy*dt;
+      S.x=S.ax+ramp*(1.5*Math.sin(T*2.3+q[0])+.7*Math.sin(T*5.9+q[1]));
+      S.y=S.ay+ramp*(1.2*Math.sin(T*1.9+q[2])+.6*Math.sin(T*4.7+q[3]));
+      S.pT=.07+.03*Math.sin(T*1.3);
+      if(T>S.scan){ S.scan=T+R(.7,2.2); if(Math.random()<.4) S.tT=S.th+(Math.random()<.5?-1:1)*R(.5,1.5); }
+      if(T>S.until) next();
+    } else if(m==='perch'){
+      S.pT=0;
+      if(T>S.until) dart(pickHover(),'hover');
+    }
+    var d=S.tT-S.th; d=Math.atan2(Math.sin(d),Math.cos(d)); S.th+=d*Math.min(1,dt*(m==='dart'?16:9));
+    S.pt+=(S.pT-S.pt)*Math.min(1,dt*8);
+  }
+  function flee(mx,my){
+    if(!C||S.mode==='out'||S.mode==='dart') return;
+    var s=toS(S.x,S.y); if(Math.hypot(s[0]-mx,s[1]-my)>Math.max(70,C.k*BODY*4)) return;
+    var best=null,bd=-1;
+    for(var i=0;i<12;i++){ var p=pickHover(true), q=toS(p[0],p[1]), dd=Math.hypot(q[0]-mx,q[1]-my); if(dd>bd){bd=dd;best=p} }
+    S.hops++; dart(best,'hover');
+  }
+  hero.addEventListener('pointermove',function(e){ if(e.pointerType!=='mouse') return; var r=heroBox.getBoundingClientRect(); flee(e.clientX-r.left,e.clientY-r.top); });
+  hero.addEventListener('pointerdown',function(e){ var r=heroBox.getBoundingClientRect(); flee(e.clientX-r.left,e.clientY-r.top); });
+
+  /* drawing: x right, y up, z toward the camera; origin at the wing roots; 1 = body length */
+  function A(o,v,s){return [o[0]+v[0]*s,o[1]+v[1]*s,o[2]+v[2]*s]}
+  function pj(p,L){return [p[0]*L,(-p[1]*CA+p[2]*SA)*L]}
+  function dep(p){return p[2]*CA+p[1]*SA}
+  var O=[0,0,0], ABD=['#93381f','#a8422a','#b04a2e','#b24a2d','#ad452a','#a84028','#a03b24','#963521','#8a301d','#7b2a1a'];
+  function wing(g,L){
+    var c=[-f[0],-f[1],-f[2]], N=9, pts=[], i, s, wd;
+    for(i=0;i<=N;i++){ s=i/N; pts.push(A(A(g.root,g.w,s*g.len),c,-.015*Math.sin(Math.PI*s))); }
+    for(i=N;i>=0;i--){ s=i/N; wd=g.hind?g.ch*Math.pow(Math.sin(Math.PI*(.16+.84*s)),.55):g.ch*Math.pow(Math.sin(Math.PI*Math.pow(s,.85)),.6); pts.push(A(A(g.root,g.w,s*g.len),c,wd)); }
+    ctx.beginPath(); pts.forEach(function(p,j){ var q=pj(p,L); if(j) ctx.lineTo(q[0],q[1]); else ctx.moveTo(q[0],q[1]); }); ctx.closePath();
+    ctx.fillStyle='rgba(232,238,240,'+g.a+')'; ctx.fill();
+    ctx.lineWidth=.45; ctx.strokeStyle='rgba(55,45,40,'+Math.min(1,g.a*1.2)+')'; ctx.stroke();
+    var t=pj(A(A(g.root,g.w,g.len*.88),c,.014),L); ctx.fillStyle='rgba(95,40,24,'+Math.min(1,g.a*2.4)+')';
+    ctx.beginPath(); ctx.arc(t[0],t[1],Math.max(.35,L*.014),0,6.283); ctx.fill();
+  }
+  function body(L,fly){
+    var N=ABD.length, i, a0, a1, p0, p1, w;
+    ctx.lineCap='round';
+    for(i=0;i<N;i++){ a0=-.03-.71*i/N; a1=-.03-.71*(i+1)/N; p0=pj(A(O,f,a0),L); p1=pj(A(O,f,a1),L); w=Math.max(.6,(.08-.032*i/N)*L);
+      ctx.strokeStyle=ABD[i]; ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke(); }
+    p0=pj(A(O,f,-.05),L); p1=pj(A(O,f,-.6),L);                      /* soft daylight along the top */
+    ctx.strokeStyle='rgba(255,175,140,.28)'; ctx.lineWidth=Math.max(.3,L*.022); ctx.beginPath(); ctx.moveTo(p0[0],p0[1]-L*.02); ctx.lineTo(p1[0],p1[1]-L*.014); ctx.stroke();
+    if(!fly){ ctx.strokeStyle='#2b1810'; ctx.lineWidth=Math.max(.45,L*.018);
+      [.09,.04,-.01].forEach(function(a){ var s0=pj(A(O,f,a),L), s1=pj(A(A(O,f,a+.03),u,-.1),L); ctx.beginPath(); ctx.moveTo(s0[0],s0[1]); ctx.lineTo(s1[0],s1[1]); ctx.stroke(); }); }
+    var t=pj(A(O,f,.045),L); ctx.fillStyle='#6b3a24'; ctx.beginPath(); ctx.arc(t[0],t[1],Math.max(.7,L*.085),0,6.283); ctx.fill();
+    var h=pj(A(O,f,.17),L); ctx.fillStyle='#4a2416'; ctx.beginPath(); ctx.arc(h[0],h[1],Math.max(.6,L*.07),0,6.283); ctx.fill();
+    ctx.fillStyle='rgba(255,215,190,.4)'; ctx.beginPath(); ctx.arc(h[0]-L*.02,h[1]-L*.03,Math.max(.25,L*.018),0,6.283); ctx.fill();
+  }
+  function draw(L){
+    var th=S.th, b=S.pt, cb=Math.cos(b), sb=Math.sin(b), ct=Math.cos(th), st=Math.sin(th), fly=S.mode!=='perch', W=[];
+    f=[ct*cb,sb,st*cb]; u=[-ct*sb,cb,-st*sb]; l=[-st,0,ct];
+    [[.06,.74,.17,.07,0],[-.03,.7,.23,.2,1]].forEach(function(D){ [-1,1].forEach(function(side){
+      for(var i=0,n=fly?3:1;i<n;i++){
+        var phi=fly?R(-.5,.8):-.06, cp=Math.cos(phi), sp=Math.sin(phi);
+        var w=[side*l[0]*cp+u[0]*sp-f[0]*D[3], side*l[1]*cp+u[1]*sp-f[1]*D[3], side*l[2]*cp+u[2]*sp-f[2]*D[3]], wl=Math.hypot(w[0],w[1],w[2]);
+        w=[w[0]/wl,w[1]/wl,w[2]/wl]; var root=A(A(O,f,D[0]),u,.03);
+        W.push({root:root,w:w,len:D[1],ch:D[2],hind:D[4],a:fly?.15:.38,d:dep(A(root,w,D[1]*.6))});
+      } }); });
+    W.forEach(function(g){ if(g.d<0) wing(g,L); });
+    body(L,fly);
+    W.forEach(function(g){ if(g.d>=0) wing(g,L); });
+  }
+  function render(){
+    var L=Math.max(11,Math.min(26,BODY*C.k)), size=Math.ceil(L*2.2), d=Math.min(3,window.devicePixelRatio||1);
+    if(size!==cs||d!==dp){ cs=size; dp=d; cv.width=Math.ceil(cs*dp); cv.height=Math.ceil(cs*dp); cv.style.width=cs+'px'; cv.style.height=cs+'px'; }
+    var s=toS(S.x,S.y);
+    cv.style.transform='translate3d('+(s[0]-cs/2).toFixed(2)+'px,'+(s[1]-cs/2).toFixed(2)+'px,0)';
+    ctx.setTransform(dp,0,0,dp,0,0); ctx.clearRect(0,0,cs,cs); ctx.translate(cs/2,cs/2);
+    draw(L);
+  }
+  function frame(now){
+    raf=0; if(!vis||document.hidden) return;
+    var t=performance.now()/1000, dt=last?Math.min(.05,t-last):.016; last=t; T=t;
+    if(!C||++fr%30===0) crop();
+    update(dt);
+    if(S.mode!=='out') render();
+    raf=requestAnimationFrame(frame);
+  }
+  function go(){ if(!raf&&vis&&!document.hidden){ last=0; raf=requestAnimationFrame(frame); } }
+  if(window.IntersectionObserver) new IntersectionObserver(function(es){ vis=es[0].isIntersecting; if(vis) go(); },{threshold:0}).observe(hero);
+  document.addEventListener('visibilitychange',go);
+  if(window.ResizeObserver) new ResizeObserver(function(){ if(C) crop(); }).observe(heroBox);
+  addEventListener('message',function(){ setTimeout(function(){ if(C) crop(); },0); });
+  go();
+})();
 
 /* ---------- momiji: a few warm maple leaves drifting down ---------- */
 var Momiji=(function(){
@@ -1597,6 +1811,85 @@ window.toggleLang=function(instant){
 (function(){
   var want=(new URLSearchParams(location.search).get('lang')||'').toLowerCase();
   if((want==='ja'||want==='jp')&&!(typeof lang!=='undefined'&&lang==='ja')) window.toggleLang(true);
+})();
+</script>
+<script>
+/* ---------- line breaks: no stray characters or lone words on a line (Jay 25 Nov) ----------
+   Japanese: browsers may break between any two characters, so ひまわり could end up as ひまわ / り.
+   Words are found with Intl.Segmenter, particles and endings stay with the word before them, and a
+   zero-width space marks the only places a line may break (CSS keep-all in .jwrap does the rest).
+   English: the last two words of a block stay together, so no line ends up holding one word.
+   Runs on the whole page and again on anything that changes (language switch, album pages). */
+(function(){
+  var SEG=null; try{ SEG=new Intl.Segmenter('ja',{granularity:'word'}); }catch(e){}
+  if(SEG) document.documentElement.classList.add('jwrap');
+  var JP=/[぀-ヿ㐀-鿿豈-﫿ｦ-ﾟ]/, ZW=/​/g, SP=/^\s+$/;
+  var HIRA=/^[ぁ-ゟ]+$/, NOUN=/^[゠-ヿ㐀-鿿豈-﫿0-9０-９々ー]+$/, OPEN=/^[「『（(【〈《“‘［\[｛{〔]+$/, PRE=/^[おご]$/;
+  var KEND=/[\u3400-\u9fff々]$/, STOP=/[。、，．！？!?」』）)]$/, CUR=/^[¥￥$＄#＃]$/;
+  var SMALL=/^[ーぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ々〜～]/, CNT=/^[年月日時分秒歳才人回目号個枚泊名円万億千百本杯軒階週代]/;
+  var FN={'から':1,'まで':1,'より':1,'ので':1,'のに':1,'けど':1,'けれど':1,'です':1,'でした':1,'ます':1,'ました':1,'ません':1,'ください':1,
+    'ている':1,'います':1,'という':1,'として':1,'など':1,'ばかり':1,'だけ':1,'しか':1,'ほど':1,'くらい':1,'ながら':1,'たち':1,'さん':1,
+    'ちゃん':1,'くん':1,'さま':1,'ごろ':1,'でも':1,'には':1,'では':1,'とは':1,'への':1,'での':1,'との':1,'からの':1,'までの':1,
+    'られる':1,'させて':1,'たい':1,'ない':1,'なく':1,'なかった':1,'できる':1,'できます':1,'しました':1,'します':1,'している':1};
+  function jp(str,isLast){
+    var out=[], cur='', open=false;
+    Array.from(SEG.segment(str)).forEach(function(g){
+      var w=g.segment;
+      if(SP.test(w)){ out.push(cur+w); cur=''; open=false; return; }   /* a space is already a break */
+      var pre=PRE.test(w)&&!KEND.test(cur), cur$=CUR.test(w);
+      var glue=cur!==''&&(open||
+        (!g.isWordLike&&!OPEN.test(w)&&!cur$)||                        /* 、。」！ and friends */
+        (HIRA.test(w)&&!pre&&(w.length<=3||FN[w])&&!STOP.test(cur))||  /* particles, endings, okurigana */
+        SMALL.test(w)||
+        (/[0-9０-９]$/.test(cur)&&CNT.test(w))||                        /* 2027年, 5日 */
+        (/^[0-9０-９]/.test(w)&&/[年月:：.,，¥￥$＄]$/.test(cur))||       /* 2027年6月5日, 15:30, ¥5,000 */
+        (NOUN.test(cur)&&NOUN.test(w)&&cur.length+w.length<=10));      /* 交換留学, 北海道洞爺湖 */
+      if(glue) cur+=w; else { if(cur) out.push(cur); cur=w; }
+      open=OPEN.test(w)||pre||cur$;
+    });
+    if(cur) out.push(cur);
+    if(isLast&&out.length>=3&&out[out.length-1].length<=2&&!/\s$/.test(out[out.length-2])) out.splice(-2,2,out[out.length-2]+out[out.length-1]);
+    return out.map(function(c,i){ return (i&&!/\s$/.test(out[i-1]))?'​'+c:c; }).join('');
+  }
+  function en(str,isLast){
+    if(!isLast||str.split(/\s+/).filter(Boolean).length<3) return str;
+    var m=/^([\s\S]*\S)[ ]+(\S+)(\s*)$/.exec(str);
+    if(!m||m[2].length+m[1].split(/\s/).pop().length>18) return str;
+    return m[1]+' '+m[2]+m[3];
+  }
+  var SKIP=/^(SCRIPT|STYLE|TEXTAREA|NOSCRIPT|OPTION|TITLE|CODE|PRE|INPUT|SELECT)$/;
+  function last(n){
+    for(var s=n.nextSibling;s;s=s.nextSibling){
+      if(s.nodeType===3){ if(s.data.trim()) return false; continue; }
+      if(s.nodeType===1){ if(s.tagName==='BR') return true; if(s.textContent.trim()) return false; }
+    }
+    var p=n.parentNode;
+    if(p&&p.nodeType===1&&p!==document.body&&getComputedStyle(p).display==='inline') return last(p);
+    return true;
+  }
+  function fix(n){
+    var p=n.parentNode; if(!p||p.nodeType!==1||SKIP.test(p.tagName)||p.closest('svg,[data-wrap-off]')) return;
+    var d=n.data; if(!d||!d.trim()) return;
+    var o;
+    if(JP.test(d)){ if(!SEG) return; o=jp(d.replace(ZW,''),last(n)); }
+    else o=en(d,last(n));
+    if(o!==d) n.data=o;
+  }
+  function run(root){
+    if(root.nodeType===3){ fix(root); return; }
+    if(root.nodeType!==1) return;
+    var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT), n, all=[];
+    while((n=w.nextNode())) all.push(n);
+    all.forEach(fix);
+  }
+  run(document.body);
+  new MutationObserver(function(ms){
+    ms.forEach(function(m){
+      if(m.type==='characterData') fix(m.target);
+      else m.addedNodes.forEach(run);
+    });
+  }).observe(document.body,{childList:true,characterData:true,subtree:true});
+  window.wrapFix=run;
 })();
 </script>
 </body>
