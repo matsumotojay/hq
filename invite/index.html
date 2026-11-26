@@ -888,7 +888,7 @@ html.jwrap body{word-break:keep-all;overflow-wrap:break-word}
       <div class="fi">
         <p class="venue-block-label" data-en="Dress Code" data-ja="服装">Dress Code</p>
         <p class="venue-block-value" data-en="Formal" data-ja="フォーマル">Formal</p>
-        <p class="venue-block-sub" data-en="Suits for men, dresses for women. It can get chilly outside, so bring something to layer on, like a coat or a cardigan. The tent will have heaters, so you will stay warm inside." data-ja="男性はスーツ、女性はドレスでお越しください。屋外は冷え込む場合がございますので、コートやカーディガンなど、羽織るものをお持ちいただくと安心です。テント内はヒーターを設置しておりますので、暖かくお過ごしいただけます。">Suits for men, dresses for women. It can get chilly outside, so bring something to layer on, like a coat or a cardigan. The tent will have heaters, so you will stay warm inside.</p>
+        <p class="venue-block-sub" data-en="Suits for men, dresses for women. Early June at Lake Toya is usually about 50 to 66°F. It can get chilly outside, so bring something to layer on, like a coat or a cardigan. The tent will have heaters, so you will stay warm inside." data-ja="男性はスーツ、女性はドレスでお越しください。6月上旬の洞爺湖の気温は、例年10〜19℃ほどです。屋外は冷え込む場合がございますので、コートやカーディガンなど、羽織るものをお持ちいただくと安心です。テント内はヒーターを設置しておりますので、暖かくお過ごしいただけます。">Suits for men, dresses for women. Early June at Lake Toya is usually about 50 to 66°F. It can get chilly outside, so bring something to layer on, like a coat or a cardigan. The tent will have heaters, so you will stay warm inside.</p>
       </div>
       <div class="fi">
         <p class="venue-block-label" data-en="Getting There" data-ja="アクセス">Getting There</p>
@@ -1842,7 +1842,7 @@ window.toggleLang=function(instant){
         (HIRA.test(w)&&!pre&&(w.length<=3||FN[w])&&!STOP.test(cur))||  /* particles, endings, okurigana */
         SMALL.test(w)||
         (/[0-9０-９]$/.test(cur)&&CNT.test(w))||                        /* 2027年, 5日 */
-        (/^[0-9０-９]/.test(w)&&/[年月:：.,，¥￥$＄]$/.test(cur))||       /* 2027年6月5日, 15:30, ¥5,000 */
+        (/^[0-9０-９]/.test(w)&&/[年月:：.,，¥￥$＄〜～]$/.test(cur))|| /* 2027年6月5日, 15:30, ¥5,000, 10〜19℃ */
         (NOUN.test(cur)&&NOUN.test(w)&&cur.length+w.length<=10));      /* 交換留学, 北海道洞爺湖 */
       if(glue) cur+=w; else { if(cur) out.push(cur); cur=w; }
       open=OPEN.test(w)||pre||cur$;
